@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   base-api:
-    image: base-api
+    image: fss-public-api
     build:
       context: LBHFSSPublicAPI/
       dockerfile: ./Dockerfile
@@ -20,7 +20,7 @@ services:
       - ./database:/docker-entrypoint-initdb.d
 
   base-api-test:
-    image: base-api-test
+    image: fss-public-api-test
     build:
       context: .
       dockerfile: LBHFSSPublicAPI.Tests/Dockerfile
