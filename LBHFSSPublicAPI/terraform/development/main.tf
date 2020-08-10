@@ -58,7 +58,7 @@ module "postgres_db_development" {
   db_identifier = "fss-public-dev-db"
   db_instance_class = "db.t2.micro"
   db_name = "fss-public_dev"
-  db_port  = 5302
+  db_port  = 6000
   db_username = data.aws_ssm_parameter.fss_public_postgres_username.value
   db_password = data.aws_ssm_parameter.fss_public_postgres_db_password.value
   subnet_ids = data.aws_subnet_ids.development_private_subnets.ids
