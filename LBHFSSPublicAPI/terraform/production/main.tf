@@ -55,9 +55,9 @@ module "postgres_db_production" {
   vpc_id = data.aws_vpc.production_vpc.id
   db_engine = "postgres"
   db_engine_version = "11.1"
-  db_identifier = "fss-public-dev-db"
+  db_identifier = "fss-public-production-db"
   db_instance_class = "db.t2.micro"
-  db_name = "fss-public_dev"
+  db_name = "fss-public_production"
   db_port  = 6000
   db_username = data.aws_ssm_parameter.fss_public_postgres_username.value
   db_password = data.aws_ssm_parameter.fss_public_postgres_db_password.value
