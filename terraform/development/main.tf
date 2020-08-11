@@ -49,6 +49,14 @@ data "aws_subnet_ids" "development_private_subnets" {
    name = "/fss-public-api/development/postgres-username"
  }
 
+  data "aws_ssm_parameter" "fss_public_postgres_port" {
+    name = "/fss-public-api/development/postgres-port"
+  }
+
+  data "aws_ssm_parameter" "fss_public_postgres_database" {
+    name = "/fss-public-api/development/postgres-database"
+  }
+
 module "postgres_db_development" {
   source = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
   environment_name = "development"
@@ -57,8 +65,8 @@ module "postgres_db_development" {
   db_engine_version = "11.1"
   db_identifier = "fss-public-dev-db"
   db_instance_class = "db.t2.micro"
-  db_name = "fss-public_dev"
-  db_port  = 6000
+  db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
+  db_port  = data.aws_ssm_parameter.fss_public_postgres_port.value
   db_username = data.aws_ssm_parameter.fss_public_postgres_username.value
   db_password = data.aws_ssm_parameter.fss_public_postgres_db_password.value
   subnet_ids = data.aws_subnet_ids.development_private_subnets.ids
