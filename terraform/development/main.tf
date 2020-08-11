@@ -45,7 +45,7 @@ data "aws_subnet_ids" "development_private_subnets" {
    name = "/fss-public-api/development/postgres-password"
  }
 
- data "aws_ssm_parameter" "fss-public_postgres_username" {
+ data "aws_ssm_parameter" "fss_public_postgres_username" {
    name = "/fss-public-api/development/postgres-username"
  }
 
