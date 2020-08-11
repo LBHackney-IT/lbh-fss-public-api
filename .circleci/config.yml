@@ -165,19 +165,19 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: development
+              only: develop
       - terraform-init-and-apply-to-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: development
+              only: develop
       - deploy-to-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: development
+              only: develop
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
