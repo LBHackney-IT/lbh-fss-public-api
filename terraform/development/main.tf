@@ -49,13 +49,13 @@ data "aws_subnet_ids" "development_private_subnets" {
    name = "/fss-public-api/development/postgres-username"
  }
 
-  data "aws_ssm_parameter" "fss_public_postgres_port" {
-    name = "/fss-public-api/development/postgres-port"
-  }
+ data "aws_ssm_parameter" "fss_public_postgres_port" {
+   name = "/fss-public-api/development/postgres-port"
+ }
 
-  data "aws_ssm_parameter" "fss_public_postgres_database" {
-    name = "/fss-public-api/development/postgres-database"
-  }
+ data "aws_ssm_parameter" "fss_public_postgres_database" {
+   name = "/fss-public-api/development/postgres-database"
+ }
 
 module "postgres_db_development" {
   source = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
