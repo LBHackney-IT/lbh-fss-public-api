@@ -77,13 +77,13 @@ commands:
       - run:
           name: Build lambda
           command: |
-            cd ./FSSPublicAPI/
+            cd ./LBHFSSPublicAPI/
             chmod +x ./build.sh
             ./build.sh
       - run:
           name: Deploy lambda
           command: |
-            cd ./FSSPublicAPI/
+            cd ./LBHFSSPublicAPI/
             sls deploy --stage <<parameters.stage>> --conceal
 
 jobs:
@@ -165,19 +165,19 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: development
+              only: develop
       - terraform-init-and-apply-to-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: development
+              only: develop
       - deploy-to-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: development
+              only: develop
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:

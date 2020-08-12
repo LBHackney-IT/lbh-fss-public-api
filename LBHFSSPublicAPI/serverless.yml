@@ -20,7 +20,7 @@ package:
 functions:
   fssPublicApi:
     name: ${self:service}-${self:provider.stage}
-    handler: FSSPublicAPI::FSSPublicAPI.LambdaEntryPoint::FunctionHandlerAsync
+    handler: LBHFSSPublicAPI::LBHFSSPublicAPI.LambdaEntryPoint::FunctionHandlerAsync
     role: lambdaExecutionRole
     environment:
       CONNECTION_STRING: Host=${ssm:/fss-public-api/${self:provider.stage}/postgres-hostname};Port=${ssm:/fss-public-api/${self:provider.stage}/postgres-port};Database=fss_public_api_mirror;Username=${ssm:/fss-public-api/${self:provider.stage}/postgres-username};Password=${ssm:/fss-public-api/${self:provider.stage}/postgres-password}
