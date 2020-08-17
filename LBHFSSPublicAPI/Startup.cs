@@ -32,7 +32,7 @@ namespace LBHFSSPublicAPI
 
         public IConfiguration Configuration { get; }
         private static List<ApiVersionDescription> _apiVersions { get; set; }
-        private const string ApiName = "cv-19-resident-support";
+        private const string ApiName = "LBHFSSPublicAPI";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public static void ConfigureServices(IServiceCollection services)
