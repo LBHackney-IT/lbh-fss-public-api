@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Folder Include="terraform\" />
+    <Folder Include="V1\UseCase\Interfaces" />
   </ItemGroup>
 
 </Project>

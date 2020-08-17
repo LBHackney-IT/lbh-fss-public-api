@@ -22,9 +22,9 @@ namespace LBHFSSPublicAPI.V1.Gateways
         //     return result?.ToDomain();
         // }
 
-        public List<Entity> GetAll()
-        {
-            return new List<Entity>();
-        }
+        // public List<Entity> GetAll()
+        // {
+        //     return new List<Entity>();
+        // }
     }
 }
