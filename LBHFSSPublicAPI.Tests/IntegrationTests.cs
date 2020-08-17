@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,6 @@ namespace LBHFSSPublicAPI.Tests
 
             _builder = new DbContextOptionsBuilder();
             _builder.UseNpgsql(_connection);
-
         }
 
         [SetUp]
@@ -46,7 +46,15 @@ namespace LBHFSSPublicAPI.Tests
         {
             Client.Dispose();
             _factory.Dispose();
-            _transaction.Rollback();
+            try
+            {
+                _transaction.Rollback();
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
             _transaction.Dispose();
         }
     }

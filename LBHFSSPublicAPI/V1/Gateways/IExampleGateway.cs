@@ -5,7 +5,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
 {
     public interface IExampleGateway
     {
-        Entity GetEntityById(int id);
+        //Entity GetEntityById(int id);
 
         List<Entity> GetAll();
     }
