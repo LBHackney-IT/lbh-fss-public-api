@@ -308,8 +308,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
             modelBuilder.Entity<UserOrganization>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("user_organizations");
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -331,8 +329,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
             modelBuilder.Entity<UserRole>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("user_roles");
 
                 entity.HasIndex(e => new { e.Id, e.RoleId })
@@ -380,7 +376,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                     .HasColumnType("character varying");
             });
 
-            SetupSeedData(modelBuilder);
+            //SetupSeedData(modelBuilder);
         }
 
         private static void SetupSeedData(ModelBuilder modelBuilder)
