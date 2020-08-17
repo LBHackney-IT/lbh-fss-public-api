@@ -232,9 +232,9 @@ workflows:
           requires:
             - terraform-init-and-apply-to-development
             - assume-role-development
-                filters:
-                  branches:
-                    only: develop
+          filters:
+            branches:
+              only: develop
       - deploy-to-development:
           requires:
             - assume-role-development
