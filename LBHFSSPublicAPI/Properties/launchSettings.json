@@ -12,7 +12,7 @@
     "LBHFSSPublicAPI": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/v3/healthcheck/ping",
+      "launchUrl": "api/v1/healthcheck/ping",
       "applicationUrl": "http://localhost:5000",
       "ConnectionStrings": {
         "DefaultConnection": "host=localhost;port=5432;username=postgres;password=mypassword;database=test-database"
