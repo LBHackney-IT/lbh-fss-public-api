@@ -3,15 +3,17 @@ using System;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20200817092511_AddKeyToUserRole")]
+    partial class AddKeyToUserRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -407,19 +409,19 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.UserOrganization", b =>
                 {
-                    b.Property<int?>("Id")
-                        .HasColumnName("id")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("Id")
+                        .HasColumnName("id")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnName("organization_id")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasIndex("Id");
 
                     b.HasIndex("OrganizationId");
 
@@ -522,9 +524,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.User", "IdNavigation")
                         .WithMany()
                         .HasForeignKey("Id")
-                        .HasConstraintName("user_organizations_id_fkey")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasConstraintName("user_organizations_id_fkey");
 
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Organization", "Organization")
                         .WithMany()
