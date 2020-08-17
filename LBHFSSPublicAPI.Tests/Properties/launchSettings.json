@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -8,20 +9,22 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "LBHFSSPublicAPI.Tests": {
+    "cv19ResSupportV3.Tests": {
       "commandName": "Project",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+      "launchUrl": "api/v1/healthcheck/ping",
+      "applicationUrl": "http://localhost:5000",
+      "ConnectionStrings": {
+        "DefaultConnection": "host=test-database;port=5432;username=postgres;password=mypassword;database=testdb"
       },
-      "applicationUrl": "https://localhost:5001;http://localhost:5000"
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_HOST": "test-database",
+        "DB_PORT": "5432",
+        "DB_USERNAME": "postgres",
+        "DB_PASSWORD": "mypassword",
+        "DB_DATABASE": "testdb"
+      }
     }
   }
 }

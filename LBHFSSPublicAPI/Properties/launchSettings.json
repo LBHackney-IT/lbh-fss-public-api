@@ -9,13 +9,21 @@
     }
   },
   "profiles": {
-    "transactions_api": {
+    "LBHFSSPublicAPI": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/v1/healthcheck/ping",
+      "launchUrl": "api/v3/healthcheck/ping",
       "applicationUrl": "http://localhost:5000",
+      "ConnectionStrings": {
+        "DefaultConnection": "host=localhost;port=5432;username=postgres;password=mypassword;database=test-database"
+      },
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_HOST": "localhost",
+        "DB_PORT": "5432",
+        "DB_USERNAME": "postgres",
+        "DB_PASSWORD": "mypassword",
+        "DB_DATABASE": "test-database"
       }
     }
   }
