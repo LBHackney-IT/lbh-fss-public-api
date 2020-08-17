@@ -38,7 +38,8 @@ namespace LBHFSSPublicAPI
         public static void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc(setupAction=> {
+                .AddMvc(setupAction =>
+                {
                     setupAction.EnableEndpointRouting = false;
                 }).AddJsonOptions(jsonOptions =>
                 {
