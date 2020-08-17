@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
+
 namespace LBHFSSPublicAPI
 {
     public class Startup
@@ -31,18 +32,22 @@ namespace LBHFSSPublicAPI
 
         public IConfiguration Configuration { get; }
         private static List<ApiVersionDescription> _apiVersions { get; set; }
-        //TODO update the below to the name of your API
-        private const string ApiName = "Your API Name";
+        private const string ApiName = "cv-19-resident-support";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public static void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc()
+                .AddMvc(setupAction=> {
+                    setupAction.EnableEndpointRouting = false;
+                }).AddJsonOptions(jsonOptions =>
+                {
+                    jsonOptions.JsonSerializerOptions.PropertyNamingPolicy = null;
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddApiVersioning(o =>
             {
-                o.DefaultApiVersion = new ApiVersion(1, 0);
+                o.DefaultApiVersion = new ApiVersion(3, 0);
                 o.AssumeDefaultVersionWhenUnspecified = true; // assume that the caller wants the default version if they don't specify
                 o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
             });
@@ -94,7 +99,7 @@ namespace LBHFSSPublicAPI
                     {
                         Title = $"{ApiName}-api {version}",
                         Version = version,
-                        Description = $"{ApiName} version {version}. Please check older versions for depreciated endpoints."
+                        Description = $"{ApiName} version {version}. Please check older versions for deprecated endpoints."
                     });
                 }
 
@@ -112,8 +117,7 @@ namespace LBHFSSPublicAPI
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Host=;Database=;";
             services.AddDbContext<DatabaseContext>(
                 opt => opt.UseNpgsql(connectionString));
         }
