@@ -119,11 +119,11 @@ commands:
             HOST=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-hostname --query Parameter.Value)
             PORT=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-port --query Parameter.Value)
             INSTANCE_NAME=$(aws ssm get-parameter --name /platform-apis-jump-box-instance-name --query Parameter.Value)
-            ssh -4 -i ./private-key.pem -Nf -M -L ${PORT}:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
+            ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
             PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value)
             USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value)
             DATABASE=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-database --query Parameter.Value)
-            CONN_STR="Host=localhost;Password=${PASSWORD};Port=${PORT};Username=${USERNAME};Database=${DATABASE}"
+            CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
 
