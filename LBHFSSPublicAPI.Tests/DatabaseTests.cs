@@ -26,14 +26,6 @@ namespace LBHFSSPublicAPI.Tests
         {
             _transaction.Rollback();
             _transaction.Dispose();
-            //ClearTaxonomiesTable();
-        }
-
-        private void ClearTaxonomiesTable()
-        {
-            var addedEntities = DatabaseContext.Taxonomies;
-            DatabaseContext.Taxonomies.RemoveRange(addedEntities);
-            //DatabaseContext.SaveChanges();
         }
     }
 }
