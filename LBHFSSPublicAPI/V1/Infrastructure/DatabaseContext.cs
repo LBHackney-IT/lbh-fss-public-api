@@ -304,6 +304,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                 entity.Property(e => e.Vocabulary)
                     .HasColumnName("vocabulary")
                     .HasColumnType("character varying");
+                entity.Property(e => e.Weight).HasColumnName("weight");
             });
 
             modelBuilder.Entity<UserOrganization>(entity =>

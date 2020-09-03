@@ -367,6 +367,10 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("vocabulary")
                         .HasColumnType("character varying");
 
+                    b.Property<int>("Weight")
+                        .HasColumnName("weight")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("taxonomies");
