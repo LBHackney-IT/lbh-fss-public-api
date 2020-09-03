@@ -4,7 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using LBHFSSPublicAPI.V1.Gateways;
+using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.Infrastructure;
+using LBHFSSPublicAPI.V1.UseCase;
+using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using LBHFSSPublicAPI.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -123,12 +126,12 @@ namespace LBHFSSPublicAPI
 
         private static void RegisterGateways(IServiceCollection services)
         {
-            services.AddScoped<IExampleGateway, ExampleGateway>();
+            services.AddScoped<ITaxonomiesGateway, TaxonomiesGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            //services.AddScoped<IGetAllUseCase, GetAllUseCase>();
+            services.AddScoped<ITaxonomiesUseCase, TaxonomiesUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
