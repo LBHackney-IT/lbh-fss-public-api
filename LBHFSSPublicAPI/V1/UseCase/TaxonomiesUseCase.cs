@@ -16,7 +16,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
         public TaxonomyResponse ExecuteGet()
         {
             var response = _gateway.GetTaxonomies();
-            return new TaxonomyResponse {Taxonomies = response};
+            return new TaxonomyResponse { Taxonomies = response };
         }
     }
 }

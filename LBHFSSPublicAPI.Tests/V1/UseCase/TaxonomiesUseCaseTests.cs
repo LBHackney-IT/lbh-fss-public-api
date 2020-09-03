@@ -38,7 +38,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         {
             var responseData = _fixture.CreateMany<TaxonomyEntity>().ToList();
             _mockTaxonomiesGateway.Setup(g => g.GetTaxonomies()).Returns(responseData);
-            var expectedResponse = new TaxonomyResponse {Taxonomies = responseData};
+            var expectedResponse = new TaxonomyResponse { Taxonomies = responseData };
             var response = _classUnderTest.ExecuteGet();
             response.Should().NotBeNull();
             response.Should().BeEquivalentTo(expectedResponse);
