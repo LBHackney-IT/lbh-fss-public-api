@@ -65,7 +65,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             DatabaseContext.Add(organization);
             DatabaseContext.SaveChanges();
             var userOrganization = DatabaseEntityHelper.CreateUserOrganization();
-            userOrganization.Id = user.Id;
+            userOrganization.User = user;
             userOrganization.Organization = organization;
             DatabaseContext.Add(userOrganization);
             DatabaseContext.SaveChanges();

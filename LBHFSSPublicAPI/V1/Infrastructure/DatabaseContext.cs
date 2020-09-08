@@ -69,6 +69,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("service_locations");
 
+                entity.HasIndex(e => e.RevisionId);
+
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.Address1)
@@ -114,6 +116,12 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             modelBuilder.Entity<ServiceRevision>(entity =>
             {
                 entity.ToTable("service_revisions");
+
+                entity.HasIndex(e => e.AuthorId);
+
+                entity.HasIndex(e => e.ReviewerUid);
+
+                entity.HasIndex(e => e.ServiceId);
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
@@ -189,6 +197,10 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.ToTable("service_taxonomies");
 
+                entity.HasIndex(e => e.RevisionId);
+
+                entity.HasIndex(e => e.TaxonomyId);
+
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
                 entity.Property(e => e.RevisionId).HasColumnName("revision_id");
@@ -209,6 +221,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             modelBuilder.Entity<Service>(entity =>
             {
                 entity.ToTable("services");
+
+                entity.HasIndex(e => e.OrganizationId);
 
                 entity.HasIndex(e => e.RevisionId)
                     .HasName("services_revision_id_key")
@@ -232,15 +246,21 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("sessions");
 
+                entity.HasIndex(e => e.UserId);
+
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnName("created_at")
+                    .HasColumnType("timestamp with time zone");
 
                 entity.Property(e => e.IpAddress)
                     .HasColumnName("ip_address")
                     .HasColumnType("character varying");
 
-                entity.Property(e => e.LastAccessAt).HasColumnName("last_access_at");
+                entity.Property(e => e.LastAccessAt)
+                    .HasColumnName("last_access_at")
+                    .HasColumnType("timestamp with time zone");
 
                 entity.Property(e => e.Payload).HasColumnName("payload");
 
@@ -270,6 +290,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             modelBuilder.Entity<SynonymWord>(entity =>
             {
                 entity.ToTable("synonym_words");
+
+                entity.HasIndex(e => e.GroupId);
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
@@ -311,26 +333,40 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("user_organizations");
 
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.HasIndex(e => e.Id);
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.HasIndex(e => e.OrganizationId);
+
+                entity.HasIndex(e => e.UserId);
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .ValueGeneratedNever();
+
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
                 entity.Property(e => e.OrganizationId).HasColumnName("organization_id");
 
-                entity.HasOne(d => d.IdNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.Id)
-                    .HasConstraintName("user_organizations_id_fkey");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
 
                 entity.HasOne(d => d.Organization)
-                    .WithMany()
+                    .WithMany(p => p.UserOrganizations)
                     .HasForeignKey(d => d.OrganizationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("user_organizations_organization_id_fkey");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserOrganizations)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("user_organizations_user_id_fkey");
             });
 
             modelBuilder.Entity<UserRole>(entity =>
             {
                 entity.ToTable("user_roles");
+
+                entity.HasIndex(e => e.RoleId);
 
                 entity.HasIndex(e => new { e.Id, e.RoleId })
                     .HasName("user_roles_id_role_id_idx");

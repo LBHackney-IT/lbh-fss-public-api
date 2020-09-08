@@ -69,6 +69,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
         public static UserOrganization CreateUserOrganization()
         {
             var userOrganizationEntity = new Fixture().Create<UserOrganizationEntity>();
+            userOrganizationEntity.OrganizationId = 0;
+            userOrganizationEntity.UserId = 0;
             return CreateUserOrganizationFrom(userOrganizationEntity);
         }
 

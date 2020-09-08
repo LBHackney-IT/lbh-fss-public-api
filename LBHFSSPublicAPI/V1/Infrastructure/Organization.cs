@@ -8,6 +8,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public Organization()
         {
             Services = new HashSet<Service>();
+            UserOrganizations = new HashSet<UserOrganization>();
         }
 
         public int Id { get; set; }
@@ -15,5 +16,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public DateTime? CreatedAt { get; set; }
 
         public virtual ICollection<Service> Services { get; set; }
+        public virtual ICollection<UserOrganization> UserOrganizations { get; set; }
     }
 }

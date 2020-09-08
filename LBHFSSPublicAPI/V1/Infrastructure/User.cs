@@ -10,6 +10,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             ServiceRevisionsAuthor = new HashSet<ServiceRevision>();
             ServiceRevisionsReviewerU = new HashSet<ServiceRevision>();
             Sessions = new HashSet<Session>();
+            UserOrganizations = new HashSet<UserOrganization>();
         }
 
         public int Id { get; set; }
@@ -22,5 +23,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public virtual ICollection<ServiceRevision> ServiceRevisionsAuthor { get; set; }
         public virtual ICollection<ServiceRevision> ServiceRevisionsReviewerU { get; set; }
         public virtual ICollection<Session> Sessions { get; set; }
+        public virtual ICollection<UserOrganization> UserOrganizations { get; set; }
     }
 }
