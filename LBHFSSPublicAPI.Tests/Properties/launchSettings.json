@@ -15,12 +15,12 @@
       "launchUrl": "api/v1/healthcheck/ping",
       "applicationUrl": "http://localhost:5000",
       "ConnectionStrings": {
-        "DefaultConnection": "host=test-database;port=5432;username=postgres;password=mypassword;database=testdb"
+        "DefaultConnection": "host=test-database;port=6543;username=postgres;password=mypassword;database=testdb"
       },
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Test",
         "DB_HOST": "test-database",
-        "DB_PORT": "5432",
+        "DB_PORT": "6543",
         "DB_USERNAME": "postgres",
         "DB_PASSWORD": "mypassword",
         "DB_DATABASE": "testdb"
