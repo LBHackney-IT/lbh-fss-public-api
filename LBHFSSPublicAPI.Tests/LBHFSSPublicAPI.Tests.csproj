@@ -27,4 +27,7 @@
     <ProjectReference Include="..\LBHFSSPublicAPI\LBHFSSPublicAPI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestHelpers\" />
+  </ItemGroup>
 </Project>

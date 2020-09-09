@@ -18,10 +18,10 @@ namespace LBHFSSPublicAPI.V1.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(Dictionary<string, bool>), 200)]
-        public IActionResult GetTaxonomies()
+        //[ProducesResponseType(typeof(Dictionary<string, bool>), 200)]
+        public IActionResult GetTaxonomies([FromQuery] string vocabulary = null)
         {
-            var result = _taxonomiesUseCase.ExecuteGet();
+            var result = _taxonomiesUseCase.ExecuteGet(vocabulary);
             return Ok(result);
         }
     }

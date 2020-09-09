@@ -14,17 +14,20 @@ namespace LBHFSSPublicAPI.V1.Gateways
         {
             _dbContext = dbContext;
         }
-        public List<TaxonomyEntity> GetTaxonomies()
+        public List<TaxonomyEntity> GetTaxonomies(string vocabulary)
         {
-            var gwResponse = _dbContext.Taxonomies.Select(x => new TaxonomyEntity
-            {
-                Id = x.Id,
-                CreatedAt = x.CreatedAt,
-                Name = x.Name,
-                ParentId = x.ParentId.Value,
-                Vocabulary = x.Vocabulary,
-                Weight = x.Weight
-            });
+            var gwResponse = _dbContext.Taxonomies.Where(
+                t => string.IsNullOrWhiteSpace(vocabulary) ||
+                t.Vocabulary.ToUpper().Contains(vocabulary.ToUpper()))
+                .Select(x => new TaxonomyEntity
+                {
+                    Id = x.Id,
+                    CreatedAt = x.CreatedAt,
+                    Name = x.Name,
+                    ParentId = x.ParentId.Value,
+                    Vocabulary = x.Vocabulary,
+                    Weight = x.Weight
+                });
             return gwResponse.ToList();
         }
     }

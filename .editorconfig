@@ -128,3 +128,6 @@ dotnet_diagnostic.CA1303.severity = none
 dotnet_diagnostic.CA1001.severity = none
 #Can reassign collections
 dotnet_diagnostic.CA2227.severity = none
+
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = suggestion

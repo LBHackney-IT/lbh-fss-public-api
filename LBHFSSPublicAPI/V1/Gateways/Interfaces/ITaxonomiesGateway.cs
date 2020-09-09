@@ -6,6 +6,6 @@ namespace LBHFSSPublicAPI.V1.Gateways.Interfaces
 {
     public interface ITaxonomiesGateway
     {
-        List<TaxonomyEntity> GetTaxonomies();
+        List<TaxonomyEntity> GetTaxonomies(string vocabulary);
     }
 }
