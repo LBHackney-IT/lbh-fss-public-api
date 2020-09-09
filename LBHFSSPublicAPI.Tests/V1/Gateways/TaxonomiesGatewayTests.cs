@@ -22,19 +22,22 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         }
 
         [Test]
-        public void GetTaxonomiesReturnsTaxonomies()
+        public void GetTaxonomiesReturnsTaxonomies() // all
         {
             var entity = _fixture.Create<Taxonomy>();
             DatabaseContext.Taxonomies.Add(entity);
             DatabaseContext.SaveChanges();
-            var response = _classUnderTest.GetTaxonomies().ToList();
+            var response = _classUnderTest.GetTaxonomies(null).ToList();
             response.First().Name.Should().Be(entity.Name);
         }
 
         [Test]
-        public void GetTaxonomiesWhenDbIsEmptyReturnsAnEmptyList()
+        public void GetTaxonomiesWhenDbIsEmptyReturnsAnEmptyList() // test independent of null/not null
         {
-            var response = _classUnderTest.GetTaxonomies().ToList();
+            // arrange
+            var vocabularyFP = _fixture.Create<string>();
+
+            var response = _classUnderTest.GetTaxonomies(vocabularyFP).ToList();
             response.Count.Should().Be(0);
         }
     }

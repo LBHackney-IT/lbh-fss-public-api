@@ -14,7 +14,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
         {
             _dbContext = dbContext;
         }
-        public List<TaxonomyEntity> GetTaxonomies()
+        public List<TaxonomyEntity> GetTaxonomies(string vocabulary)
         {
             var gwResponse = _dbContext.Taxonomies.Select(x => new TaxonomyEntity
             {
