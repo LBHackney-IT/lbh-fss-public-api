@@ -78,5 +78,47 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Should().NotBeNull();
             gatewayResult.Count.Should().Be(0);
         }
+
+        [Test]
+        public void GivenAFilterParameterAndAMatchingTaxonomyWithMultipleConcatinatedFilterValuesWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsOnlyFilteredTaxonomies() // GatewayReturnsOnlyFilteredTaxonomies
+        {
+            // arrange
+            var vocabularyFP = _fixture.Create<string>();
+
+            var taxonomies = _fixture.CreateMany<Taxonomy>(7).ToList();
+            taxonomies[1].Vocabulary = $"{vocabularyFP} {_fixture.Create<string>()}";                               // matching value in front
+            taxonomies[3].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP}";                               // matching value at the back
+            taxonomies[4].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP} {_fixture.Create<string>()}";   // matching value in the middle
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.GetTaxonomies(vocabularyFP).ToList();
+
+            // assert
+            gatewayResult.Count.Should().Be(3);
+            gatewayResult.Should().BeEquivalentTo(taxonomies.Where(x => x.Vocabulary.Contains(vocabularyFP, System.StringComparison.OrdinalIgnoreCase)));
+        }
+
+        [Test]
+        public void GivenAFilterParameterWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsAllCorrectlyFilteredTaxonomiesRegardlesOfStringCase() // GatewayReturnsOnlyFilteredTaxonomies
+        {
+            // arrange
+            var vocabularyFP = _fixture.Create<string>().ToLower();
+
+            var taxonomies = _fixture.CreateMany<Taxonomy>(7).ToList();
+            //DB will contain upper case, while filter param will be lower case
+            taxonomies[1].Vocabulary = vocabularyFP.ToUpper();
+            taxonomies[5].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP.ToUpper()} {_fixture.Create<string>()}";
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.GetTaxonomies(vocabularyFP).ToList();
+
+            // assert
+            gatewayResult.Count.Should().Be(2);
+            gatewayResult.Should().BeEquivalentTo(taxonomies.Where(x => x.Vocabulary.Contains(vocabularyFP, System.StringComparison.OrdinalIgnoreCase)));
+        }
     }
 }
