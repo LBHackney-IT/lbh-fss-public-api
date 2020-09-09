@@ -8,6 +8,9 @@ using LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using System.Reflection;
+using NUnit.Framework.Internal;
+using NUnit.Framework.Interfaces;
 
 namespace LBHFSSPublicAPI.Tests.V1.E2ETests
 {
@@ -17,7 +20,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         private Fixture _fixture = new Fixture();
 
         [Test]
-        public async Task GetTaxonomiesReturnsTaxonomies()
+        public async Task GivenRequestWithNoFilterParamterWhenGetTaxonomiesEndpointIsCalledThenItReturnsAllTaxonomies()
         {
             var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
@@ -29,6 +32,33 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
             var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponse>(stringResponse);
             deserializedBody.Taxonomies.Count.Should().Be(taxonomies.Count);
+        }
+
+        // An experiment to give tests more readable names: (It works, but bit hacky)
+        //[TestCase("", TestName = "Given request with filter parameter, When get taxonomies endpoint is called, Then it returns only filtered taxonomies.")]
+        [Test]
+        public async Task GivenRequestWithFilterParameterWhenGetTaxonomiesEndpointIsCalledThenItReturnsOnlyFilteredTaxonomies()
+        {
+            // arrange
+            var vocabularyFP = _fixture.Create<string>();
+
+            var taxonomies = _fixture.CreateMany<Taxonomy>(5).ToList();
+            taxonomies[1].Vocabulary = vocabularyFP;
+            taxonomies[3].Vocabulary = vocabularyFP;
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var requestUri = new Uri($"api/v1/taxonomies?vocabulary={vocabularyFP}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+
+            var content = response.Content;
+            var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
+            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponse>(stringResponse);
+
+            // assert
+            response.StatusCode.Should().Be(200);
+            deserializedBody.Taxonomies.Count.Should().Be(2);
         }
     }
 }

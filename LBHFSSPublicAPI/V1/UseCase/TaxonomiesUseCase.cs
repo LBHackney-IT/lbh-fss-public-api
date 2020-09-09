@@ -13,7 +13,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
         {
             _gateway = gateway;
         }
-        public TaxonomyResponse ExecuteGet()
+        public TaxonomyResponse ExecuteGet(string vocabulary)
         {
             var response = _gateway.GetTaxonomies();
             return new TaxonomyResponse { Taxonomies = response };

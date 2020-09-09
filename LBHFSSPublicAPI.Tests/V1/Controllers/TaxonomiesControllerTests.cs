@@ -33,7 +33,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         {
             var expected = _fixture.CreateMany<TaxonomyEntity>().ToList();
             var expectedResponse = new TaxonomyResponse { Taxonomies = expected };
-            _mockUseCase.Setup(u => u.ExecuteGet()).Returns(expectedResponse);
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<string>())).Returns(expectedResponse);
             var response = _classUnderTest.GetTaxonomies() as OkObjectResult;
             response.Should().NotBeNull();
             response.StatusCode.Should().Be(200);
@@ -44,7 +44,20 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void ControllerGetRequestCallsUseCaseGetMethod()
         {
             _classUnderTest.GetTaxonomies();
-            _mockUseCase.Verify(u => u.ExecuteGet(), Times.Once);
+            _mockUseCase.Verify(u => u.ExecuteGet(It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void GiveRequestWithFilterParameterWhenGetTaxonomiesControllerMethodIsCalledThenItCallsExecuteGetUsecaseMethodWithThatParameter()
+        {
+            // arrange
+            var vocabularyFP = _fixture.Create<string>();
+
+            // act
+            _classUnderTest.GetTaxonomies(vocabularyFP);
+
+            // assert
+            _mockUseCase.Verify(u => u.ExecuteGet(It.Is<string>(p => p == vocabularyFP)), Times.Once);
         }
     }
 }

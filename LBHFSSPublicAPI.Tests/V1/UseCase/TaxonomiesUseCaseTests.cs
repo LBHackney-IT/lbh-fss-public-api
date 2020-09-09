@@ -34,12 +34,12 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         }
 
         [Test]
-        public void ReturnsHelpRequests()
+        public void ReturnsHelpRequests() //Wrap up
         {
             var responseData = _fixture.CreateMany<TaxonomyEntity>().ToList();
             _mockTaxonomiesGateway.Setup(g => g.GetTaxonomies()).Returns(responseData);
             var expectedResponse = new TaxonomyResponse { Taxonomies = responseData };
-            var response = _classUnderTest.ExecuteGet();
+            var response = _classUnderTest.ExecuteGet(null);
             response.Should().NotBeNull();
             response.Should().BeEquivalentTo(expectedResponse);
         }

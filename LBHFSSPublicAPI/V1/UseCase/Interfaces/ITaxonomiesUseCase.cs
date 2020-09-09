@@ -5,6 +5,6 @@ namespace LBHFSSPublicAPI.V1.UseCase.Interfaces
 {
     public interface ITaxonomiesUseCase
     {
-        TaxonomyResponse ExecuteGet();
+        TaxonomyResponse ExecuteGet(string vocabulary);
     }
 }
