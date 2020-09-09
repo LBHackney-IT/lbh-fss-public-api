@@ -16,7 +16,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
         }
         public List<TaxonomyEntity> GetTaxonomies(string vocabulary)
         {
-            var gwResponse = _dbContext.Taxonomies.Select(x => new TaxonomyEntity
+            var gwResponse = _dbContext.Taxonomies.Where(t => string.IsNullOrWhiteSpace(vocabulary) || t.Vocabulary.ToUpper() == vocabulary.ToUpper()).Select(x => new TaxonomyEntity
             {
                 Id = x.Id,
                 CreatedAt = x.CreatedAt,
