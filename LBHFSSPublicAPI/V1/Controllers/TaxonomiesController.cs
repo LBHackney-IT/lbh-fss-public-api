@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.UseCase;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,10 @@ namespace LBHFSSPublicAPI.V1.Controllers
         {
             var usecaseResult = _taxonomiesUseCase.ExecuteGet(id);
 
-            return Ok(usecaseResult);
+            if (usecaseResult != null)
+                return Ok(usecaseResult);
+
+            return NotFound(new ErrorResponse($"Taxonomy with an Id: {id} was not found."));
         }
     }
 }

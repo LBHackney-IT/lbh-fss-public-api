@@ -11,6 +11,7 @@ using Moq;
 using NUnit.Framework;
 using AutoFixture;
 using LBHFSSPublicAPI.Tests.TestHelpers;
+using LBHFSSPublicAPI.V1.Boundary;
 
 namespace LBHFSSPublicAPI.Tests.V1.Controllers
 {
@@ -67,13 +68,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         #region Get Single Taxonomy by Id
 
         [Test]
-        public void GivenASuccessfulGetTaxonomyCallControllerReturnsOk200Response()
+        public void WhenSearchedTaxonomyIsFoundSuccessfullyThenGetTaxonomyControllerReturns200OkResponse()
         {
             // arrange
             var expectedStatusCode = 200;
             var expectedRespType = typeof(OkObjectResult);
 
             var id = Randomm.Id();
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(new TaxonomyEntity());
 
             // act
             var controllerResponse = _classUnderTest.GetTaxonomy(id);
@@ -129,6 +131,45 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
 
             // assert
             _mockUseCase.Verify(u => u.ExecuteGet(It.Is<int>(p => p == id)), Times.Once);
+        }
+
+        [Test]
+        public void WhenSearchedTaxonomyIsNotFoundThenGetTaxonomyControllerReturnsOk404NotFoundResponse()
+        {
+            // arrange
+            var expectedStatusCode = 404;
+            var expectedRespType = typeof(NotFoundObjectResult);
+
+            var id = Randomm.Id(); //irrelevant
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyEntity);
+
+            // act
+            var controllerResponse = _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            var responseObjectResult = controllerResponse as ObjectResult;
+            responseObjectResult.Should().NotBeNull();
+            responseObjectResult.Should().BeOfType(expectedRespType);
+
+            var responseStatusCode = responseObjectResult.StatusCode;
+            responseStatusCode.Should().Be(expectedStatusCode);
+        }
+
+        [Test]
+        public void WhenSearchedTaxonomyIsNotFoundThenThenGetTaxonomyControllerReturnsWrapedUpErrorResponse()
+        {
+            // arrange
+            var id = Randomm.Id();
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyEntity);
+
+            var expectedValue = new ErrorResponse($"Taxonomy with an Id: {id} was not found.");
+
+            // act
+            var controllerResponse = _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            var responseValue = (controllerResponse as ObjectResult).Value;
+            responseValue.Should().BeEquivalentTo(expectedValue);
         }
 
         #endregion
