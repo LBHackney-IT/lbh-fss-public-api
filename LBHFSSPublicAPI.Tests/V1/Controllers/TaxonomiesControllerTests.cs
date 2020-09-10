@@ -67,7 +67,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         #region Get Single Taxonomy by Id
 
         [Test]
-        public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItReturnsOk200Response()
+        public void GivenASuccessfulGetTaxonomyCallControllerReturnsOk200Response()
         {
             // arrange
             var expectedStatusCode = 200;
@@ -85,6 +85,24 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
 
             var responseStatusCode = responseObjectResult.StatusCode;
             responseStatusCode.Should().Be(expectedStatusCode);
+        }
+
+        [Test]
+        public void GivenASuccessfulGetTaxonomyCallWhenUseCaseReturnsAValueThenControllerResponseWrapsUpThatValue()
+        {
+            // arrange
+            var expectedValue = Random.Create<TaxonomyEntity>();
+
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<int>())).Returns(expectedValue);
+
+            var id = Random.Id(); //irrelevant
+
+            // act
+            var controllerResponse = _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            var responseValue = (controllerResponse as ObjectResult).Value;
+            responseValue.Should().Be(expectedValue);
         }
 
         [Test]
