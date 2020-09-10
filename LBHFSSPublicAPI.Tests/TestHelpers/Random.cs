@@ -16,6 +16,11 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return _faker.Random.Int(minimum, maximum);
         }
 
+        public static string Text()
+        {
+            return string.Join(" ", _faker.Random.Words(5));
+        }
+
         public static T Create<T>()
         {
             return _fixture.Create<T>();

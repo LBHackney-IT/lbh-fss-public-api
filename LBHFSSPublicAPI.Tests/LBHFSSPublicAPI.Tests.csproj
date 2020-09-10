@@ -29,5 +29,6 @@
 
   <ItemGroup>
     <Folder Include="TestHelpers\" />
+    <Folder Include="V1\Boundary\" />
   </ItemGroup>
 </Project>
