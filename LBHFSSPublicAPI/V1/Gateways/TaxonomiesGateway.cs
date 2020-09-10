@@ -35,7 +35,19 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         public TaxonomyEntity GetTaxonomy(int id)
         {
-            throw new NotImplementedException();
+            var gatewayResult = _dbContext.Taxonomies
+                .Where(t => t.Id == id)
+                .Select(e => new TaxonomyEntity
+                {
+                    Id = e.Id,
+                    CreatedAt = e.CreatedAt,
+                    Name = e.Name,
+                    ParentId = e.ParentId.Value,
+                    Vocabulary = e.Vocabulary,
+                    Weight = e.Weight
+                }).FirstOrDefault();
+
+            return gatewayResult;
         }
     }
 }

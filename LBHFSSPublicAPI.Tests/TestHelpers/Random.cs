@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AutoFixture;
 using Bogus;
 using LBHFSSPublicAPI.V1.Domain;
@@ -18,6 +19,11 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         public static T Create<T>()
         {
             return _fixture.Create<T>();
+        }
+
+        public static IEnumerable<T> CreateMany<T>(int quantity = 3)
+        {
+            return _fixture.CreateMany<T>(quantity);
         }
     }
 }
