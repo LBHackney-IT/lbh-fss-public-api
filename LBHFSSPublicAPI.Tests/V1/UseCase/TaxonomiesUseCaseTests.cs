@@ -60,7 +60,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         public void GivenAnIdWhenGetTaxonomyUseCaseIsCalledThenItCallsGetTaxonomyGatewayMethodAndPassesInThatId()
         {
             // arrange
-            var id = Random.Id();
+            var id = Randomm.Id();
 
             // act
             _classUnderTest.ExecuteGet(id);
@@ -73,8 +73,8 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         public void GivenSuccessfulGetTaxonomyGatewayCallWhenGatewayReturnsAValueThenTheUseCaseReturnsThatSameValue()
         {
             // arrange
-            var id = Random.Id(); //irrelevant
-            var gatewayResult = Random.Create<TaxonomyEntity>();
+            var id = Randomm.Id(); //irrelevant
+            var gatewayResult = Randomm.Create<TaxonomyEntity>();
 
             _mockTaxonomiesGateway.Setup(g => g.GetTaxonomy(It.IsAny<int>())).Returns(gatewayResult);
 

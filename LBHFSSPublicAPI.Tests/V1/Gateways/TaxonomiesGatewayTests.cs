@@ -131,7 +131,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenIdThatHasAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsMatchingTaxonomyDomainObject()
         {
             // arrange
-            var taxonomies = Random.CreateMany<Taxonomy>();
+            var taxonomies = Randomm.CreateMany<Taxonomy>();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -150,11 +150,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenIdThatDoesNotHaveAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsNull()
         {
             // arrange
-            var taxonomies = Random.CreateMany<Taxonomy>();
+            var taxonomies = Randomm.CreateMany<Taxonomy>();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
-            var id = Random.Id();
+            var id = Randomm.Id();
 
             // act
             var gatewayResult = _classUnderTest.GetTaxonomy(id);

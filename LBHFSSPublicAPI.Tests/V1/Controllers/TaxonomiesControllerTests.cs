@@ -73,7 +73,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var expectedStatusCode = 200;
             var expectedRespType = typeof(OkObjectResult);
 
-            var id = Random.Id();
+            var id = Randomm.Id();
 
             // act
             var controllerResponse = _classUnderTest.GetTaxonomy(id);
@@ -91,11 +91,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void GivenASuccessfulGetTaxonomyCallWhenUseCaseReturnsAValueThenControllerResponseWrapsUpThatValue()
         {
             // arrange
-            var expectedValue = Random.Create<TaxonomyEntity>();
+            var expectedValue = Randomm.Create<TaxonomyEntity>();
 
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<int>())).Returns(expectedValue);
 
-            var id = Random.Id(); //irrelevant
+            var id = Randomm.Id(); //irrelevant
 
             // act
             var controllerResponse = _classUnderTest.GetTaxonomy(id);
@@ -109,7 +109,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItCallsTheUseCaseGetMethod()
         {
             // arrange
-            var id = Random.Id(); //irrelevant
+            var id = Randomm.Id(); //irrelevant
 
             // act
             _classUnderTest.GetTaxonomy(id);
@@ -122,7 +122,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItCallsTheUseCaseGetMethodWithThatId()
         {
             // arrange
-            var id = Random.Id(); //irrelevant
+            var id = Randomm.Id(); //irrelevant
 
             // act
             _classUnderTest.GetTaxonomy(id);

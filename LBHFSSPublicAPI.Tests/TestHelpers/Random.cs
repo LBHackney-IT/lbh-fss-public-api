@@ -6,7 +6,7 @@ using LBHFSSPublicAPI.V1.Domain;
 
 namespace LBHFSSPublicAPI.Tests.TestHelpers
 {
-    public static class Random
+    public static class Randomm
     {
         private static Faker _faker = new Faker();                 // Good for single values
         private static Fixture _fixture = new Fixture();           // Good for complex objects
