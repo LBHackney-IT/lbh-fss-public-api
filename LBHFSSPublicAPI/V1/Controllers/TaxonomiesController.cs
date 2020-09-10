@@ -24,5 +24,12 @@ namespace LBHFSSPublicAPI.V1.Controllers
             var result = _taxonomiesUseCase.ExecuteGet(vocabulary);
             return Ok(result);
         }
+
+        [HttpGet]
+        [Route("{id}")]
+        public IActionResult GetTaxonomy([FromRoute] int id) //if user doens't input anything, then it will be 0 by default!!!
+        {
+            return Ok(new { });
+        }
     }
 }

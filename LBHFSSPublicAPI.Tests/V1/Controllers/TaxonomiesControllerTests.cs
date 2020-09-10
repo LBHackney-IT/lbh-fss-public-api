@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using AutoFixture;
+using LBHFSSPublicAPI.Tests.TestHelpers;
 
 namespace LBHFSSPublicAPI.Tests.V1.Controllers
 {
@@ -27,6 +28,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             _mockUseCase = new Mock<ITaxonomiesUseCase>();
             _classUnderTest = new TaxonomiesController(_mockUseCase.Object);
         }
+
+        #region Get Taxonomies with/without filter
 
         [Test]
         public void ReturnsResponseWithStatus()
@@ -59,5 +62,31 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             // assert
             _mockUseCase.Verify(u => u.ExecuteGet(It.Is<string>(p => p == vocabularyFP)), Times.Once);
         }
+        #endregion
+
+        #region Get Single Taxonomy by Id
+
+        [Test]
+        public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItReturnsOk200Response()
+        {
+            // arrange
+            var expectedStatusCode = 200;
+            var expectedRespType = typeof(OkObjectResult);
+
+            var id = Random.Id();
+
+            // act
+            var controllerResponse = _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            var responseObjectResult = controllerResponse as ObjectResult;
+            responseObjectResult.Should().NotBeNull();
+            responseObjectResult.Should().BeOfType(expectedRespType);
+
+            var responseStatusCode = responseObjectResult.StatusCode;
+            responseStatusCode.Should().Be(expectedStatusCode);
+        }
+
+        #endregion
     }
 }
