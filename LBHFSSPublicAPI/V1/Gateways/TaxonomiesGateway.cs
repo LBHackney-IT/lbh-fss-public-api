@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LBHFSSPublicAPI.V1.Domain;
@@ -14,6 +15,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
         {
             _dbContext = dbContext;
         }
+
         public List<TaxonomyEntity> GetTaxonomies(string vocabulary)
         {
             var gwResponse = _dbContext.Taxonomies.Where(
@@ -29,6 +31,11 @@ namespace LBHFSSPublicAPI.V1.Gateways
                     Weight = x.Weight
                 });
             return gwResponse.ToList();
+        }
+
+        public TaxonomyEntity GetTaxonomy(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
 
         public TaxonomyEntity ExecuteGet(int id)
         {
-            throw new NotImplementedException();
+            return _gateway.GetTaxonomy(id);
         }
     }
 }
