@@ -87,6 +87,32 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             responseStatusCode.Should().Be(expectedStatusCode);
         }
 
+        [Test]
+        public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItCallsTheUseCaseGetMethod()
+        {
+            // arrange
+            var id = Random.Id(); //irrelevant
+
+            // act
+            _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            _mockUseCase.Verify(u => u.ExecuteGet(It.IsAny<int>()), Times.Once);
+        }
+
+        [Test]
+        public void GivenAValidIdWhenGetTaxonomyControllerMethodIsCalledThenItCallsTheUseCaseGetMethodWithThatId()
+        {
+            // arrange
+            var id = Random.Id(); //irrelevant
+
+            // act
+            _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            _mockUseCase.Verify(u => u.ExecuteGet(It.Is<int>(p => p == id)), Times.Once);
+        }
+
         #endregion
     }
 }
