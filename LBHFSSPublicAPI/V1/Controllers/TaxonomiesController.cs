@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.UseCase;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,18 @@ namespace LBHFSSPublicAPI.V1.Controllers
         {
             var result = _taxonomiesUseCase.ExecuteGet(vocabulary);
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public IActionResult GetTaxonomy([FromRoute] int id) //if user doens't input anything, then it will be 0 by default!!!
+        {
+            var usecaseResult = _taxonomiesUseCase.ExecuteGet(id);
+
+            if (usecaseResult != null)
+                return Ok(usecaseResult);
+
+            return NotFound(new ErrorResponse($"Taxonomy with an Id: {id} was not found."));
         }
     }
 }

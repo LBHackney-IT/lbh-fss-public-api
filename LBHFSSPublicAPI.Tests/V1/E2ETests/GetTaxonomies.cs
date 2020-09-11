@@ -11,6 +11,9 @@ using NUnit.Framework;
 using System.Reflection;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Interfaces;
+using LBHFSSPublicAPI.V1.Domain;
+using LBHFSSPublicAPI.Tests.TestHelpers;
+using LBHFSSPublicAPI.V1.Boundary;
 
 namespace LBHFSSPublicAPI.Tests.V1.E2ETests
 {
@@ -18,6 +21,8 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
     public class GetTaxonomies : IntegrationTests<Startup>
     {
         private Fixture _fixture = new Fixture();
+
+        #region Get Taxonomies with/without filter
 
         [Test]
         public async Task GivenRequestWithNoFilterParamterWhenGetTaxonomiesEndpointIsCalledThenItReturnsAllTaxonomies()
@@ -60,5 +65,59 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             response.StatusCode.Should().Be(200);
             deserializedBody.Taxonomies.Count.Should().Be(2);
         }
+
+        #endregion
+
+        #region Get Single Taxonomy by Id
+
+        [Test]
+        public async Task GivenRequestWithIdWhenGetTaxonomyEndpointIsCalledThenItReturnsSingleMatchingTaxonomy()
+        {
+            // arrange
+            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            var matchTaxonomy = DatabaseContext.Taxonomies.FirstOrDefault();
+            var expectedId = matchTaxonomy.Id;
+
+            // act
+            var requestUri = new Uri($"api/v1/taxonomies/{expectedId}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+
+            var content = response.Content;
+            var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
+            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyEntity>(stringResponse);
+
+            // assert
+            response.StatusCode.Should().Be(200);
+            deserializedBody.Should().BeEquivalentTo(matchTaxonomy);
+        }
+
+        [Test]
+        public async Task GivenRequestWithIdThatDoesNotHaveAMatchWhenGetTaxonomyEndpointIsCalledThenItReturnsA404Response()
+        {
+            // arrange
+            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            var nonMatchingId = Randomm.Id();
+            var expectedValue = new ErrorResponse($"Taxonomy with an Id: {nonMatchingId} was not found.");
+
+            // act
+            var requestUri = new Uri($"api/v1/taxonomies/{nonMatchingId}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+
+            var content = response.Content;
+            var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
+            var deserializedBody = JsonConvert.DeserializeObject<ErrorResponse>(stringResponse);
+
+            // assert
+            response.StatusCode.Should().Be(404);
+            deserializedBody.Should().BeEquivalentTo(expectedValue);
+        }
+
+        #endregion
     }
 }

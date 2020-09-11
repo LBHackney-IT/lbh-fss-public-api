@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using LBHFSSPublicAPI.V1.Boundary.Response;
+using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 
@@ -13,10 +15,16 @@ namespace LBHFSSPublicAPI.V1.UseCase
         {
             _gateway = gateway;
         }
+
         public TaxonomyResponse ExecuteGet(string vocabulary)
         {
             var response = _gateway.GetTaxonomies(vocabulary);
             return new TaxonomyResponse { Taxonomies = response };
+        }
+
+        public TaxonomyEntity ExecuteGet(int id)
+        {
+            return _gateway.GetTaxonomy(id);
         }
     }
 }

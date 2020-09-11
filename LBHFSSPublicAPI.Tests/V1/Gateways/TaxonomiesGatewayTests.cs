@@ -6,6 +6,7 @@ using LBHFSSPublicAPI.V1.Gateways;
 using FluentAssertions;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using NUnit.Framework;
+using LBHFSSPublicAPI.Tests.TestHelpers;
 
 namespace LBHFSSPublicAPI.Tests.V1.Gateways
 {
@@ -20,6 +21,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             _classUnderTest = new TaxonomiesGateway(DatabaseContext);
         }
+
+        #region Get Taxonomies with/without filter
 
         [Test]
         public void GetTaxonomiesReturnsTaxonomies() // all
@@ -120,5 +123,45 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Count.Should().Be(2);
             gatewayResult.Should().BeEquivalentTo(taxonomies.Where(x => x.Vocabulary.Contains(vocabularyFP, System.StringComparison.OrdinalIgnoreCase)));
         }
+        #endregion
+
+        #region Get Single Taxonomy by Id
+
+        [Test]
+        public void GivenIdThatHasAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsMatchingTaxonomyDomainObject()
+        {
+            // arrange
+            var taxonomies = Randomm.CreateMany<Taxonomy>();
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            var expectedResult = DatabaseContext.Taxonomies.First();
+            var expectedId = expectedResult.Id;
+
+            // act
+            var gatewayResult = _classUnderTest.GetTaxonomy(expectedId);
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Should().BeEquivalentTo(expectedResult);
+        }
+
+        [Test]
+        public void GivenIdThatDoesNotHaveAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsNull()
+        {
+            // arrange
+            var taxonomies = Randomm.CreateMany<Taxonomy>();
+            DatabaseContext.Taxonomies.AddRange(taxonomies);
+            DatabaseContext.SaveChanges();
+
+            var id = Randomm.Id();
+
+            // act
+            var gatewayResult = _classUnderTest.GetTaxonomy(id);
+
+            // assert
+            gatewayResult.Should().BeNull();
+        }
+        #endregion
     }
 }
