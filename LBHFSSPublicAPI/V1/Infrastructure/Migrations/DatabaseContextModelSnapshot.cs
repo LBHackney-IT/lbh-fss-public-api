@@ -355,6 +355,10 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("Description")
+                        .HasColumnName("description")
+                        .HasColumnType("character varying");
+
                     b.Property<string>("Name")
                         .HasColumnName("name")
                         .HasColumnType("character varying");
