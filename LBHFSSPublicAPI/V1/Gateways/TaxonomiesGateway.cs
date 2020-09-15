@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LBHFSSPublicAPI.V1.Domain;
+using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.Infrastructure;
 
@@ -18,36 +19,19 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         public List<TaxonomyEntity> GetTaxonomies(string vocabulary)
         {
-            var gwResponse = _dbContext.Taxonomies.Where(
+            // add some exception handling
+            return _dbContext.Taxonomies.Where(
                 t => string.IsNullOrWhiteSpace(vocabulary) ||
                 t.Vocabulary.ToUpper().Contains(vocabulary.ToUpper()))
-                .Select(x => new TaxonomyEntity
-                {
-                    Id = x.Id,
-                    CreatedAt = x.CreatedAt,
-                    Name = x.Name,
-                    ParentId = x.ParentId.Value,
-                    Vocabulary = x.Vocabulary,
-                    Weight = x.Weight
-                });
-            return gwResponse.ToList();
+                .Select(x => x.ToDomain()).ToList();
         }
 
         public TaxonomyEntity GetTaxonomy(int id)
         {
-            var gatewayResult = _dbContext.Taxonomies
+            // add some exception handling
+            return _dbContext.Taxonomies
                 .Where(t => t.Id == id)
-                .Select(e => new TaxonomyEntity
-                {
-                    Id = e.Id,
-                    CreatedAt = e.CreatedAt,
-                    Name = e.Name,
-                    ParentId = e.ParentId.Value,
-                    Vocabulary = e.Vocabulary,
-                    Weight = e.Weight
-                }).FirstOrDefault();
-
-            return gatewayResult;
+                .Select(e => e.ToDomain()).FirstOrDefault();
         }
     }
 }

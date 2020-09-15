@@ -12,6 +12,7 @@ using NUnit.Framework;
 using AutoFixture;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary;
+using LBHFSSPublicAPI.V1.Factories;
 
 namespace LBHFSSPublicAPI.Tests.V1.Controllers
 {
@@ -36,7 +37,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void ReturnsResponseWithStatus()
         {
             var expected = _fixture.CreateMany<TaxonomyEntity>().ToList();
-            var expectedResponse = new TaxonomyResponse { Taxonomies = expected };
+            var expectedResponse = expected.ToResponse();
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<string>())).Returns(expectedResponse);
             var response = _classUnderTest.GetTaxonomies() as OkObjectResult;
             response.Should().NotBeNull();
@@ -75,7 +76,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var expectedRespType = typeof(OkObjectResult);
 
             var id = Randomm.Id();
-            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(new TaxonomyEntity());
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(new TaxonomyResponse());
 
             // act
             var controllerResponse = _classUnderTest.GetTaxonomy(id);
@@ -93,7 +94,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void GivenASuccessfulGetTaxonomyCallWhenUseCaseReturnsAValueThenControllerResponseWrapsUpThatValue()
         {
             // arrange
-            var expectedValue = Randomm.Create<TaxonomyEntity>();
+            var expectedValue = Randomm.Create<TaxonomyEntity>().ToResponse();
 
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<int>())).Returns(expectedValue);
 
@@ -141,7 +142,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var expectedRespType = typeof(NotFoundObjectResult);
 
             var id = Randomm.Id(); //irrelevant
-            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyEntity);
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyResponse);
 
             // act
             var controllerResponse = _classUnderTest.GetTaxonomy(id);
@@ -160,7 +161,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         {
             // arrange
             var id = Randomm.Id();
-            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyEntity);
+            _mockUseCase.Setup(u => u.ExecuteGet(It.Is<int>(p => p == id))).Returns(null as TaxonomyResponse);
 
             var expectedValue = new ErrorResponse($"Taxonomy with an Id: {id} was not found.");
 

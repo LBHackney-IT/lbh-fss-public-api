@@ -14,6 +14,7 @@ using NUnit.Framework.Interfaces;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary;
+using LBHFSSPublicAPI.V1.Factories;
 
 namespace LBHFSSPublicAPI.Tests.V1.E2ETests
 {
@@ -35,7 +36,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             response.StatusCode.Should().Be(200);
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
-            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponse>(stringResponse);
+            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponseList>(stringResponse);
             deserializedBody.Taxonomies.Count.Should().Be(taxonomies.Count);
         }
 
@@ -59,7 +60,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
 
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
-            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponse>(stringResponse);
+            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponseList>(stringResponse);
 
             // assert
             response.StatusCode.Should().Be(200);
@@ -78,7 +79,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
-            var matchTaxonomy = DatabaseContext.Taxonomies.FirstOrDefault();
+            var matchTaxonomy = DatabaseContext.Taxonomies.FirstOrDefault().ToDomain();
             var expectedId = matchTaxonomy.Id;
 
             // act
@@ -87,11 +88,11 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
 
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
-            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyEntity>(stringResponse);
+            var deserializedBody = JsonConvert.DeserializeObject<TaxonomyResponse>(stringResponse);
 
             // assert
             response.StatusCode.Should().Be(200);
-            deserializedBody.Should().BeEquivalentTo(matchTaxonomy);
+            deserializedBody.Should().BeEquivalentTo(matchTaxonomy.ToResponse());
         }
 
         [Test]

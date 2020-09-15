@@ -4,6 +4,7 @@ using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Domain;
+using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using LBHFSSPublicAPI.V1.UseCase;
@@ -47,7 +48,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         {
             var responseData = _fixture.CreateMany<TaxonomyEntity>().ToList();
             _mockTaxonomiesGateway.Setup(g => g.GetTaxonomies(It.IsAny<string>())).Returns(responseData);
-            var expectedResponse = new TaxonomyResponse { Taxonomies = responseData };
+            var expectedResponse = responseData.ToResponse();
             var response = _classUnderTest.ExecuteGet(null);
             response.Should().NotBeNull();
             response.Should().BeEquivalentTo(expectedResponse);
@@ -82,7 +83,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var usecaseResult = _classUnderTest.ExecuteGet(id);
 
             // assert
-            usecaseResult.Should().Be(gatewayResult);
+            usecaseResult.Should().BeEquivalentTo(gatewayResult.ToResponse());
         }
 
         #endregion
