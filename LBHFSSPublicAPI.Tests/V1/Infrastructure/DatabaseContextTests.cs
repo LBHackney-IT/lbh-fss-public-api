@@ -132,27 +132,28 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             result.Should().BeEquivalentTo(session);
         }
 
-        [Test]
-        public void CanGetAServiceRevisionEntity()
-        {
-            var organization = DatabaseEntityHelper.CreateOrganization();
-            DatabaseContext.Add(organization);
-            var author = DatabaseEntityHelper.CreateUser();
-            DatabaseContext.Add(author);
-            var reviewer = DatabaseEntityHelper.CreateUser();
-            DatabaseContext.Add(reviewer);
-            var service = DatabaseEntityHelper.CreateService();
-            service.Organization = organization;
-            DatabaseContext.Add(service);
-            var serviceRevision = DatabaseEntityHelper.CreateServiceRevision();
-            serviceRevision.Author = author;
-            serviceRevision.ReviewerU = reviewer;
-            serviceRevision.Service = service;
-            DatabaseContext.Add(serviceRevision);
-            DatabaseContext.SaveChanges();
-            var result = DatabaseContext.ServiceRevisions.ToList().FirstOrDefault();
-            result.Should().BeEquivalentTo(serviceRevision);
-        }
+        // #database_ef_changes_v2-17-09-2020: Is this test still valid? (service revisions removed)
+        //[Test]
+        //public void CanGetAServiceRevisionEntity()
+        //{
+        //    var organization = DatabaseEntityHelper.CreateOrganization();
+        //    DatabaseContext.Add(organization);
+        //    var author = DatabaseEntityHelper.CreateUser();
+        //    DatabaseContext.Add(author);
+        //    var reviewer = DatabaseEntityHelper.CreateUser();
+        //    DatabaseContext.Add(reviewer);
+        //    var service = DatabaseEntityHelper.CreateService();
+        //    service.Organization = organization;
+        //    DatabaseContext.Add(service);
+        //    var serviceRevision = DatabaseEntityHelper.CreateServiceRevision();
+        //    serviceRevision.Author = author;
+        //    serviceRevision.ReviewerU = reviewer;
+        //    serviceRevision.Service = service;
+        //    DatabaseContext.Add(serviceRevision);
+        //    DatabaseContext.SaveChanges();
+        //    var result = DatabaseContext.ServiceRevisions.ToList().FirstOrDefault();
+        //    result.Should().BeEquivalentTo(serviceRevision);
+        //}
 
         [Test]
         public void CanGetAServiceLocationEntity()
@@ -166,13 +167,15 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             var service = DatabaseEntityHelper.CreateService();
             service.Organization = organization;
             DatabaseContext.Add(service);
-            var serviceRevision = DatabaseEntityHelper.CreateServiceRevision();
-            serviceRevision.Author = author;
-            serviceRevision.ReviewerU = reviewer;
-            serviceRevision.Service = service;
-            DatabaseContext.Add(serviceRevision);
+            // #database_ef_changes_v2-17-09-2020: (service revisions removed)
+            //var serviceRevision = DatabaseEntityHelper.CreateServiceRevision();
+            //serviceRevision.Author = author;
+            //serviceRevision.ReviewerU = reviewer;
+            //serviceRevision.Service = service;
+            //DatabaseContext.Add(serviceRevision);
             var serviceLocation = DatabaseEntityHelper.CreateServiceLocation();
-            serviceLocation.Revision = serviceRevision;
+            // #database_ef_changes_v2-17-09-2020: (service revisions removed)
+            //serviceLocation.Revision = serviceRevision;
             DatabaseContext.Add(serviceLocation);
             DatabaseContext.SaveChanges();
             var result = DatabaseContext.ServiceLocations.ToList().FirstOrDefault();

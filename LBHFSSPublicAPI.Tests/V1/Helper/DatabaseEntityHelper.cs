@@ -30,11 +30,12 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
             return CreateServiceLocationFrom(serviceLocationEntity);
         }
 
-        public static ServiceRevision CreateServiceRevision()
-        {
-            var serviceRevisionEntity = new Fixture().Create<ServiceRevisionEntity>();
-            return CreateServiceRevisionFrom(serviceRevisionEntity);
-        }
+        // #database_ef_changes_v2-17-09-2020: (probably no longer valid, service revisions removed)
+        //public static ServiceRevision CreateServiceRevision()
+        //{
+        //    var serviceRevisionEntity = new Fixture().Create<ServiceRevisionEntity>();
+        //    return CreateServiceRevisionFrom(serviceRevisionEntity);
+        //}
 
         public static Session CreateSession()
         {
@@ -132,7 +133,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
             return new Service
             {
                 Id = serviceEntity.Id,
-                RevisionId = serviceEntity.RevisionId,
+                // #database_ef_changes_v2-17-09-2020: (service revisions removed)
+                //RevisionId = serviceEntity.RevisionId,
                 OrganizationId = serviceEntity.OrganizationId,
                 CreatedAt = serviceEntity.CreatedAt
             };
@@ -150,37 +152,39 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
                 Latitude = serviceLocationEntity.Latitude,
                 Longitude = serviceLocationEntity.Longitude,
                 PostalCode = serviceLocationEntity.PostalCode,
-                RevisionId = serviceLocationEntity.RevisionId,
+                // #database_ef_changes_v2-17-09-2020: (service revisions removed)
+                //RevisionId = serviceLocationEntity.RevisionId,
                 StateProvince = serviceLocationEntity.StateProvince,
                 Uprn = serviceLocationEntity.Uprn,
                 CreatedAt = serviceLocationEntity.CreatedAt
             };
         }
 
-        private static ServiceRevision CreateServiceRevisionFrom(ServiceRevisionEntity serviceRevisionEntity)
-        {
-            // TODO: Reuse domain factory classes when created.
-            return new ServiceRevision
-            {
-                Id = serviceRevisionEntity.Id,
-                AuthorId = serviceRevisionEntity.AuthorId,
-                Description = serviceRevisionEntity.Description,
-                Facebook = serviceRevisionEntity.Facebook,
-                Instagram = serviceRevisionEntity.Instagram,
-                Linkedin = serviceRevisionEntity.Linkedin,
-                Name = serviceRevisionEntity.Name,
-                ReviewedAt = serviceRevisionEntity.ReviewedAt,
-                ReviewerMessage = serviceRevisionEntity.ReviewerMessage,
-                ReviewerUid = serviceRevisionEntity.ReviewerUid,
-                ServiceId = serviceRevisionEntity.ServiceId,
-                Status = serviceRevisionEntity.Status,
-                SubmittedAt = serviceRevisionEntity.SubmittedAt,
-                Telephone = serviceRevisionEntity.Telephone,
-                Twitter = serviceRevisionEntity.Twitter,
-                Website = serviceRevisionEntity.Website,
-                CreatedAt = serviceRevisionEntity.CreatedAt
-            };
-        }
+        // #database_ef_changes_v2-17-09-2020: (probably no longer valid, service revisions removed)
+        //private static ServiceRevision CreateServiceRevisionFrom(ServiceRevisionEntity serviceRevisionEntity)
+        //{
+        //    // TODO: Reuse domain factory classes when created.
+        //    return new ServiceRevision
+        //    {
+        //        Id = serviceRevisionEntity.Id,
+        //        AuthorId = serviceRevisionEntity.AuthorId,
+        //        Description = serviceRevisionEntity.Description,
+        //        Facebook = serviceRevisionEntity.Facebook,
+        //        Instagram = serviceRevisionEntity.Instagram,
+        //        Linkedin = serviceRevisionEntity.Linkedin,
+        //        Name = serviceRevisionEntity.Name,
+        //        ReviewedAt = serviceRevisionEntity.ReviewedAt,
+        //        ReviewerMessage = serviceRevisionEntity.ReviewerMessage,
+        //        ReviewerUid = serviceRevisionEntity.ReviewerUid,
+        //        ServiceId = serviceRevisionEntity.ServiceId,
+        //        Status = serviceRevisionEntity.Status,
+        //        SubmittedAt = serviceRevisionEntity.SubmittedAt,
+        //        Telephone = serviceRevisionEntity.Telephone,
+        //        Twitter = serviceRevisionEntity.Twitter,
+        //        Website = serviceRevisionEntity.Website,
+        //        CreatedAt = serviceRevisionEntity.CreatedAt
+        //    };
+        //}
 
         private static Session CreateSessionFrom(SessionEntity sessionEntity)
         {

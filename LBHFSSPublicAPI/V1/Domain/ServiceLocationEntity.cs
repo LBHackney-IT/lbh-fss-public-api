@@ -11,7 +11,10 @@ namespace LBHFSSPublicAPI.V1.Domain
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public string PostalCode { get; set; }
-        public int RevisionId { get; set; }
+
+        // #database_ef_changes_v2-17-09-2020: (probably no longer valid, service revisions removed)
+        //public int RevisionId { get; set; }
+
         public string StateProvince { get; set; }
         public int? Uprn { get; set; }
         public DateTime? CreatedAt { get; set; }
