@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using LBHFSSPublicAPI.V1.Infrastructure;
 
 namespace LBHFSSPublicAPI.V1.Domain
 {
@@ -11,5 +13,6 @@ namespace LBHFSSPublicAPI.V1.Domain
         public string Vocabulary { get; set; }
         public int Weight { get; set; }
         public DateTime? CreatedAt { get; set; }
+        public virtual ICollection<ServiceTaxonomy> ServiceTaxonomies { get; set; }
     }
 }
