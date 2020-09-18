@@ -1,7 +1,4 @@
 using System.Linq;
-using AutoFixture;
-using LBHFSSPublicAPI.Tests.V1.Helper;
-using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Gateways;
 using FluentAssertions;
 using LBHFSSPublicAPI.V1.Infrastructure;
@@ -13,7 +10,6 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
     [TestFixture]
     public class TaxonomiesGatewayTests : DatabaseTests
     {
-        private readonly Fixture _fixture = new Fixture();
         private TaxonomiesGateway _classUnderTest;
 
         [SetUp]
@@ -27,7 +23,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         [Test]
         public void GetTaxonomiesReturnsTaxonomies() // all
         {
-            var entity = _fixture.Create<Taxonomy>();
+            var entity = Randomm.Create<Taxonomy>();
             DatabaseContext.Taxonomies.Add(entity);
             DatabaseContext.SaveChanges();
             var response = _classUnderTest.GetTaxonomies(null).ToList();
@@ -38,7 +34,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GetTaxonomiesWhenDbIsEmptyReturnsAnEmptyList() // test independent of null/not null
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
             var response = _classUnderTest.GetTaxonomies(vocabularyFP).ToList();
             response.Count.Should().Be(0);
@@ -48,9 +44,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenAFilterParameterWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsOnlyFilteredTaxonomies() // GatewayReturnsOnlyFilteredTaxonomies
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = _fixture.CreateMany<Taxonomy>(5).ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>(5).ToList();
             taxonomies[1].Vocabulary = vocabularyFP;
             taxonomies[3].Vocabulary = vocabularyFP;
             DatabaseContext.Taxonomies.AddRange(taxonomies);
@@ -68,9 +64,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenAFilterParameterAndNoMatchingResultsWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsEmptyCollection()
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -86,12 +82,12 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenAFilterParameterAndAMatchingTaxonomyWithMultipleConcatinatedFilterValuesWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsOnlyFilteredTaxonomies() // GatewayReturnsOnlyFilteredTaxonomies
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = _fixture.CreateMany<Taxonomy>(7).ToList();
-            taxonomies[1].Vocabulary = $"{vocabularyFP} {_fixture.Create<string>()}";                               // matching value in front
-            taxonomies[3].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP}";                               // matching value at the back
-            taxonomies[4].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP} {_fixture.Create<string>()}";   // matching value in the middle
+            var taxonomies = Randomm.CreateMany<Taxonomy>(7).ToList();
+            taxonomies[1].Vocabulary = $"{vocabularyFP} {Randomm.Create<string>()}";                               // matching value in front
+            taxonomies[3].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP}";                               // matching value at the back
+            taxonomies[4].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP} {Randomm.Create<string>()}";   // matching value in the middle
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -107,12 +103,12 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenAFilterParameterWhenGetTaxonomiesGatewayMethodIsCalledThenItReturnsAllCorrectlyFilteredTaxonomiesRegardlesOfStringCase() // GatewayReturnsOnlyFilteredTaxonomies
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>().ToLower();
+            var vocabularyFP = Randomm.Create<string>().ToLower();
 
-            var taxonomies = _fixture.CreateMany<Taxonomy>(7).ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>(7).ToList();
             //DB will contain upper case, while filter param will be lower case
             taxonomies[1].Vocabulary = vocabularyFP.ToUpper();
-            taxonomies[5].Vocabulary = $"{_fixture.Create<string>()} {vocabularyFP.ToUpper()} {_fixture.Create<string>()}";
+            taxonomies[5].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP.ToUpper()} {Randomm.Create<string>()}";
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 

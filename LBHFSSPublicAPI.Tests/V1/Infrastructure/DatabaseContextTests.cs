@@ -1,5 +1,6 @@
 using System.Linq;
 using FluentAssertions;
+using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.Tests.V1.Helper;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using NUnit.Framework;
@@ -76,7 +77,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
         [Test]
         public void CanGetATaxonomyEntity()
         {
-            var taxonomy = DatabaseEntityHelper.CreateTaxonomy();
+            var taxonomy = Randomm.Create<Taxonomy>();
             DatabaseContext.Add(taxonomy);
             DatabaseContext.SaveChanges();
             var result = DatabaseContext.Taxonomies.ToList().FirstOrDefault();

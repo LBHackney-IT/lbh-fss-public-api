@@ -1,17 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoFixture;
 using FluentAssertions;
 using LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using System.Reflection;
-using NUnit.Framework.Internal;
-using NUnit.Framework.Interfaces;
-using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.Factories;
@@ -21,14 +15,12 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
     [TestFixture]
     public class GetTaxonomies : IntegrationTests<Startup>
     {
-        private Fixture _fixture = new Fixture();
-
         #region Get Taxonomies with/without filter
 
         [Test]
         public async Task GivenRequestWithNoFilterParamterWhenGetTaxonomiesEndpointIsCalledThenItReturnsAllTaxonomies()
         {
-            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
             var requestUri = new Uri("api/v1/taxonomies", UriKind.Relative);
@@ -46,9 +38,9 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task GivenRequestWithFilterParameterWhenGetTaxonomiesEndpointIsCalledThenItReturnsOnlyFilteredTaxonomies()
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = _fixture.CreateMany<Taxonomy>(5).ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>(5).ToList();
             taxonomies[1].Vocabulary = vocabularyFP;
             taxonomies[3].Vocabulary = vocabularyFP;
             DatabaseContext.Taxonomies.AddRange(taxonomies);
@@ -75,7 +67,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task GivenRequestWithIdWhenGetTaxonomyEndpointIsCalledThenItReturnsSingleMatchingTaxonomy()
         {
             // arrange
-            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -99,7 +91,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task GivenRequestWithIdThatDoesNotHaveAMatchWhenGetTaxonomyEndpointIsCalledThenItReturnsA404Response()
         {
             // arrange
-            var taxonomies = _fixture.CreateMany<Taxonomy>().ToList();
+            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 

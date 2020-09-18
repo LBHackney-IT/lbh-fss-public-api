@@ -9,7 +9,6 @@ using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
-using AutoFixture;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.Factories;
@@ -22,7 +21,6 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
     {
         private TaxonomiesController _classUnderTest;
         private Mock<ITaxonomiesUseCase> _mockUseCase;
-        private Fixture _fixture = new Fixture();
 
         [SetUp]
         public void SetUp()
@@ -36,7 +34,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         [Test]
         public void ReturnsResponseWithStatus()
         {
-            var expected = _fixture.CreateMany<TaxonomyEntity>().ToList();
+            var expected = Randomm.CreateMany<TaxonomyEntity>().ToList();
             var expectedResponse = expected.ToResponse();
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<string>())).Returns(expectedResponse);
             var response = _classUnderTest.GetTaxonomies() as OkObjectResult;
@@ -56,7 +54,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void GiveRequestWithFilterParameterWhenGetTaxonomiesControllerMethodIsCalledThenItCallsExecuteGetUsecaseMethodWithThatParameter()
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
             // act
             _classUnderTest.GetTaxonomies(vocabularyFP);

@@ -1,5 +1,4 @@
 using System.Linq;
-using AutoFixture;
 using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary.Response;
@@ -19,7 +18,6 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
     {
         private TaxonomiesUseCase _classUnderTest;
         private Mock<ITaxonomiesGateway> _mockTaxonomiesGateway;
-        private Fixture _fixture = new Fixture();
 
         [SetUp]
         public void Setup()
@@ -34,7 +32,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         public void GetTaxonomiesUseCaseCallsGatewayGetTaxonomies()
         {
             // arrange
-            var vocabularyFP = _fixture.Create<string>();
+            var vocabularyFP = Randomm.Create<string>();
 
             // act
             _classUnderTest.ExecuteGet(vocabularyFP);
@@ -46,7 +44,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         [Test]
         public void ReturnsHelpRequests() //Wrap up
         {
-            var responseData = _fixture.CreateMany<TaxonomyEntity>().ToList();
+            var responseData = Randomm.CreateMany<TaxonomyEntity>().ToList();
             _mockTaxonomiesGateway.Setup(g => g.GetTaxonomies(It.IsAny<string>())).Returns(responseData);
             var expectedResponse = responseData.ToResponse();
             var response = _classUnderTest.ExecuteGet(null);

@@ -1,4 +1,4 @@
-using AutoFixture;
+using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Infrastructure;
 
@@ -8,25 +8,25 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
     {
         public static Organization CreateOrganization()
         {
-            var organizationEntity = new Fixture().Create<OrganizationEntity>();
+            var organizationEntity = Randomm.Create<OrganizationEntity>();
             return CreateOrganizationFrom(organizationEntity);
         }
 
         public static Role CreateRole()
         {
-            var roleEntity = new Fixture().Create<RoleEntity>();
+            var roleEntity = Randomm.Create<RoleEntity>();
             return CreateRoleFrom(roleEntity);
         }
 
         public static Service CreateService()
         {
-            var serviceEntity = new Fixture().Create<ServiceEntity>();
+            var serviceEntity = Randomm.Create<ServiceEntity>();
             return CreateServiceFrom(serviceEntity);
         }
 
         public static ServiceLocation CreateServiceLocation()
         {
-            var serviceLocationEntity = new Fixture().Create<ServiceLocationEntity>();
+            var serviceLocationEntity = Randomm.Create<ServiceLocationEntity>();
             return CreateServiceLocationFrom(serviceLocationEntity);
         }
 
@@ -39,37 +39,37 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
 
         public static Session CreateSession()
         {
-            var sessionEntity = new Fixture().Create<SessionEntity>();
+            var sessionEntity = Randomm.Create<SessionEntity>();
             return CreateSessionFrom(sessionEntity);
         }
 
         public static SynonymGroup CreateSynonymGroup()
         {
-            var synonymGroupEntity = new Fixture().Create<SynonymGroupEntity>();
+            var synonymGroupEntity = Randomm.Create<SynonymGroupEntity>();
             return CreateSynonymGroupFrom(synonymGroupEntity);
         }
 
         public static SynonymWord CreateSynonymWord()
         {
-            var synonymWordEntity = new Fixture().Create<SynonymWordEntity>();
+            var synonymWordEntity = Randomm.Create<SynonymWordEntity>();
             return CreateSynonymWordFrom(synonymWordEntity);
         }
 
         public static Taxonomy CreateTaxonomy()
         {
-            var taxonomyEntity = new Fixture().Create<TaxonomyEntity>();
+            var taxonomyEntity = Randomm.Create<TaxonomyEntity>();
             return CreateTaxonomyFrom(taxonomyEntity);
         }
 
         public static User CreateUser()
         {
-            var userEntity = new Fixture().Create<UserEntity>();
+            var userEntity = Randomm.Create<UserEntity>();
             return CreateUserFrom(userEntity);
         }
 
         public static UserOrganization CreateUserOrganization()
         {
-            var userOrganizationEntity = new Fixture().Create<UserOrganizationEntity>();
+            var userOrganizationEntity = Randomm.Create<UserOrganizationEntity>();
             userOrganizationEntity.OrganizationId = 0;
             userOrganizationEntity.UserId = 0;
             return CreateUserOrganizationFrom(userOrganizationEntity);
@@ -77,7 +77,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
 
         public static UserRole CreateUserRole()
         {
-            var userRoleEntity = new Fixture().Create<UserRoleEntity>();
+            var userRoleEntity = Randomm.Create<UserRoleEntity>();
             return CreateUserRoleFrom(userRoleEntity);
         }
 
