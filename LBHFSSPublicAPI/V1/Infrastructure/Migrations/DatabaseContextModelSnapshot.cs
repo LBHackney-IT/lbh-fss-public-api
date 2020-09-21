@@ -19,23 +19,166 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "3.1.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.File", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("id")
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnName("created_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Url")
+                        .HasColumnName("url")
+                        .HasColumnType("character varying");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("files");
+                });
+
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.Organization", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
+
+                    b.Property<string>("AdultSafeguardingLeadFirstName")
+                        .HasColumnName("adult_safeguarding_lead_first_name")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("AdultSafeguardingLeadLastName")
+                        .HasColumnName("adult_safeguarding_lead_last_name")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("AdultSafeguardingLeadTrainingMonth")
+                        .HasColumnName("adult_safeguarding_lead_training_month")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("AdultSafeguardingLeadTrainingYear")
+                        .HasColumnName("adult_safeguarding_lead_training_year")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("CharityNumber")
+                        .HasColumnName("charity_number")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("ChildSafeguardingLeadFirstName")
+                        .HasColumnName("child_safeguarding_lead_first_name")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("ChildSafeguardingLeadLastName")
+                        .HasColumnName("child_safeguarding_lead_last_name")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("ChildSafeguardingLeadTrainingMonth")
+                        .HasColumnName("child_safeguarding_lead_training_month")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("ChildSafeguardingLeadTrainingYear")
+                        .HasColumnName("child_safeguarding_lead_training_year")
+                        .HasColumnType("character varying");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("FundingOther")
+                        .HasColumnName("funding_other")
+                        .HasColumnType("text");
+
+                    b.Property<bool?>("HasAdultSafeguardingLead")
+                        .HasColumnName("has_adult_safeguarding_lead")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasAdultSupport")
+                        .HasColumnName("has_adult_support")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasChildSafeguardingLead")
+                        .HasColumnName("has_child_safeguarding_lead")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasChildSupport")
+                        .HasColumnName("has_child_support")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasEnhancedSupport")
+                        .HasColumnName("has_enhanced_support")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasHcOrColGrant")
+                        .HasColumnName("has_hc_or_col_grant")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("HasHcvsOrHgOrAelGrant")
+                        .HasColumnName("has_hcvs_or_hg_or_ael_grant")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsHackneyBased")
+                        .HasColumnName("is_hackney_based")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsLocalOfferListed")
+                        .HasColumnName("is_local_offer_listed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsLotteryFunded")
+                        .HasColumnName("is_lottery_funded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsRegisteredCharity")
+                        .HasColumnName("is_registered_charity")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsTraRegistered")
+                        .HasColumnName("is_tra_registered")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LotteryFundedProject")
+                        .HasColumnName("lottery_funded_project")
+                        .HasColumnType("character varying");
+
                     b.Property<string>("Name")
                         .HasColumnName("name")
                         .HasColumnType("character varying");
 
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnName("reviewed_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ReviewerMessage")
+                        .HasColumnName("reviewer_message")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ReviewerUid")
+                        .HasColumnName("reviewer_uid")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RslOrHaAssociation")
+                        .HasColumnName("rsl_or_ha_association")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Status")
+                        .HasColumnName("status")
+                        .HasColumnType("character varying");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnName("submitted_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnName("updated_at")
+                        .HasColumnType("timestamp without time zone");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ReviewerUid");
 
                     b.ToTable("organizations");
                 });
@@ -46,7 +189,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -67,32 +210,81 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("Description")
+                        .HasColumnName("description")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Email")
+                        .HasColumnName("email")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Facebook")
+                        .HasColumnName("facebook")
+                        .HasColumnType("character varying");
+
+                    b.Property<int?>("ImageId")
+                        .HasColumnName("image_id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnName("instagram")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Keywords")
+                        .HasColumnName("keywords")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Linkedin")
+                        .HasColumnName("linkedin")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Name")
+                        .HasColumnName("name")
+                        .HasColumnType("character varying");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnName("organization_id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RevisionId")
-                        .HasColumnName("revision_id")
-                        .HasColumnType("integer");
+                    b.Property<string>("ReferralEmail")
+                        .HasColumnName("referral_email")
+                        .HasColumnType("character varying");
 
-                    b.Property<int?>("RevisionId1")
-                        .HasColumnType("integer");
+                    b.Property<string>("ReferralLink")
+                        .HasColumnName("referral_link")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Status")
+                        .HasColumnName("status")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Telephone")
+                        .HasColumnName("telephone")
+                        .HasColumnType("character varying");
+
+                    b.Property<string>("Twitter")
+                        .HasColumnName("twitter")
+                        .HasColumnType("character varying");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnName("updated_at")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Website")
+                        .HasColumnName("website")
+                        .HasColumnType("character varying");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ImageId");
+
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("RevisionId")
-                        .IsUnique()
-                        .HasName("services_revision_id_key");
-
-                    b.HasIndex("RevisionId1");
 
                     b.ToTable("services");
                 });
@@ -103,7 +295,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<string>("Address1")
                         .HasColumnName("address_1")
@@ -133,8 +325,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("postal_code")
                         .HasColumnType("character varying");
 
-                    b.Property<int?>("RevisionId")
-                        .HasColumnName("revision_id")
+                    b.Property<int?>("ServiceId")
+                        .HasColumnName("service_id")
                         .HasColumnType("integer");
 
                     b.Property<string>("StateProvince")
@@ -147,109 +339,35 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RevisionId");
+                    b.HasIndex("ServiceId")
+                        .HasName("IX_service_locations_revision_id");
 
                     b.ToTable("service_locations");
                 });
 
-            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceRevision", b =>
+            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceTaxonomy", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<int?>("AuthorId")
-                        .HasColumnName("author_id")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnName("created_at")
-                        .HasColumnType("timestamp without time zone");
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<string>("Description")
                         .HasColumnName("description")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Facebook")
-                        .HasColumnName("facebook")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Instagram")
-                        .HasColumnName("instagram")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Linkedin")
-                        .HasColumnName("linkedin")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Name")
-                        .HasColumnName("name")
-                        .HasColumnType("character varying");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnName("reviewed_at")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("ReviewerMessage")
-                        .HasColumnName("reviewer_message")
                         .HasColumnType("text");
-
-                    b.Property<int?>("ReviewerUid")
-                        .HasColumnName("reviewer_uid")
-                        .HasColumnType("integer");
 
                     b.Property<int?>("ServiceId")
                         .HasColumnName("service_id")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Status")
-                        .HasColumnName("status")
-                        .HasColumnType("character varying");
-
-                    b.Property<DateTime?>("SubmittedAt")
-                        .HasColumnName("submitted_at")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Telephone")
-                        .HasColumnName("telephone")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Twitter")
-                        .HasColumnName("twitter")
-                        .HasColumnType("character varying");
-
-                    b.Property<string>("Website")
-                        .HasColumnName("website")
-                        .HasColumnType("character varying");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
-
-                    b.HasIndex("ReviewerUid");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("service_revisions");
-                });
-
-            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceTaxonomy", b =>
-                {
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnName("created_at")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int?>("RevisionId")
-                        .HasColumnName("revision_id")
                         .HasColumnType("integer");
 
                     b.Property<int?>("TaxonomyId")
                         .HasColumnName("taxonomy_id")
                         .HasColumnType("integer");
 
-                    b.HasIndex("RevisionId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
 
                     b.HasIndex("TaxonomyId");
 
@@ -262,7 +380,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -301,7 +419,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -322,7 +440,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -349,7 +467,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -386,7 +504,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnName("id")
                         .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -416,8 +534,10 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.UserOrganization", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnName("id")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -446,7 +566,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                 {
                     b.Property<int?>("Id")
                         .HasColumnName("id")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnName("created_at")
@@ -466,53 +587,44 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.ToTable("user_roles");
                 });
 
+            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.Organization", b =>
+                {
+                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.User", "ReviewerU")
+                        .WithMany("Organizations")
+                        .HasForeignKey("ReviewerUid")
+                        .HasConstraintName("organizations_reviewer_uid_fkey");
+                });
+
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.Service", b =>
                 {
+                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.File", "Image")
+                        .WithMany("Services")
+                        .HasForeignKey("ImageId")
+                        .HasConstraintName("services_image_id_fkey");
+
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Organization", "Organization")
                         .WithMany("Services")
                         .HasForeignKey("OrganizationId")
                         .HasConstraintName("services_organization_id_fkey");
-
-                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.ServiceRevision", "Revision")
-                        .WithMany()
-                        .HasForeignKey("RevisionId1");
                 });
 
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceLocation", b =>
                 {
-                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.ServiceRevision", "Revision")
-                        .WithMany("ServiceLocations")
-                        .HasForeignKey("RevisionId")
-                        .HasConstraintName("service_locations_revision_id_fkey");
-                });
-
-            modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceRevision", b =>
-                {
-                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.User", "Author")
-                        .WithMany("ServiceRevisionsAuthor")
-                        .HasForeignKey("AuthorId")
-                        .HasConstraintName("service_revisions_author_id_fkey");
-
-                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.User", "ReviewerU")
-                        .WithMany("ServiceRevisionsReviewerU")
-                        .HasForeignKey("ReviewerUid")
-                        .HasConstraintName("service_revisions_reviewer_uid_fkey");
-
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Service", "Service")
-                        .WithMany("ServiceRevisions")
+                        .WithMany("ServiceLocations")
                         .HasForeignKey("ServiceId")
-                        .HasConstraintName("service_revisions_service_id_fkey");
+                        .HasConstraintName("service_locations_service_id_fkey");
                 });
 
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceTaxonomy", b =>
                 {
-                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.ServiceRevision", "Revision")
-                        .WithMany()
-                        .HasForeignKey("RevisionId")
-                        .HasConstraintName("service_taxonomies_revision_id_fkey");
+                    b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Service", "Service")
+                        .WithMany("ServiceTaxonomies")
+                        .HasForeignKey("ServiceId")
+                        .HasConstraintName("service_taxonomies_service_id_fkey");
 
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Taxonomy", "Taxonomy")
-                        .WithMany()
+                        .WithMany("ServiceTaxonomies")
                         .HasForeignKey("TaxonomyId")
                         .HasConstraintName("service_taxonomies_taxonomy_id_fkey");
                 });
@@ -551,14 +663,14 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.UserRole", b =>
                 {
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.User", "IdNavigation")
-                        .WithMany()
-                        .HasForeignKey("Id")
+                        .WithOne("UserRoles")
+                        .HasForeignKey("LBHFSSPublicAPI.V1.Infrastructure.UserRole", "Id")
                         .HasConstraintName("user_roles_id_fkey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Role", "Role")
-                        .WithMany()
+                        .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .HasConstraintName("user_roles_role_id_fkey");
                 });
