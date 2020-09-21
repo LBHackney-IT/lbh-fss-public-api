@@ -53,7 +53,8 @@ namespace LBHFSSPublicAPI.V1.Factories
                 Vocabulary = entity.Vocabulary,
                 Weight = entity.Weight,
                 ParentId = entity.ParentId,
-                CreatedAt = entity.CreatedAt
+                CreatedAt = entity.CreatedAt,
+                ServiceTaxonomies = entity.ServiceTaxonomies
             };
         }
     }

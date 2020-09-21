@@ -15,13 +15,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Domain
             entity.Id.Should().BeGreaterOrEqualTo(0);
         }
 
-        [Test]
-        public void ServiceEntitiesHaveARevisionId()
-        {
-            var entity = new ServiceEntity();
-            entity.RevisionId = 1;
-            entity.RevisionId.Should().Be(1);
-        }
+        // #database_ef_changes_v2-17-09-2020: Is this test still valid? (service revisions removed)
+        //[Test]
+        //public void ServiceEntitiesHaveARevisionId()
+        //{
+        //    var entity = new ServiceEntity();
+        //    entity.RevisionId = 1;
+        //    entity.RevisionId.Should().Be(1);
+        //}
 
         [Test]
         public void ServiceEntitiesHaveAnOrganizationId()

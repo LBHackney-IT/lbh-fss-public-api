@@ -106,7 +106,7 @@ namespace LBHFSSPublicAPI
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
+                if (System.IO.File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
             });
             ConfigureDbContext(services);

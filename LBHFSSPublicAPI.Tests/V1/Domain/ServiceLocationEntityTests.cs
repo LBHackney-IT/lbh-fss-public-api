@@ -69,13 +69,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Domain
             entity.PostalCode.Should().BeSameAs(postalCode);
         }
 
-        [Test]
-        public void ServiceRevisionEntitiesHaveARevisionId()
-        {
-            var entity = new ServiceLocationEntity();
-            entity.RevisionId = 1;
-            entity.RevisionId.Should().Be(1);
-        }
+        // #database_ef_changes_v2-17-09-2020: Is this test still valid? (service revisions removed)
+        //[Test]
+        //public void ServiceRevisionEntitiesHaveARevisionId()
+        //{
+        //    var entity = new ServiceLocationEntity();
+        //    entity.RevisionId = 1;
+        //    entity.RevisionId.Should().Be(1);
+        //}
 
         [Test]
         public void ServiceRevisionEntitiesHaveAStateProvince()
