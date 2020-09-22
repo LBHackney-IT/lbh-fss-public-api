@@ -20,7 +20,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         [Test]
         public async Task GivenRequestWithNoFilterParamterWhenGetTaxonomiesEndpointIsCalledThenItReturnsAllTaxonomies()
         {
-            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
             var requestUri = new Uri("api/v1/taxonomies", UriKind.Relative);
@@ -40,7 +40,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             // arrange
             var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = Randomm.CreateMany<Taxonomy>(5).ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies(5).ToList();
             taxonomies[1].Vocabulary = vocabularyFP;
             taxonomies[3].Vocabulary = vocabularyFP;
             DatabaseContext.Taxonomies.AddRange(taxonomies);
@@ -67,7 +67,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task GivenRequestWithIdWhenGetTaxonomyEndpointIsCalledThenItReturnsSingleMatchingTaxonomy()
         {
             // arrange
-            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -91,7 +91,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task GivenRequestWithIdThatDoesNotHaveAMatchWhenGetTaxonomyEndpointIsCalledThenItReturnsA404Response()
         {
             // arrange
-            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies().ToList();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 

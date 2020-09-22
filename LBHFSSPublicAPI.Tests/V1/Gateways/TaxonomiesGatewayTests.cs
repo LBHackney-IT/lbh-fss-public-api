@@ -23,7 +23,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         [Test]
         public void GetTaxonomiesReturnsTaxonomies() // all
         {
-            var entity = Randomm.Create<Taxonomy>();
+            var entity = EntityHelpers.CreateTaxonomy();
             DatabaseContext.Taxonomies.Add(entity);
             DatabaseContext.SaveChanges();
             var response = _classUnderTest.GetTaxonomies(null).ToList();
@@ -46,7 +46,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = Randomm.CreateMany<Taxonomy>(5).ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies(5).ToList();
             taxonomies[1].Vocabulary = vocabularyFP;
             taxonomies[3].Vocabulary = vocabularyFP;
             DatabaseContext.Taxonomies.AddRange(taxonomies);
@@ -66,7 +66,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = Randomm.CreateMany<Taxonomy>().ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -84,7 +84,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var vocabularyFP = Randomm.Create<string>();
 
-            var taxonomies = Randomm.CreateMany<Taxonomy>(7).ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies(7).ToList();
             taxonomies[1].Vocabulary = $"{vocabularyFP} {Randomm.Create<string>()}";                               // matching value in front
             taxonomies[3].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP}";                               // matching value at the back
             taxonomies[4].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP} {Randomm.Create<string>()}";   // matching value in the middle
@@ -105,7 +105,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var vocabularyFP = Randomm.Create<string>().ToLower();
 
-            var taxonomies = Randomm.CreateMany<Taxonomy>(7).ToList();
+            var taxonomies = EntityHelpers.CreateTaxonomies(7).ToList();
             //DB will contain upper case, while filter param will be lower case
             taxonomies[1].Vocabulary = vocabularyFP.ToUpper();
             taxonomies[5].Vocabulary = $"{Randomm.Create<string>()} {vocabularyFP.ToUpper()} {Randomm.Create<string>()}";
@@ -127,7 +127,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenIdThatHasAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsMatchingTaxonomyDomainObject()
         {
             // arrange
-            var taxonomies = Randomm.CreateMany<Taxonomy>();
+            var taxonomies = EntityHelpers.CreateTaxonomies();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
@@ -146,7 +146,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         public void GivenIdThatDoesNotHaveAMatchWhenGetTaxonomyGatewayMethodIsCalledThenItReturnsNull()
         {
             // arrange
-            var taxonomies = Randomm.CreateMany<Taxonomy>();
+            var taxonomies = EntityHelpers.CreateTaxonomies();
             DatabaseContext.Taxonomies.AddRange(taxonomies);
             DatabaseContext.SaveChanges();
 
