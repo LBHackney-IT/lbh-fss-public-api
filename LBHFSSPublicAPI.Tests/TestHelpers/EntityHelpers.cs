@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AutoFixture;
 using LBHFSSPublicAPI.V1.Infrastructure;
 
@@ -13,6 +14,8 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 .Without(s => s.Id)
                 .With(s => s.Organization, CreateOrganization())
                 .With(s => s.Image, CreateFile)
+                .With(s => s.ServiceTaxonomies, CreateServiceTaxonomies(1))
+                .With(s => s.ServiceLocations, CreateServiceLocations())
                 .Create();
             return service;
         }
@@ -61,7 +64,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             var serviceLocation = Randomm.Build<ServiceLocation>()
                 .Without(sl => sl.Id)
-                .With(sl => sl.Service, CreateService())
+                .With(sl => sl.Service, Randomm.Build<Service>()
+                    .Without(s => s.Id)
+                    .With(s => s.Organization, CreateOrganization())
+                    .With(s => s.Image, CreateFile)
+                    .Create()
+                )
                 .Create();
             return serviceLocation;
         }
@@ -93,6 +101,19 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return userOrganization;
         }
 
+        public static ServiceTaxonomy CreateServiceTaxonomy()
+        {
+            var serviceTaxonomy = Randomm.Build<ServiceTaxonomy>()
+                .Without(st => st.Id)
+                .With(st => st.Service, Randomm.Build<Service>().Without(s => s.Id)
+                    .With(s => s.Organization, CreateOrganization())
+                    .With(s => s.Image, CreateFile)
+                    .Create())
+                .With(st => st.Taxonomy, Randomm.Build<Taxonomy>().Without(t => t.Id).Create())
+                .Create();
+            return serviceTaxonomy;
+        }
+
         public static ICollection<Taxonomy> CreateTaxonomies(int count = 3)
         {
             var taxonomies = new List<Taxonomy>();
@@ -103,6 +124,37 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
 
             return taxonomies;
         }
+
+        public static ICollection<Service> CreateServices(int count = 3)
+        {
+            var services = new List<Service>();
+            for (var a = 0; a < count; a++)
+            {
+                services.Add(CreateService());
+            }
+            return services;
+        }
+
+        public static ICollection<ServiceTaxonomy> CreateServiceTaxonomies(int count = 3)
+        {
+            var serviceTaxonomies = new List<ServiceTaxonomy>();
+            for (var a = 0; a < count; a++)
+            {
+                serviceTaxonomies.Add(CreateServiceTaxonomy());
+            }
+            return serviceTaxonomies;
+        }
+
+        public static ICollection<ServiceLocation> CreateServiceLocations(int count = 3)
+        {
+            var serviceLocations = new List<ServiceLocation>();
+            for (var a = 0; a < count; a++)
+            {
+                serviceLocations.Add(CreateServiceLocation());
+            }
+            return serviceLocations;
+        }
+
 
         // public static UserRole CreateUserRole()
         // {
