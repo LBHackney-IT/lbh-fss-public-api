@@ -124,11 +124,13 @@ namespace LBHFSSPublicAPI
         private static void RegisterGateways(IServiceCollection services)
         {
             services.AddScoped<ITaxonomiesGateway, TaxonomiesGateway>();
+            services.AddScoped<IServicesGateway, ServicesGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
             services.AddScoped<ITaxonomiesUseCase, TaxonomiesUseCase>();
+            services.AddScoped<IServicesUseCase, ServicesUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
