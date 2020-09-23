@@ -188,6 +188,10 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                     .HasColumnName("address_1")
                     .HasColumnType("character varying");
 
+                entity.Property(e => e.Address2)
+                    .HasColumnName("address_2")
+                    .HasColumnType("character varying");
+
                 entity.Property(e => e.City)
                     .HasColumnName("city")
                     .HasColumnType("character varying");
