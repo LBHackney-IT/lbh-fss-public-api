@@ -44,7 +44,9 @@ namespace LBHFSSPublicAPI.V1.Factories
                         .Where(x => x.Taxonomy.Vocabulary == "demographic")
                         .Select(x => new Demographic
                         {
-                            Id = x.Taxonomy.Id, Name = x.Taxonomy.Name, Vocabulary = x.Taxonomy.Vocabulary,
+                            Id = x.Taxonomy.Id,
+                            Name = x.Taxonomy.Name,
+                            Vocabulary = x.Taxonomy.Vocabulary,
                         }).ToList(),
                 Description = domain.Description,
                 Images = new Image
@@ -67,25 +69,25 @@ namespace LBHFSSPublicAPI.V1.Factories
                         PostalCode = x.PostalCode,
                         Country = x.Country
                     }).ToList(),
-                    Organization = new org.Organization
-                    {
-                        Id = domain.Organization.Id,
-                        Name = domain.Organization.Name,
-                        Status = domain.Organization.Status
-                    },
-                    Referral = new Referral
-                    {
-                        Email = domain.Email,
-                        Website = domain.Website
-                    },
-                    Social = new Social
-                    {
-                        Facebook = domain.Facebook,
-                        Twitter = domain.Twitter,
-                        Instagram = domain.Instagram,
-                        Linkedin = domain.Linkedin
-                    },
-                    Status = domain.Status
+                Organization = new org.Organization
+                {
+                    Id = domain.Organization.Id,
+                    Name = domain.Organization.Name,
+                    Status = domain.Organization.Status
+                },
+                Referral = new Referral
+                {
+                    Email = domain.Email,
+                    Website = domain.Website
+                },
+                Social = new Social
+                {
+                    Facebook = domain.Facebook,
+                    Twitter = domain.Twitter,
+                    Instagram = domain.Instagram,
+                    Linkedin = domain.Linkedin
+                },
+                Status = domain.Status
             };
             return response;
         }
