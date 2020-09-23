@@ -43,7 +43,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("files");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -56,7 +58,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("organizations");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.AdultSafeguardingLeadFirstName)
                     .HasColumnName("adult_safeguarding_lead_first_name")
@@ -158,7 +162,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("roles");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -174,10 +180,16 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                 entity.HasIndex(e => e.ServiceId)
                     .HasName("IX_service_locations_revision_id");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.Address1)
                     .HasColumnName("address_1")
+                    .HasColumnType("character varying");
+
+                entity.Property(e => e.Address2)
+                    .HasColumnName("address_2")
                     .HasColumnType("character varying");
 
                 entity.Property(e => e.City)
@@ -220,7 +232,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("service_taxonomies");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.Description).HasColumnName("description");
 
@@ -243,7 +257,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("services");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -320,7 +336,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.HasIndex(e => e.UserId);
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt)
                     .HasColumnName("created_at")
@@ -350,7 +368,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("synonym_groups");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -365,7 +385,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.HasIndex(e => e.GroupId);
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -385,7 +407,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("taxonomies");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -422,7 +446,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
-                    .ValueGeneratedNever();
+                    .UseIdentityAlwaysColumn();
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -454,7 +478,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
-                    .ValueGeneratedNever();
+                    .UseIdentityAlwaysColumn();
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -475,7 +499,9 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             {
                 entity.ToTable("users");
 
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
 
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 

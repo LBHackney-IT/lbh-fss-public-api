@@ -3,15 +3,17 @@ using System;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20200921161227_MakeIdsAutoIncrement")]
+    partial class MakeIdsAutoIncrement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,10 +303,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("address_1")
                         .HasColumnType("character varying");
 
-                    b.Property<string>("Address2")
-                        .HasColumnName("address_2")
-                        .HasColumnType("character varying");
-
                     b.Property<string>("City")
                         .HasColumnName("city")
                         .HasColumnType("character varying");
@@ -568,7 +566,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.UserRole", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int?>("Id")
                         .HasColumnName("id")
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
@@ -577,11 +575,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
                         .HasColumnName("role_id")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -679,9 +674,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
-                        .HasConstraintName("user_roles_role_id_fkey")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasConstraintName("user_roles_role_id_fkey");
                 });
 #pragma warning restore 612, 618
         }

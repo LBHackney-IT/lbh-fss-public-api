@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using AutoFixture;
+using AutoFixture.Dsl;
 using AutoFixture.Kernel;
 using Bogus;
 using LBHFSSPublicAPI.V1.Domain;
@@ -36,6 +37,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             _fixture.Customize(new IgnoreVirtualMembersCustomisation());
         }
+
+        public static ICustomizationComposer<T> Build<T>()
+        {
+            return _fixture.Build<T>();
+        }
+
         #endregion
     }
     #region Autofixture Customization
