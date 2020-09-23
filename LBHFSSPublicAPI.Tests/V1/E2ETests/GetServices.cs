@@ -23,15 +23,15 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var expectedService = DatabaseContext.Services.FirstOrDefault();
             var searchSearviceId = expectedService.Id;
             // act
-            var requestUri = new Uri($"api/v1/services/{searchSearviceId}", UriKind.Relative);
+            var requestUri = new Uri($"api/v1/services/{searchSearviceId}?postcode={Randomm.Text()}", UriKind.Relative);
             var response = Client.GetAsync(requestUri).Result;
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
             var actualService = JsonConvert.DeserializeObject<GetServiceResponse>(stringResponse);
             // assert
-            //response.StatusCode.Should().Be(200);
-            //actualService.Id.Should().Be(expectedService.Id);
-            //actualService.Status.Status.Should().Be(services.Status);
+            response.StatusCode.Should().Be(200);
+            actualService.Id.Should().Be(expectedService.Id);
+            actualService.Status.Should().Be(service.Status);
         }
     }
 }
