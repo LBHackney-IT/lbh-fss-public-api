@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using LBHFSSPublicAPI.V1.Boundary;
+using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.UseCase;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -18,16 +19,16 @@ namespace LBHFSSPublicAPI.V1.Controllers
             _servicesUseCase = servicesUseCase;
         }
 
-        // [HttpGet]
-        // [Route("{id}")]
-        // public IActionResult GetTaxonomy([FromRoute] int id) //if user doens't input anything, then it will be 0 by default!!!
-        // {
-        //     var usecaseResult = _servicesUseCase.ExecuteGet(id);
-        //
-        //     if (usecaseResult != null)
-        //         return Ok(usecaseResult);
-        //
-        //     return NotFound(new ErrorResponse($"Service with an Id: {id} was not found."));
-        // }
+        [HttpGet]
+        [Route("{id}")]
+        public IActionResult GetService([FromRoute] GetServiceByIdRequest requestParams) //if user doens't input anything, then it will be 0 by default!!!
+        {
+            var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
+
+            if (usecaseResult != null)
+                return Ok(usecaseResult);
+
+            return NotFound(new ErrorResponse($"Service with an Id: {requestParams.Id} was not found."));
+        }
     }
 }

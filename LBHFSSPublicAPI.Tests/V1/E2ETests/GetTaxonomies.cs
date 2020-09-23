@@ -33,7 +33,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         // An experiment to give tests more readable names: (It works, but bit hacky)
-        //[TestCase("", TestName = "Given request with filter parameter, When get taxonomies endpoint is called, Then it returns only filtered taxonomies.")]
+        //[TestCase(TestName = "Given request with filter parameter, When get taxonomies endpoint is called, Then it returns only filtered taxonomies.")]
         [Test]
         public async Task GivenRequestWithFilterParameterWhenGetTaxonomiesEndpointIsCalledThenItReturnsOnlyFilteredTaxonomies()
         {
