@@ -52,7 +52,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             var entity = Randomm.Create<Contact>();
             Assert.That(entity, Has.Property("Email").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Telephone").InstanceOf(typeof(string)));
-            Assert.That(entity, Has.Property("Website").InstanceOf(typeof(Uri)));
+            Assert.That(entity, Has.Property("Website").InstanceOf(typeof(string)));
         }
 
         [Test]
@@ -72,8 +72,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             var entityType = typeof(Image);
             entityType.GetProperties().Length.Should().Be(2);
             var entity = Randomm.Create<Image>();
-            Assert.That(entity, Has.Property("Medium").InstanceOf(typeof(Uri)));
-            Assert.That(entity, Has.Property("Original").InstanceOf(typeof(Uri)));
+            Assert.That(entity, Has.Property("Medium").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Original").InstanceOf(typeof(string)));
         }
 
         [Test]
@@ -82,8 +82,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             var entityType = typeof(Location);
             entityType.GetProperties().Length.Should().Be(9);
             var entity = Randomm.Create<Location>();
-            Assert.That(entity, Has.Property("Latitude").InstanceOf(typeof(double)));
-            Assert.That(entity, Has.Property("Longitude").InstanceOf(typeof(double)));
+            Assert.That(entity, Has.Property("Latitude").InstanceOf(typeof(decimal)));
+            Assert.That(entity, Has.Property("Longitude").InstanceOf(typeof(decimal)));
             Assert.That(entity, Has.Property("Uprn").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Address1").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Address2").InstanceOf(typeof(string)));
@@ -111,7 +111,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             entityType.GetProperties().Length.Should().Be(2);
             var entity = Randomm.Create<Referral>();
             Assert.That(entity, Has.Property("Email").InstanceOf(typeof(string)));
-            Assert.That(entity, Has.Property("Website").InstanceOf(typeof(Uri)));
+            Assert.That(entity, Has.Property("Website").InstanceOf(typeof(string)));
         }
 
         [Test]
@@ -120,10 +120,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             var entityType = typeof(Social);
             entityType.GetProperties().Length.Should().Be(4);
             var entity = Randomm.Create<Social>();
-            Assert.That(entity, Has.Property("Facebook").InstanceOf(typeof(Uri)));
-            Assert.That(entity, Has.Property("Twitter").InstanceOf(typeof(Uri)));
-            Assert.That(entity, Has.Property("Instagram").InstanceOf(typeof(Uri)));
-            Assert.That(entity, Has.Property("Linkedin").InstanceOf(typeof(Uri)));
+            Assert.That(entity, Has.Property("Facebook").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Twitter").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Instagram").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Linkedin").InstanceOf(typeof(string)));
         }
 
     }

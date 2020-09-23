@@ -17,14 +17,14 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public Referral Referral { get; set; }
         public Social Social { get; set; }
         public string Status { get; set; }
-        public string Distance => string.Empty;
+        public string Distance { get; set; }
     }
 
     public class Contact
     {
         public string Email { get; set; }
         public string Telephone { get; set; }
-        public Uri Website { get; set; }
+        public string Website { get; set; }
     }
 
     public class Demographic
@@ -45,14 +45,14 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
 
     public class Image
     {
-        public Uri Medium { get; set; }
-        public Uri Original { get; set; }
+        public string Medium { get; set; }
+        public string Original { get; set; }
     }
 
     public class Location
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
         public string Uprn { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
@@ -72,14 +72,14 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
     public class Referral
     {
         public string Email { get; set; }
-        public Uri Website { get; set; }
+        public string Website { get; set; }
     }
 
     public class Social
     {
-        public Uri Facebook { get; set; }
-        public Uri Twitter { get; set; }
-        public Uri Instagram { get; set; }
-        public Uri Linkedin { get; set; }
+        public string Facebook { get; set; }
+        public string Twitter { get; set; }
+        public string Instagram { get; set; }
+        public string Linkedin { get; set; }
     }
 }
