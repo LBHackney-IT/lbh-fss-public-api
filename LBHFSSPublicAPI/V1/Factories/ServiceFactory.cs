@@ -36,20 +36,23 @@ namespace LBHFSSPublicAPI.V1.Factories
                                 Weight = x.Taxonomy.Weight
                             }).ToList(),
                     Contact =
-                        new Contact {Email = domain.Email, Telephone = domain.Telephone, Website = domain.Website},
+                        new Contact { Email = domain.Email, Telephone = domain.Telephone, Website = domain.Website },
                     Demographic = domain.ServiceTaxonomies == null
                         ? new List<Demographic>()
                         : domain.ServiceTaxonomies
                             .Where(x => x.Taxonomy.Vocabulary == "demographic")
                             .Select(x => new Demographic
                             {
-                                Id = x.Taxonomy.Id, Name = x.Taxonomy.Name, Vocabulary = x.Taxonomy.Vocabulary,
+                                Id = x.Taxonomy.Id,
+                                Name = x.Taxonomy.Name,
+                                Vocabulary = x.Taxonomy.Vocabulary,
                             }).ToList(),
                     Description = domain.Description,
                     Images = new Image
                     {
                         // TODO:  We need to get the resized image uri for this property
-                        Medium = "new_uri_to_be_provided", Original = domain.Image.Url
+                        Medium = "new_uri_to_be_provided",
+                        Original = domain.Image.Url
                     },
                     Locations = domain.ServiceLocations
                         .Select(x => new Location
@@ -72,7 +75,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                             Name = domain.Organization.Name,
                             Status = domain.Organization.Status
                         },
-                    Referral = new Referral {Email = domain.Email, Website = domain.Website},
+                    Referral = new Referral { Email = domain.Email, Website = domain.Website },
                     Social = new Social
                     {
                         Facebook = domain.Facebook,
