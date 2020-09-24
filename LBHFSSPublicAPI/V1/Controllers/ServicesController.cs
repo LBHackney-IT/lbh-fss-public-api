@@ -30,5 +30,12 @@ namespace LBHFSSPublicAPI.V1.Controllers
 
             return NotFound(new ErrorResponse($"Service with an Id: {requestParams.Id} was not found."));
         }
+
+        [HttpGet]
+        public IActionResult SearchServices([FromQuery] SearchServicesRequest requestParams)
+        {
+            var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
+            return Ok(usecaseResult);
+        }
     }
 }

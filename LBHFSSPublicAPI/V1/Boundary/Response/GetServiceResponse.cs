@@ -17,7 +17,6 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public Referral Referral { get; set; }
         public Social Social { get; set; }
         public string Status { get; set; }
-        public string Distance { get; set; }
     }
 
     public class Contact
@@ -60,6 +59,7 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public string StateProvince { get; set; }
         public string PostalCode { get; set; }
         public string Country { get; set; }
+        public string Distance { get; set; }
     }
 
     public class Organization
