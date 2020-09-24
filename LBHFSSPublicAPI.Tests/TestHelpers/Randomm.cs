@@ -6,6 +6,7 @@ using AutoFixture;
 using AutoFixture.Dsl;
 using AutoFixture.Kernel;
 using Bogus;
+using Geolocation;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Newtonsoft.Json;
@@ -14,7 +15,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
 {
     public static class Randomm
     {
-        private static Faker _faker = new Faker();                 // Good for single values
+        private static Faker _faker = new Faker("en_GB");          // Good for single values
         private static Fixture _fixture = new Fixture();           // Good for complex objects
         static Randomm()                                           // Gets called automatically by common language runtime (CLR)
         {
@@ -49,22 +50,32 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
 
         #endregion
 
-        #region Addresses API Fake Response
-
         /// <summary>
         /// Coordinate bounds (Lon, Lat) of a Rectangle surrounding
         /// Hackey. Some parts of rectangle are outside hackney.
         /// </summary>
         /// <returns></returns>
-        public static double Longitude()
+        private static double Longitude()
         {
             return _faker.Random.Double(-0.11, 0);
         }
 
-        public static double Latitude()
+        private static double Latitude()
         {
             return _faker.Random.Double(51.513, 51.58);
         }
+
+        public static Coordinate Coordinates()
+        {
+            return new Coordinate(Latitude(), Longitude());
+        }
+
+        public static string Postcode()
+        {
+            return _faker.Address.ZipCode();
+        }
+
+        #region Addresses API Fake Response
 
         private static List<FakeAddress> FakeAddresses()
         {
@@ -75,11 +86,19 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 .ToList();
         }
 
-        private static FakeData FakeData()
+        private static FakeData FakeData(Coordinate coordinate, bool populateAddressCollection)
         {
-            return _fixture.Build<FakeData>()
-                .With(d => d.Address, FakeAddresses())
+            var listOfAddresses = _fixture.Build<FakeData>()
+                .With(d => d.Address, populateAddressCollection ? FakeAddresses() : new List<FakeAddress>())
                 .Create();
+
+            if (populateAddressCollection)
+            {
+                listOfAddresses.Address.FirstOrDefault().Latitude = coordinate.Latitude;
+                listOfAddresses.Address.FirstOrDefault().Longitude = coordinate.Longitude;
+            }
+
+            return listOfAddresses;
         }
 
         private static FakeError FakeError()
@@ -91,12 +110,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 .Create();
         }
 
-        private static string FakeAddressesAPIJsonResponse(int statusCode)
+        private static string FakeAddressesAPIJsonResponse(int statusCode, Coordinate coordinate, bool populateAddressCollection)
         {
             var isStatus200 = statusCode == 200;
 
             var fakeResponse = _fixture.Build<FakeAddressesAPIJsonResponse>()
-                .With(r => r.Data, isStatus200 ? FakeData() : null)
+                .With(r => r.Data, isStatus200 ? FakeData(coordinate, populateAddressCollection) : null)
                 .With(r => r.Error, isStatus200 ? null : FakeError())
                 .With(r => r.StatusCode, statusCode)
                 .Create();
@@ -104,11 +123,18 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return JsonConvert.SerializeObject(fakeResponse);
         }
 
+        public static AddressesAPIContextResponse AddressesAPIContextResponse(int statusCode, Coordinate coordinate)
+        {
+            return new AddressesAPIContextResponse(
+                statusCode,
+                FakeAddressesAPIJsonResponse(statusCode, coordinate, populateAddressCollection: true));
+        }
+
         public static AddressesAPIContextResponse AddressesAPIContextResponse(int statusCode)
         {
             return new AddressesAPIContextResponse(
                 statusCode,
-                FakeAddressesAPIJsonResponse(statusCode));
+                FakeAddressesAPIJsonResponse(statusCode, new Coordinate(), populateAddressCollection: false));
         }
 
         #endregion
