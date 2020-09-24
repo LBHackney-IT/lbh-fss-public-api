@@ -19,12 +19,14 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
     {
         private ServicesUseCase _classUnderTest;
         private Mock<IServicesGateway> _mockServicesGateway;
+        private Mock<IAddressesGateway> _mockAddressesGateway;
 
         [SetUp]
         public void Setup()
         {
             _mockServicesGateway = new Mock<IServicesGateway>();
-            _classUnderTest = new ServicesUseCase(_mockServicesGateway.Object);
+            _mockAddressesGateway = new Mock<IAddressesGateway>();
+            _classUnderTest = new ServicesUseCase(_mockServicesGateway.Object, _mockAddressesGateway.Object);
         }
 
         #region Get Services with/without filter
@@ -86,6 +88,49 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             // assert
             usecaseResult.Should().BeEquivalentTo(gatewayResult.ToResponse());
         }
+
+        [TestCase(TestName = "Given a valid nonempty postcode, When ExecuteGet Service usecase's method is called, Then it calls the Addresses gateway GetPostcodeCoordinates method.")]
+        public void GivenValidPostcodeUsecaseShouldCallAddressesGateway()
+        {
+            // arrange
+            var request = Randomm.Create<GetServiceByIdRequest>();
+
+            // act
+            _classUnderTest.ExecuteGet(request);
+
+            // assert
+            _mockAddressesGateway.Verify(g => g.GetPostcodeCoordinates(It.IsAny<string>()), Times.Once);
+        }
+
+        [TestCase(TestName = "Given a valid nonempty postcode, When ExecuteGet Service usecase's method is called, Then it calls the Addresses gateway GetPostcodeCoordinates method, And pass in that Postcode.")]
+        public void GivenValidPostcodeUsecaseShouldCallAddressesGatewayWithThatPostcode()
+        {
+            // arrange
+            var request = Randomm.Create<GetServiceByIdRequest>();
+
+            // act
+            _classUnderTest.ExecuteGet(request);
+
+            // assert
+            _mockAddressesGateway.Verify(g => g.GetPostcodeCoordinates(It.Is<string>(p => p == request.PostCode)), Times.Once);
+        }
+
+        [TestCase("", TestName = "Given an empty postcode, When ExecuteGet Service usecase's method is called, Then it does not call the Addresses gateway GetPostcodeCoordinates method")]
+        [TestCase(null, TestName = "Given a null postcode, When ExecuteGet Service usecase's method is called, Then it does not call the Addresses gateway GetPostcodeCoordinates method")]
+        public void GivenNoPostcodeUsecaseShouldNotCallAddressesGateway(string postcode)
+        {
+            // arrange
+            var request = Randomm.Create<GetServiceByIdRequest>();
+            request.PostCode = postcode;
+
+            // act
+            _classUnderTest.ExecuteGet(request);
+
+            // assert
+            _mockAddressesGateway.Verify(g => g.GetPostcodeCoordinates(It.IsAny<string>()), Times.Never);
+        }
+
+        // TODO: Distance calculating helper does its job.
 
         #endregion
     }

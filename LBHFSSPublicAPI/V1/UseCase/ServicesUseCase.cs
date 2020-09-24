@@ -9,21 +9,27 @@ namespace LBHFSSPublicAPI.V1.UseCase
 {
     public class ServicesUseCase : IServicesUseCase
     {
-        private readonly IServicesGateway _gateway;
+        private readonly IServicesGateway _servicesGateway;
+        private readonly IAddressesGateway _addressesGateway;
 
-        public ServicesUseCase(IServicesGateway servicesGateway)
+        public ServicesUseCase(IServicesGateway servicesGateway, IAddressesGateway addressesGateway)
         {
-            _gateway = servicesGateway;
+            _servicesGateway = servicesGateway;
+            _addressesGateway = addressesGateway;
         }
         public GetServiceResponse ExecuteGet(GetServiceByIdRequest requestParams)
         {
-            var gatewayResponse = _gateway.GetService(requestParams.Id);
+            var gatewayResponse = _servicesGateway.GetService(requestParams.Id);
+
+            if(!string.IsNullOrEmpty(requestParams.PostCode))
+                _addressesGateway.GetPostcodeCoordinates(requestParams.PostCode);
+
             return gatewayResponse.ToResponse();
         }
 
         public GetServiceResponseList ExecuteGet(SearchServicesRequest searchParams)
         {
-            var gatewayResponse = _gateway.SearchServices(searchParams);
+            var gatewayResponse = _servicesGateway.SearchServices(searchParams);
             var response = gatewayResponse.ToResponse();
             response.Metadata.PostCode = searchParams.PostCode;
             return response;
