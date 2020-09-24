@@ -8,5 +8,6 @@ namespace LBHFSSPublicAPI.V1.UseCase.Interfaces
     public interface IServicesUseCase
     {
         public GetServiceResponse ExecuteGet(GetServiceByIdRequest requestParams);
+        public GetServiceResponseList ExecuteGet(SearchServicesRequest searchParams);
     }
 }

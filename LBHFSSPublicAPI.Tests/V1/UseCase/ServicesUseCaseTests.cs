@@ -29,29 +29,31 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
 
         #region Get Services with/without filter
 
-        // [TestCase(TestName = "Given a valid request parameter when the use case is called the gateway will be called with the unwrapped id")]
-        // public void GetServicesUseCaseCallsGatewayGetServices()
-        // {
-        //     // arrange
-        //     var requestParams = Randomm.Create<GetServiceByIdRequest>();
-        //
-        //     // act
-        //     _classUnderTest.ExecuteGet(requestParams);
-        //
-        //     // assert
-        //     _mockServicesGateway.Verify(u => u.GetService(It.Is<int>(p => p == requestParams.Id)), Times.Once);
-        // }
+        [TestCase(TestName = "Given a valid request parameter when the use case is called the gateway will be called with the unwrapped id")]
+        public void GetServicesUseCaseCallsGatewayGetServices()
+        {
+            // arrange
+            var requestParams = Randomm.Create<GetServiceByIdRequest>();
 
-        // [Test]
-        // public void ReturnsHelpRequests() //Wrap up
-        // {
-        //     var responseData = Randomm.CreateMany<ServiceyEntity>().ToList();
-        //     _mockServicesGateway.Setup(g => g.GetServices(It.IsAny<string>())).Returns(responseData);
-        //     var expectedResponse = responseData.ToResponse();
-        //     var response = _classUnderTest.ExecuteGet(null);
-        //     response.Should().NotBeNull();
-        //     response.Should().BeEquivalentTo(expectedResponse);
-        // }
+            // act
+            _classUnderTest.ExecuteGet(requestParams);
+
+            // assert
+            _mockServicesGateway.Verify(u => u.GetService(It.Is<int>(p => p == requestParams.Id)), Times.Once);
+        }
+
+        [TestCase(TestName = "Given a valid set of search parameters a ServicesResponse collection is returned")]
+        public void ReturnsServicesIfSeachParamIsProvided() //Wrap up
+        {
+            var requestParams = Randomm.Create<SearchServicesRequest>();
+            var responseData = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(responseData);
+            var expectedResponse = responseData.ToResponse();
+            expectedResponse.Metadata.PostCode = requestParams.PostCode;
+            var response = _classUnderTest.ExecuteGet(requestParams);
+            response.Should().NotBeNull();
+            response.Should().BeEquivalentTo(expectedResponse);
+        }
         #endregion
 
         #region Get Single Service by Id

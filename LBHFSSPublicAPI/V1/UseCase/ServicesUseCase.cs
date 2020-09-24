@@ -20,5 +20,13 @@ namespace LBHFSSPublicAPI.V1.UseCase
             var gatewayResponse = _gateway.GetService(requestParams.Id);
             return gatewayResponse.ToResponse();
         }
+
+        public GetServiceResponseList ExecuteGet(SearchServicesRequest searchParams)
+        {
+            var gatewayResponse = _gateway.SearchServices(searchParams);
+            var response = gatewayResponse.ToResponse();
+            response.Metadata.PostCode = searchParams.PostCode;
+            return response;
+        }
     }
 }

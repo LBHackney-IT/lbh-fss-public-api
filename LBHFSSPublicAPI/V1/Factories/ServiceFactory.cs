@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using LBHFSSPublicAPI.V1.Boundary.Response;
@@ -16,80 +17,83 @@ namespace LBHFSSPublicAPI.V1.Factories
         {
             if (domain == null)
                 return null;
-            var response = domain == null ? null : new GetServiceResponse
-            {
-                Id = domain.Id,
-                Name = domain.Name,
-                Categories = domain.ServiceTaxonomies == null
-                    ? new List<Category>()
-                    : domain.ServiceTaxonomies
-                        .Where(x => x.Taxonomy != null && x.Taxonomy.Vocabulary == "category")
-                        .Select(x => new Category
-                        {
-                            Id = x.Taxonomy.Id,
-                            Name = x.Taxonomy.Name,
-                            Description = x.Taxonomy.Description,
-                            Vocabulary = x.Taxonomy.Vocabulary,
-                            Weight = x.Taxonomy.Weight
-                        }).ToList(),
-                Contact = new Contact
+            var response = domain == null
+                ? null
+                : new GetServiceResponse
                 {
-                    Email = domain.Email,
-                    Telephone = domain.Telephone,
-                    Website = domain.Website
-                },
-                Demographic = domain.ServiceTaxonomies == null
-                    ? new List<Demographic>()
-                    : domain.ServiceTaxonomies
-                        .Where(x => x.Taxonomy.Vocabulary == "demographic")
-                        .Select(x => new Demographic
-                        {
-                            Id = x.Taxonomy.Id,
-                            Name = x.Taxonomy.Name,
-                            Vocabulary = x.Taxonomy.Vocabulary,
-                        }).ToList(),
-                Description = domain.Description,
-                Images = new Image
-                {
-                    // TODO:  We need to get the resized image uri for this property
-                    Medium = "new_uri_to_be_provided",
-                    Original = domain.Image.Url
-                },
-                Locations = domain.ServiceLocations
-                    .Select(x => new Location
+                    Id = domain.Id,
+                    Name = domain.Name,
+                    Categories = domain.ServiceTaxonomies == null
+                        ? new List<Category>()
+                        : domain.ServiceTaxonomies
+                            .Where(x => x.Taxonomy != null && x.Taxonomy.Vocabulary == "category")
+                            .Select(x => new Category
+                            {
+                                Id = x.Taxonomy.Id,
+                                Name = x.Taxonomy.Name,
+                                Description = x.Taxonomy.Description,
+                                Vocabulary = x.Taxonomy.Vocabulary,
+                                Weight = x.Taxonomy.Weight
+                            }).ToList(),
+                    Contact =
+                        new Contact { Email = domain.Email, Telephone = domain.Telephone, Website = domain.Website },
+                    Demographic = domain.ServiceTaxonomies == null
+                        ? new List<Demographic>()
+                        : domain.ServiceTaxonomies
+                            .Where(x => x.Taxonomy.Vocabulary == "demographic")
+                            .Select(x => new Demographic
+                            {
+                                Id = x.Taxonomy.Id,
+                                Name = x.Taxonomy.Name,
+                                Vocabulary = x.Taxonomy.Vocabulary,
+                            }).ToList(),
+                    Description = domain.Description,
+                    Images = new Image
                     {
-                        Latitude = x.Latitude,
-                        Longitude = x.Longitude,
-                        //check if this is a string or integer (does it have preceding 0 or alpa characters)
-                        Uprn = x.Uprn.ToString(),
-                        Address1 = x.Address1,
-                        Address2 = x.Address2,
-                        City = x.City,
-                        StateProvince = x.StateProvince,
-                        PostalCode = x.PostalCode,
-                        Country = x.Country
-                    }).ToList(),
-                Organization = new org.Organization
-                {
-                    Id = domain.Organization.Id,
-                    Name = domain.Organization.Name,
-                    Status = domain.Organization.Status
-                },
-                Referral = new Referral
-                {
-                    Email = domain.Email,
-                    Website = domain.Website
-                },
-                Social = new Social
-                {
-                    Facebook = domain.Facebook,
-                    Twitter = domain.Twitter,
-                    Instagram = domain.Instagram,
-                    Linkedin = domain.Linkedin
-                },
-                Status = domain.Status
-            };
+                        // TODO:  We need to get the resized image uri for this property
+                        Medium = "new_uri_to_be_provided",
+                        Original = domain.Image.Url
+                    },
+                    Locations = domain.ServiceLocations
+                        .Select(x => new Location
+                        {
+                            Latitude = x.Latitude,
+                            Longitude = x.Longitude,
+                            //check if this is a string or integer (does it have preceding 0 or alpa characters)
+                            Uprn = x.Uprn.ToString(),
+                            Address1 = x.Address1,
+                            Address2 = x.Address2,
+                            City = x.City,
+                            StateProvince = x.StateProvince,
+                            PostalCode = x.PostalCode,
+                            Country = x.Country
+                        }).ToList(),
+                    Organization =
+                        new org.Organization
+                        {
+                            Id = domain.Organization.Id,
+                            Name = domain.Organization.Name,
+                            Status = domain.Organization.Status
+                        },
+                    Referral = new Referral { Email = domain.Email, Website = domain.Website },
+                    Social = new Social
+                    {
+                        Facebook = domain.Facebook,
+                        Twitter = domain.Twitter,
+                        Instagram = domain.Instagram,
+                        Linkedin = domain.Linkedin
+                    },
+                    Status = domain.Status
+                };
             return response;
+        }
+
+        public static GetServiceResponseList ToResponse(this ICollection<ServiceEntity> domain)
+        {
+            return domain == null ? new GetServiceResponseList() : new GetServiceResponseList()
+            {
+                Services = domain.Select(s => s.ToResponse()).ToList()
+            };
         }
 
         public static ServiceEntity ToDomain(this Service entity)
@@ -121,6 +125,13 @@ namespace LBHFSSPublicAPI.V1.Factories
                 ReferralEmail = entity.ReferralEmail,
                 ReferralLink = entity.ReferralLink
             };
+        }
+
+        public static ICollection<ServiceEntity> ToDomain(this ICollection<Service> entities)
+        {
+            if (entities == null)
+                return new List<ServiceEntity>();
+            return entities.Select(e => e.ToDomain()).ToList();
         }
     }
 }
