@@ -49,6 +49,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var responseData = EntityHelpers.CreateServices().ToDomain();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(responseData);
             var expectedResponse = responseData.ToResponse();
+            expectedResponse.Metadata.PostCode = requestParams.PostCode;
             var response = _classUnderTest.ExecuteGet(requestParams);
             response.Should().NotBeNull();
             response.Should().BeEquivalentTo(expectedResponse);
