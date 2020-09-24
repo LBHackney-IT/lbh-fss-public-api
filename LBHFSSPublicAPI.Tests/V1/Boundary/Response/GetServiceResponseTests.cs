@@ -14,7 +14,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
         public void GetServiceResponseObjectShouldHaveCorrectProperties()
         {
             var entityType = typeof(GetServiceResponse);
-            entityType.GetProperties().Length.Should().Be(13);
+            entityType.GetProperties().Length.Should().Be(12);
             var entity = Randomm.Create<GetServiceResponse>();
             Assert.That(entity, Has.Property("Id").InstanceOf(typeof(int)));
             Assert.That(entity, Has.Property("Name").InstanceOf(typeof(string)));
@@ -28,7 +28,6 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             Assert.That(entity, Has.Property("Referral").InstanceOf(typeof(Referral)));
             Assert.That(entity, Has.Property("Social").InstanceOf(typeof(Social)));
             Assert.That(entity, Has.Property("Status").InstanceOf(typeof(string)));
-            Assert.That(entity, Has.Property("Distance").InstanceOf(typeof(string)));
         }
 
         [Test]
@@ -80,7 +79,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
         public void GetServiceResponseLocationObjectShouldHaveCorrectProperties()
         {
             var entityType = typeof(Location);
-            entityType.GetProperties().Length.Should().Be(9);
+            entityType.GetProperties().Length.Should().Be(10);
             var entity = Randomm.Create<Location>();
             Assert.That(entity, Has.Property("Latitude").InstanceOf(typeof(decimal)));
             Assert.That(entity, Has.Property("Longitude").InstanceOf(typeof(decimal)));
@@ -91,6 +90,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             Assert.That(entity, Has.Property("StateProvince").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("PostalCode").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Country").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Distance").InstanceOf(typeof(string)));
         }
 
         [Test]
