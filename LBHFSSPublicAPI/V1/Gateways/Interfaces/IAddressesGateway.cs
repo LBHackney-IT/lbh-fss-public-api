@@ -5,6 +5,6 @@ namespace LBHFSSPublicAPI.V1.Gateways.Interfaces
 {
     public interface IAddressesGateway
     {
-        Coordinate GetPostcodeCoordinates(string postcode);
+        Coordinate? GetPostcodeCoordinates(string postcode);
     }
 }

@@ -26,6 +26,10 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             return _faker.Random.Int(minimum, maximum);
         }
+        public static string Word()
+        {
+            return _faker.Random.Word();
+        }
         public static string Text()
         {
             return string.Join(" ", _faker.Random.Words(5));
@@ -102,22 +106,29 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return listOfAddresses;
         }
 
-        private static ErrorEntity FakeError()
+        private static ErrorEntity FakeError(bool isServerErrorResponse)
         {
             return _fixture.Build<ErrorEntity>()
                 .With(e => e.IsValid, false)
-                .With(e => e.Errors, null)
-                .With(e => e.ValidationErrors, _fixture.CreateMany<ValidationErrorEntity>().ToList())
+                .With(e => e.Errors,
+                    isServerErrorResponse ?
+                    new List<ExecutionErrorEntity> { _fixture.Create<ExecutionErrorEntity>() } :
+                    null)
+                .With(e => e.ValidationErrors,
+                    isServerErrorResponse ?
+                    null :
+                    _fixture.CreateMany<ValidationErrorEntity>().ToList())
                 .Create();
         }
 
         private static string FakeAddressesAPIJsonResponse(int statusCode, Coordinate coordinate, bool populateAddressCollection)
         {
             var isStatus200 = statusCode == 200;
+            var isStatus500 = statusCode == 500;
 
             var fakeResponse = _fixture.Build<RootAPIResponseEntity>()
                 .With(r => r.Data, isStatus200 ? FakeData(coordinate, populateAddressCollection) : null)
-                .With(r => r.Error, isStatus200 ? null : FakeError())
+                .With(r => r.Error, isStatus200 ? null : FakeError(isStatus500))
                 .With(r => r.StatusCode, statusCode)
                 .Create();
 
