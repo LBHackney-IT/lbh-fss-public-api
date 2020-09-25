@@ -28,6 +28,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         [TestCase(TestName = "Given a postcode, When Addresses gateway GetPostcodeCoordinates method is called, Then it calls Addresses API context's GetAddressesRequest method With that postcode.")]
         public void AddressesGatewayShouldCallAddressesContextWithGivenPostcode()
         {
+            // rubbish arrange
+            var irrelevantResponse = Randomm.AddressesAPIContextResponse(200);
+            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(irrelevantResponse);
+
             // arrange
             var postcode = Randomm.Postcode();
 
@@ -112,10 +116,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayCall.Should().Throw<APICallInternalException>();
         }
 
-        [TestCase(200, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
-        [TestCase(400, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
-        [TestCase(500, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
-        [TestCase(9000, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
+        [TestCase(200, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned With 200, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
+        [TestCase(400, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned With 400, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
+        [TestCase(500, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned With 500, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
+        [TestCase(9000, TestName = "Given Addresses API context's GetAddressesRequest method is called, When unexpected schema response is returned With 400, Then the AddressesGateway throws ResponseSchemaNotRecognisedException.")]
         public void AddressesGatewayShouldThrowAnErrorWhenAPICallReturnsUnexpectedSchema(int statusCode) // if anything about the Addresses API changes, ResponseSchemaNotRecognisedException //TODO: should contain api name
         {
             // arrange
@@ -124,19 +128,23 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             switch (statusCode) {
                 case 200:
                     contextResponse.JsonContent =
-                        contextResponse.JsonContent.Replace("Data", Randomm.Word());
+                        contextResponse.JsonContent.Replace("Data", Randomm.Word()
+                        , StringComparison.OrdinalIgnoreCase);
                     break;
                 case 400:
                     contextResponse.JsonContent =
-                        contextResponse.JsonContent.Replace("validationErrors", Randomm.Word());
+                        contextResponse.JsonContent.Replace("validationErrors", Randomm.Word()
+                        , StringComparison.OrdinalIgnoreCase);
                     break;
                 case 500:
                     contextResponse.JsonContent =
-                        contextResponse.JsonContent.Replace("Errors", Randomm.Word());
+                        contextResponse.JsonContent.Replace("Errors", Randomm.Word()
+                        , StringComparison.OrdinalIgnoreCase);
                     break;
                 default:
                     contextResponse.JsonContent =
-                        contextResponse.JsonContent.Replace("error", Randomm.Word());
+                        contextResponse.JsonContent.Replace("error", Randomm.Word()
+                        , StringComparison.OrdinalIgnoreCase);
                     break;
             }
 
@@ -163,5 +171,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // assert
             gatewayCall.Should().Throw<WebException>();
         }
+
+        // TODO: Add NotFound - API could potentially be moved.
+        // TODO: Add Other status code.
     }
 }

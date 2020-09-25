@@ -31,6 +31,7 @@
     <Folder Include="terraform\" />
     <Folder Include="V1\Exceptions\" />
     <Folder Include="V1\Infrastructure\AddressesContextEntities\" />
+    <Folder Include="V1\Domain\AddressesAPIDomain\" />
   </ItemGroup>
 
 </Project>
