@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LBHFSSPublicAPI.V1.Gateways;
@@ -82,6 +83,39 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // assert
             gatewayResult.Should().NotBeNull();
             gatewayResult.Count.Should().Be(1);
+        }
+
+        [TestCase(TestName = "Given search parameters when the SearchService method is called it returns records matching applied synonym group")]
+        public void GivenSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingSynonymGroupResults()
+        {
+            // arrange
+            var synonymGroup1 = EntityHelpers.CreateSynonymGroupWithWords(5);
+            var synonymGroup2 = EntityHelpers.CreateSynonymGroupWithWords(3);
+            synonymGroup2.SynonymWords.ToList()[1].Word = synonymGroup1.SynonymWords.ToList()[1].Word;
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var searchTerm = synonymGroup1.SynonymWords.ToList()[1].Word;
+            var requestParams = new SearchServicesRequest();
+            requestParams.Search = searchTerm;
+            serviceToFind1.Name += synonymGroup1.SynonymWords.ToList()[4].Word;
+            serviceToFind2.Name += synonymGroup2.SynonymWords.ToList()[2].Word;
+            DatabaseContext.SynonymGroups.Add(synonymGroup1);
+            DatabaseContext.SynonymGroups.Add(synonymGroup2);
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.SaveChanges();
+            var expectedData = new List<Service>();
+            expectedData.Add(serviceToFind1);
+            expectedData.Add(serviceToFind2);
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Count.Should().Be(expectedData.Count);
         }
         #endregion
     }

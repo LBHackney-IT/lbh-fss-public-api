@@ -25,6 +25,14 @@ namespace LBHFSSPublicAPI.V1.UseCase
         {
             var gatewayResponse = _gateway.SearchServices(searchParams);
             var response = gatewayResponse.ToResponse();
+            var services = response.Services;
+            foreach (var service in services)
+            {
+                foreach (var serviceLocation in service.Locations)
+                {
+                    //serviceLocation.Distance = calculateDistance(coords);
+                }
+            }
             response.Metadata.PostCode = searchParams.PostCode;
             return response;
         }
