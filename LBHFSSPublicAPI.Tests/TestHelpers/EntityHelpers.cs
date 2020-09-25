@@ -39,9 +39,11 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
 
         public static SynonymGroup CreateSynonymGroup()
         {
-            return Randomm.Build<SynonymGroup>()
+            var synonymGroup = Randomm.Build<SynonymGroup>()
                 .Without(s => s.Id)
                 .Create();
+            synonymGroup.SynonymWords = new List<SynonymWord>();
+            return synonymGroup;
         }
 
         public static SynonymWord CreateSynonymWord()
@@ -153,6 +155,17 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 serviceLocations.Add(CreateServiceLocation());
             }
             return serviceLocations;
+        }
+
+        public static SynonymGroup CreateSynonymGroupWithWords(int count = 3)
+        {
+            var synonymGroup = CreateSynonymGroup();
+            for (var a = 0; a < count; a++)
+            {
+                var synomymWord = new SynonymWord { GroupId = synonymGroup.Id, Word = Randomm.Create<string>() };
+                synonymGroup.SynonymWords.Add(synomymWord);
+            }
+            return synonymGroup;
         }
 
 
