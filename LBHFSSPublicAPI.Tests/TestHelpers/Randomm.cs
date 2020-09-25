@@ -9,6 +9,7 @@ using Bogus;
 using Geolocation;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Infrastructure;
+using LBHFSSPublicAPI.V1.Infrastructure.AddressesContextEntities;
 using Newtonsoft.Json;
 
 namespace LBHFSSPublicAPI.Tests.TestHelpers
@@ -77,19 +78,19 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
 
         #region Addresses API Fake Response
 
-        private static List<FakeAddress> FakeAddresses()
+        private static List<AddressEntity> FakeAddresses()
         {
-            return _fixture.Build<FakeAddress>()
+            return _fixture.Build<AddressEntity>()
                 .With(a => a.Longitude, Longitude())
                 .With(a => a.Latitude, Latitude())
                 .CreateMany()
                 .ToList();
         }
 
-        private static FakeData FakeData(Coordinate coordinate, bool populateAddressCollection)
+        private static DataEntity FakeData(Coordinate coordinate, bool populateAddressCollection)
         {
-            var listOfAddresses = _fixture.Build<FakeData>()
-                .With(d => d.Address, populateAddressCollection ? FakeAddresses() : new List<FakeAddress>())
+            var listOfAddresses = _fixture.Build<DataEntity>()
+                .With(d => d.Address, populateAddressCollection ? FakeAddresses() : new List<AddressEntity>())
                 .Create();
 
             if (populateAddressCollection)
@@ -101,12 +102,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return listOfAddresses;
         }
 
-        private static FakeError FakeError()
+        private static ErrorEntity FakeError()
         {
-            return _fixture.Build<FakeError>()
+            return _fixture.Build<ErrorEntity>()
                 .With(e => e.IsValid, false)
                 .With(e => e.Errors, null)
-                .With(e => e.ValidationErrors, _fixture.CreateMany<FakeValidationError>().ToList())
+                .With(e => e.ValidationErrors, _fixture.CreateMany<ValidationErrorEntity>().ToList())
                 .Create();
         }
 
@@ -114,7 +115,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             var isStatus200 = statusCode == 200;
 
-            var fakeResponse = _fixture.Build<FakeAddressesAPIJsonResponse>()
+            var fakeResponse = _fixture.Build<RootAPIResponseEntity>()
                 .With(r => r.Data, isStatus200 ? FakeData(coordinate, populateAddressCollection) : null)
                 .With(r => r.Error, isStatus200 ? null : FakeError())
                 .With(r => r.StatusCode, statusCode)
@@ -161,85 +162,5 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             fixture.Customizations.Add(new IgnoreVirtualMembers());
         }
     }
-    #endregion
-
-    #region Addresses API response classes - required for testing.
-
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
-
-    /// <summary>
-    /// Classes generated based of Addresses API response. Only used for testing purposes
-    /// to generate random, but structured string responses.
-    /// </summary>
-    public class FakeAddress
-    {
-        public string AddressKey { get; set; }
-        public int Uprn { get; set; }
-        public int Usrn { get; set; }
-        public int ParentUPRN { get; set; }
-        public string AddressStatus { get; set; }
-        public string UnitName { get; set; }
-        public object UnitNumber { get; set; }
-        public object BuildingName { get; set; }
-        public string BuildingNumber { get; set; }
-        public string Street { get; set; }
-        public string Postcode { get; set; }
-        public string Locality { get; set; }
-        public string Town { get; set; }
-        public string Gazetteer { get; set; }
-        public string CommercialOccupier { get; set; }
-        public string Ward { get; set; }
-        public string UsageDescription { get; set; }
-        public string UsagePrimary { get; set; }
-        public string UsageCode { get; set; }
-        public string PlanningUseClass { get; set; }
-        public bool PropertyShell { get; set; }
-        public bool HackneyGazetteerOutOfBoroughAddress { get; set; }
-        public double Easting { get; set; }
-        public double Northing { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public int AddressStartDate { get; set; }
-        public int AddressEndDate { get; set; }
-        public int AddressChangeDate { get; set; }
-        public int PropertyStartDate { get; set; }
-        public int PropertyEndDate { get; set; }
-        public int PropertyChangeDate { get; set; }
-        public string Line1 { get; set; }
-        public string Line2 { get; set; }
-        public string Line3 { get; set; }
-        public string Line4 { get; set; }
-    }
-
-    public class FakeData
-    {
-        public List<FakeAddress> Address { get; set; }
-
-#pragma warning disable CA1707 // Identifiers should not contain underscores
-        public int Page_count { get; set; }
-        public int Total_count { get; set; }
-#pragma warning restore CA1707 // Identifiers should not contain underscores
-    }
-
-    public class FakeAddressesAPIJsonResponse
-    {
-        public FakeData Data { get; set; }
-        public int StatusCode { get; set; }
-        public object Error { get; set; }
-    }
-
-    public class FakeValidationError
-    {
-        public string Message { get; set; }
-        public string FieldName { get; set; }
-    }
-
-    public class FakeError
-    {
-        public bool IsValid { get; set; }
-        public object Errors { get; set; }
-        public List<FakeValidationError> ValidationErrors { get; set; }
-    }
-
     #endregion
 }
