@@ -34,17 +34,27 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         public ICollection<ServiceEntity> SearchServices(SearchServicesRequest requestParams)
         {
-            Expression<Func<Service, bool>> searchServices = x =>
-                string.IsNullOrWhiteSpace(requestParams.Search)
-                || x.Name.Replace(" ", "").ToUpper().Contains(requestParams.Search.Replace(" ", "").ToUpper());
-
+            var synonyms = new HashSet<string>();
+            if (string.IsNullOrWhiteSpace(requestParams.Search))
+                return _context.Services
+                        .Select(s => s.ToDomain())
+                        .ToList();
+            synonyms.Add(requestParams.Search.ToUpper());
+            var matchedSynonyms = _context.SynonymWords
+                .Include(sw => sw.Group)
+                .ThenInclude(sg => sg.SynonymWords)
+                .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
+                .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToUpper()))
+                    .ToList())
+                .ToList();
             var services = _context.Services
                 .Include(s => s.Image)
                 .Include(s => s.Organization)
                 .Include(s => s.ServiceLocations)
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
-                .Where(searchServices)
+                .AsEnumerable()
+                .Where(x => synonyms.Any(b => x.Name.ToUpper().Contains(b)))
                 .Select(s => s.ToDomain())
                 .ToList();
             return services;
