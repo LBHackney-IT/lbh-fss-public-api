@@ -46,6 +46,15 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
                 uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p == searchParams)), Times.Once);
         }
 
+        [TestCase(TestName = "When the services controller GetService action is called with a taxonomy id the ServicesUseCase ExecuteGet method is called once with the parameter specified")]
+        public void ServiceControllerSearchServiceActionWithTaxonomyIdCallsTheServicesUseCaseWithTheCorrectTaxonomyId()
+        {
+            var searchParams = Randomm.Create<SearchServicesRequest>();
+            _classUnderTest.SearchServices(searchParams);
+            _mockUseCase.Verify(uc =>
+                uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p.TaxonomyIds == searchParams.TaxonomyIds)), Times.Once);
+        }
+
 
         [Test]
         public void ReturnsResponseWithStatus()

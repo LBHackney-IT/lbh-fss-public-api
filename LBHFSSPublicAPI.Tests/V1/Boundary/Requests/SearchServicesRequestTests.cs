@@ -21,7 +21,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             Assert.That(entity, Has.Property("Sort").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Offset").InstanceOf(typeof(int)));
             Assert.That(entity, Has.Property("Limit").InstanceOf(typeof(int)));
-            Assert.That(entity, Has.Property("TaxonomyId").InstanceOf(typeof(int)));
+            Assert.That(entity, Has.Property("TaxonomyIds").InstanceOf(typeof(List<int>)));
             Assert.That(entity, Has.Property("PostCode").InstanceOf(typeof(string)));
         }
     }

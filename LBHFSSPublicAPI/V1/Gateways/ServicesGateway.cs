@@ -35,18 +35,17 @@ namespace LBHFSSPublicAPI.V1.Gateways
         public ICollection<ServiceEntity> SearchServices(SearchServicesRequest requestParams)
         {
             var synonyms = new HashSet<string>();
-            if (string.IsNullOrWhiteSpace(requestParams.Search))
-                return _context.Services
-                        .Select(s => s.ToDomain())
-                        .ToList();
-            synonyms.Add(requestParams.Search.ToUpper());
-            var matchedSynonyms = _context.SynonymWords
-                .Include(sw => sw.Group)
-                .ThenInclude(sg => sg.SynonymWords)
-                .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
-                .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToUpper()))
-                    .ToList())
-                .ToList();
+            if (!string.IsNullOrWhiteSpace(requestParams.Search))
+            {
+                synonyms.Add(requestParams.Search.ToUpper());
+                var matchedSynonyms = _context.SynonymWords
+                    .Include(sw => sw.Group)
+                    .ThenInclude(sg => sg.SynonymWords)
+                    .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
+                    .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToUpper()))
+                        .ToList())
+                    .ToList();
+            }
             var services = _context.Services
                 .Include(s => s.Image)
                 .Include(s => s.Organization)
@@ -54,7 +53,9 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
                 .AsEnumerable()
-                .Where(x => synonyms.Any(b => x.Name.ToUpper().Contains(b)))
+                .Where(x => synonyms.Count == 0 || synonyms.Any(b => x.Name.ToUpper().Contains(b)))
+                .Where(x => requestParams.TaxonomyIds == null || requestParams.TaxonomyIds.Count == 0
+                            || x.ServiceTaxonomies.Any(st => requestParams.TaxonomyIds.Contains(st.TaxonomyId)))
                 .Select(s => s.ToDomain())
                 .ToList();
             return services;
