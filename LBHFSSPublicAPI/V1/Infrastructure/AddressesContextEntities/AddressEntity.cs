@@ -5,13 +5,13 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.AddressesContextEntities
     public class AddressEntity
     {
         public string AddressKey { get; set; }
-        public int Uprn { get; set; }
-        public int Usrn { get; set; }
-        public int ParentUPRN { get; set; }
+        public string Uprn { get; set; }
+        public string Usrn { get; set; }
+        public string ParentUPRN { get; set; }
         public string AddressStatus { get; set; }
         public string UnitName { get; set; }
-        public object UnitNumber { get; set; }
-        public object BuildingName { get; set; }
+        public string UnitNumber { get; set; }
+        public string BuildingName { get; set; }
         public string BuildingNumber { get; set; }
         public string Street { get; set; }
         public string Postcode { get; set; }
@@ -30,12 +30,12 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.AddressesContextEntities
         public double Northing { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
-        public int AddressStartDate { get; set; }
-        public int AddressEndDate { get; set; }
-        public int AddressChangeDate { get; set; }
-        public int PropertyStartDate { get; set; }
-        public int PropertyEndDate { get; set; }
-        public int PropertyChangeDate { get; set; }
+        public string AddressStartDate { get; set; }
+        public string AddressEndDate { get; set; }
+        public string AddressChangeDate { get; set; }
+        public string PropertyStartDate { get; set; }
+        public string PropertyEndDate { get; set; }
+        public string PropertyChangeDate { get; set; }
         public string Line1 { get; set; }
         public string Line2 { get; set; }
         public string Line3 { get; set; }

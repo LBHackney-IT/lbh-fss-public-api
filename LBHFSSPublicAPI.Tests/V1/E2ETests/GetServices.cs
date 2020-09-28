@@ -23,7 +23,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var expectedService = DatabaseContext.Services.FirstOrDefault();
             var searchSearviceId = expectedService.Id;
             // act
-            var requestUri = new Uri($"api/v1/services/{searchSearviceId}?postcode={Randomm.Text()}", UriKind.Relative);
+            var requestUri = new Uri($"api/v1/services/{searchSearviceId}?postcode={Randomm.Postcode()}", UriKind.Relative);
             var response = Client.GetAsync(requestUri).Result;
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
