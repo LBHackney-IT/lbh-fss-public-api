@@ -17,6 +17,7 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public Referral Referral { get; set; }
         public Social Social { get; set; }
         public string Status { get; set; }
+        public Metadata Metadata { get; set; }
     }
 
     public class Contact
@@ -50,8 +51,8 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
 
     public class Location
     {
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public string Uprn { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
@@ -81,5 +82,13 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public string Twitter { get; set; }
         public string Instagram { get; set; }
         public string Linkedin { get; set; }
+    }
+
+    public class Metadata
+    {
+        public string PostCode { get; set; }
+        public double? PostCodeLatitude { get; set; }
+        public double? PostCodeLongitude { get; set; }
+        public string Error { get; set; }
     }
 }

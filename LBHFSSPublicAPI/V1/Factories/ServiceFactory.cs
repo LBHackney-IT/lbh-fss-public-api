@@ -57,8 +57,8 @@ namespace LBHFSSPublicAPI.V1.Factories
                     Locations = domain.ServiceLocations
                         .Select(x => new Location
                         {
-                            Latitude = x.Latitude,
-                            Longitude = x.Longitude,
+                            Latitude = (double?) x.Latitude,
+                            Longitude = (double?) x.Longitude,
                             //check if this is a string or integer (does it have preceding 0 or alpa characters)
                             Uprn = x.Uprn.ToString(),
                             Address1 = x.Address1,
@@ -66,7 +66,8 @@ namespace LBHFSSPublicAPI.V1.Factories
                             City = x.City,
                             StateProvince = x.StateProvince,
                             PostalCode = x.PostalCode,
-                            Country = x.Country
+                            Country = x.Country,
+                            Distance = null
                         }).ToList(),
                     Organization =
                         new org.Organization
@@ -83,7 +84,14 @@ namespace LBHFSSPublicAPI.V1.Factories
                         Instagram = domain.Instagram,
                         Linkedin = domain.Linkedin
                     },
-                    Status = domain.Status
+                    Status = domain.Status,
+                    Metadata = new Metadata
+                    {
+                        PostCode = null,
+                        PostCodeLatitude = null,
+                        PostCodeLongitude = null,
+                        Error = null
+                    }
                 };
             return response;
         }

@@ -60,12 +60,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         /// Hackey. Some parts of rectangle are outside hackney.
         /// </summary>
         /// <returns></returns>
-        private static double Longitude()
+        public static double Longitude()
         {
             return _faker.Random.Double(-0.11, 0);
         }
 
-        private static double Latitude()
+        public static double Latitude()
         {
             return _faker.Random.Double(51.513, 51.58);
         }
