@@ -117,6 +117,36 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Should().NotBeNull();
             gatewayResult.Count.Should().Be(expectedData.Count);
         }
+
+        [TestCase(TestName = "Given taxonomy id search parameter when the SearchService method is called it returns records matching taxonomy id")]
+        public void GivenTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingTaxonomyIdResults()
+        {
+            var taxonomy1 = EntityHelpers.CreateTaxonomy();
+            var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var serviceTaxonomy1 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy2 = EntityHelpers.CreateServiceTaxonomy();
+            serviceTaxonomy1.Service = serviceToFind1;
+            serviceTaxonomy1.Taxonomy = taxonomy1;
+            serviceTaxonomy2.Service = serviceToFind2;
+            serviceTaxonomy2.Taxonomy = taxonomy2;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.SaveChanges();
+            var requestParams = new SearchServicesRequest();
+            requestParams.TaxonomyIds = new List<int> { taxonomy1.Id, taxonomy2.Id };
+            var expectedData = new List<Service>();
+            expectedData.Add(serviceToFind1);
+            expectedData.Add(serviceToFind2);
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Count.Should().Be(expectedData.Count);
+        }
         #endregion
     }
 }
