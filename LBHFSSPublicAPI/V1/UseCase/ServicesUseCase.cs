@@ -21,7 +21,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
         {
             var gatewayResponse = _servicesGateway.GetService(requestParams.Id);
 
-            if(!string.IsNullOrEmpty(requestParams.PostCode))
+            if (!string.IsNullOrEmpty(requestParams.PostCode))
                 _addressesGateway.GetPostcodeCoordinates(requestParams.PostCode);
 
             return gatewayResponse.ToResponse();

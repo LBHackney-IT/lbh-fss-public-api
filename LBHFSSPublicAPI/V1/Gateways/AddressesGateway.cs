@@ -21,9 +21,10 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         public Coordinate? GetPostcodeCoordinates(string postcode)
         {
+            var apiResponse = _apiContext.GetAddressesRequest(postcode);
+
             try
             {
-                var apiResponse = _apiContext.GetAddressesRequest(postcode);
                 var jsonContent = apiResponse.JsonContent;
                 var statusCode = apiResponse.StatusCode;
 
@@ -36,6 +37,10 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 else if (statusCode == 403)
                 {
                     throw new APICallNotAuthorizedException("Addresses");
+                }
+                else if (statusCode == 404)
+                {
+                    throw new APICallNotFoundException("Addresses");
                 }
                 else if (statusCode == 500)
                 {

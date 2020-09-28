@@ -102,6 +102,22 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayCall.Should().Throw<APICallNotAuthorizedException>().WithMessage($"A call to {"Addresses"} API was not authorized.");
         }
 
+        [TestCase(TestName = "Given Addresses API context's GetAddressesRequest method is called, When not found response is returned, Then the AddressesGateway throws APICallNotFoundException.")] // ideally would tell the url path or similar
+        public void AddressesGatewayShouldThrowAnErrorWhenAPICallResultsInNotFound()
+        {
+            // arrange
+            var statusCode = 404;
+            var forbiddenResp = "";
+            var contextResponse = new AddressesAPIContextResponse(statusCode, forbiddenResp);
+            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+
+            // act
+            Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
+
+            // assert
+            gatewayCall.Should().Throw<APICallNotFoundException>();
+        }
+
         [TestCase(TestName = "Given Addresses API context's GetAddressesRequest method is called, When internal server error response is returned, Then the AddressesGateway throws APICallInternalException.")] // TODO: test exception message
         public void AddressesGatewayShouldThrowAnErrorWhenAPICallReturnInternalFailure()
         {
@@ -124,8 +140,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var contextResponse = Randomm.AddressesAPIContextResponse(statusCode == 9000 ? 400 : statusCode);
-            
-            switch (statusCode) {
+
+            switch (statusCode)
+            {
                 case 200:
                     contextResponse.JsonContent =
                         contextResponse.JsonContent.Replace("Data", Randomm.Word()
