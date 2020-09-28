@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LBHFSSPublicAPI.V1.Boundary.Request
@@ -7,6 +8,7 @@ namespace LBHFSSPublicAPI.V1.Boundary.Request
         public SearchServicesRequest()
         {
             Limit = 0;
+            TaxonomyIds = new List<int>();
         }
 
         [FromQuery]
@@ -19,7 +21,7 @@ namespace LBHFSSPublicAPI.V1.Boundary.Request
         public int Offset { get; set; }
 
         [FromQuery]
-        public int TaxonomyId { get; set; }
+        public List<int> TaxonomyIds { get; set; }
 
         [FromQuery]
         public int Limit { get; set; }
