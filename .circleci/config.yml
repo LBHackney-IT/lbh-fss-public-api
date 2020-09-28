@@ -148,7 +148,7 @@ jobs:
           command: docker-compose build fss-public-api-test
       - run:
           name: Run tests
-          command: docker-compose run fss-public-api-test -e ADDRESSES_API_BASE_URL ADDRESSES_API_KEY
+          command: docker-compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY --rm fss-public-api-test
   assume-role-development:
     executor: docker-python
     steps:
