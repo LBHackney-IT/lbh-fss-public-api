@@ -8,6 +8,6 @@ namespace LBHFSSPublicAPI.V1.Boundary.Request
         public int Id { get; set; }
 
         [FromQuery(Name = "postCode")]
-        public string PostCode { get; set; }
+        public string PostCode { get; set; } = null;
     }
 }

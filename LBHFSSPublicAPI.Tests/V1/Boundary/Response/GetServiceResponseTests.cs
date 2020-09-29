@@ -14,7 +14,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
         public void GetServiceResponseObjectShouldHaveCorrectProperties()
         {
             var entityType = typeof(GetServiceResponse);
-            entityType.GetProperties().Length.Should().Be(12);
+            entityType.GetProperties().Length.Should().Be(13);
             var entity = Randomm.Create<GetServiceResponse>();
             Assert.That(entity, Has.Property("Id").InstanceOf(typeof(int)));
             Assert.That(entity, Has.Property("Name").InstanceOf(typeof(string)));
@@ -28,6 +28,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             Assert.That(entity, Has.Property("Referral").InstanceOf(typeof(Referral)));
             Assert.That(entity, Has.Property("Social").InstanceOf(typeof(Social)));
             Assert.That(entity, Has.Property("Status").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("Metadata").InstanceOf(typeof(Metadata)));
         }
 
         [Test]
@@ -81,8 +82,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             var entityType = typeof(Location);
             entityType.GetProperties().Length.Should().Be(10);
             var entity = Randomm.Create<Location>();
-            Assert.That(entity, Has.Property("Latitude").InstanceOf(typeof(decimal)));
-            Assert.That(entity, Has.Property("Longitude").InstanceOf(typeof(decimal)));
+            Assert.That(entity, Has.Property("Latitude").InstanceOf(typeof(double)));
+            Assert.That(entity, Has.Property("Longitude").InstanceOf(typeof(double)));
             Assert.That(entity, Has.Property("Uprn").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Address1").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Address2").InstanceOf(typeof(string)));
@@ -126,5 +127,16 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary
             Assert.That(entity, Has.Property("Linkedin").InstanceOf(typeof(string)));
         }
 
+        [Test]
+        public void GetServiceResponseMetadataObjectShouldHaveCorrectProperties()
+        {
+            var entityType = typeof(Metadata);
+            entityType.GetProperties().Length.Should().Be(4);
+            var entity = Randomm.Create<Metadata>();
+            Assert.That(entity, Has.Property("PostCode").InstanceOf(typeof(string)));
+            Assert.That(entity, Has.Property("PostCodeLatitude").InstanceOf(typeof(double?)));
+            Assert.That(entity, Has.Property("PostCodeLongitude").InstanceOf(typeof(double?)));
+            Assert.That(entity, Has.Property("Error").InstanceOf(typeof(string)));
+        }
     }
 }

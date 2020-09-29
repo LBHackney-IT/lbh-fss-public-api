@@ -66,6 +66,8 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             var serviceLocation = Randomm.Build<ServiceLocation>()
                 .Without(sl => sl.Id)
+                .With(sl => sl.Latitude, (decimal) Randomm.Latitude())
+                .With(sl => sl.Longitude, (decimal) Randomm.Longitude())
                 .With(sl => sl.Service, Randomm.Build<Service>()
                     .Without(s => s.Id)
                     .With(s => s.Organization, CreateOrganization())

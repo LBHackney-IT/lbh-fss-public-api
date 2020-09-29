@@ -110,6 +110,7 @@ namespace LBHFSSPublicAPI
                     c.IncludeXmlComments(xmlPath);
             });
             ConfigureDbContext(services);
+            ConfigureAddressesAPIContext(services);
             RegisterGateways(services);
             RegisterUseCases(services);
         }
@@ -121,10 +122,27 @@ namespace LBHFSSPublicAPI
                 opt => opt.UseNpgsql(connectionString));
         }
 
+        private static void ConfigureAddressesAPIContext(IServiceCollection services)
+        {
+            var apiBaseUrl = Environment.GetEnvironmentVariable("ADDRESSES_API_BASE_URL")
+                ?? throw new ArgumentNullException("Addresses API base url");
+
+            var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY")
+                ?? throw new ArgumentNullException("Addresses API key");
+
+            var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey);
+
+            services.AddScoped<IAddressesAPIContext>(s =>
+            {
+                return new AddressesAPIContext(connOptions);
+            });
+        }
+
         private static void RegisterGateways(IServiceCollection services)
         {
             services.AddScoped<ITaxonomiesGateway, TaxonomiesGateway>();
             services.AddScoped<IServicesGateway, ServicesGateway>();
+            services.AddScoped<IAddressesGateway, AddressesGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
