@@ -16,13 +16,13 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
     public class AddressesGatewayTests
     {
         private IAddressesGateway _classUnderTest;
-        private Mock<IAddressesAPIContext> _mockAddressesAPIContext;
+        private Mock<IAddressesAPIContext> _mockAddressesApiContext;
 
         [SetUp]
         public void Setup()
         {
-            _mockAddressesAPIContext = new Mock<IAddressesAPIContext>();
-            _classUnderTest = new AddressesGateway(_mockAddressesAPIContext.Object);
+            _mockAddressesApiContext = new Mock<IAddressesAPIContext>();
+            _classUnderTest = new AddressesGateway(_mockAddressesApiContext.Object);
         }
 
         [TestCase(TestName = "Given a postcode, When Addresses gateway GetPostcodeCoordinates method is called, Then it calls Addresses API context's GetAddressesRequest method With that postcode.")]
@@ -30,7 +30,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // rubbish arrange
             var irrelevantResponse = Randomm.AddressesAPIContextResponse(200);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(irrelevantResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(irrelevantResponse);
 
             // arrange
             var postcode = Randomm.Postcode();
@@ -39,7 +39,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             _classUnderTest.GetPostcodeCoordinates(postcode);
 
             // assert
-            _mockAddressesAPIContext.Verify(c => c.GetAddressesRequest(It.Is<string>(p => p == postcode)), Times.Once);
+            _mockAddressesApiContext.Verify(c => c.GetAddressesRequest(It.Is<string>(p => p == postcode)), Times.Once);
         }
 
         [TestCase(TestName = "Given Addresses API context's GetAddressesRequest method is called, When successful response With nonempty addresses collection is returned, Then the AddressesGateway returns coordinates of the first address in that collection.")]
@@ -48,7 +48,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var expectedCoordinates = Randomm.Coordinates();
             var contextResponse = Randomm.AddressesAPIContextResponse(200, expectedCoordinates);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             var gatewayResponse = _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -63,7 +63,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var contextResponse = Randomm.AddressesAPIContextResponse(200);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             var gatewayResponse = _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -77,7 +77,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var contextResponse = Randomm.AddressesAPIContextResponse(400);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -93,7 +93,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var statusCode = 403;
             var forbiddenResp = "{\"message\":\"Forbidden\"}";
             var contextResponse = new AddressesAPIContextResponse(statusCode, forbiddenResp);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -109,7 +109,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var statusCode = 404;
             var forbiddenResp = "";
             var contextResponse = new AddressesAPIContextResponse(statusCode, forbiddenResp);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -123,7 +123,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var contextResponse = Randomm.AddressesAPIContextResponse(500);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -165,7 +165,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
                     break;
             }
 
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>())).Returns(contextResponse);
 
             // act
             Action gatewayCall = () => _classUnderTest.GetPostcodeCoordinates(It.IsAny<string>());
@@ -179,7 +179,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var expectedException = new WebException(Randomm.Word(), WebExceptionStatus.Timeout);
-            _mockAddressesAPIContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>()))
+            _mockAddressesApiContext.Setup(c => c.GetAddressesRequest(It.IsAny<string>()))
                 .Throws(expectedException);
 
             // act
