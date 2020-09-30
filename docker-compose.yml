@@ -10,6 +10,8 @@ services:
       - 3000:3000
     environment:
       - CONNECTION_STRING=Host=dev-database;Port=5432;Database=testdb;Username=postgres;Password=mypassword
+      - ADDRESSES_API_BASE_URL=Test
+      - ADDRESSES_API_KEY=Test
       - ASPNETCORE_ENVIRONMENT=Development
     links:
       - dev-database
@@ -32,6 +34,8 @@ services:
       - DB_PASSWORD=mypassword
       - DB_DATABASE=testdb
       - ASPNETCORE_ENVIRONMENT=Test
+      - ADDRESSES_API_BASE_URL=Test
+      - ADDRESSES_API_KEY=Test
     links:
       - test-database
   test-database:

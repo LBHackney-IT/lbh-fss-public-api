@@ -69,11 +69,54 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if a taxonomy id search parameter is provided, services with taxonomy with id")]
+            "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided, services with matching category and demographics are returned")]
+        public async Task GetServicesByTaxonomyIdServicesIfMatchedToCategoryAndDemographic()
+        {
+            var taxonomy1 = EntityHelpers.CreateTaxonomy();
+            var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var serviceTaxonomy1 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy2 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy3 = EntityHelpers.CreateServiceTaxonomy();
+            var searchTerm = Randomm.Create<string>();
+            serviceToFind1.Name += searchTerm;
+            serviceToFind2.Name += searchTerm;
+            serviceTaxonomy1.Service = serviceToFind1;
+            serviceTaxonomy1.Taxonomy = taxonomy1;
+            serviceTaxonomy2.Service = serviceToFind1;
+            serviceTaxonomy2.Taxonomy = taxonomy2;
+            serviceTaxonomy3.Service = services.First();
+            serviceTaxonomy3.Taxonomy = taxonomy2;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy3);
+            DatabaseContext.SaveChanges();
+            var requestUri = new Uri($"api/v1/services?search={searchTerm}&taxonomyids={taxonomy1.Id}&taxonomyids={taxonomy2.Id}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            response.StatusCode.Should().Be(200);
+            var content = response.Content;
+            var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
+            var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
+            deserializedBody.Services.Count.Should().Be(1);
+        }
+
+        [TestCase(TestName =
+            "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided and no services match both, nothing is returned")]
         public async Task GetServicesByTaxonomyIdServicesIfMatchedToTaxonomyId()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
             var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            var taxonomy3 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            taxonomy3.Vocabulary = "demographic";
             var services = EntityHelpers.CreateServices();
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
@@ -95,14 +138,16 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
             DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
             DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy3);
+            DatabaseContext.Taxonomies.Add(taxonomy3);
             DatabaseContext.SaveChanges();
-            var requestUri = new Uri($"api/v1/services?search={searchTerm}&taxonomyids={taxonomy1.Id}&taxonomyids={taxonomy2.Id}", UriKind.Relative);
+            var requestUri = new Uri($"api/v1/services?search={searchTerm}&taxonomyids={taxonomy2.Id}&taxonomyids={taxonomy3.Id}", UriKind.Relative);
             var response = Client.GetAsync(requestUri).Result;
             response.StatusCode.Should().Be(200);
             var content = response.Content;
             var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
             var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
-            deserializedBody.Services.Count.Should().Be(2);
+            deserializedBody.Services.Count.Should().Be(0);
         }
+
     }
 }

@@ -118,11 +118,92 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Count.Should().Be(expectedData.Count);
         }
 
-        [TestCase(TestName = "Given taxonomy id search parameter when the SearchService method is called it returns records matching taxonomy id")]
-        public void GivenTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingTaxonomyIdResults()
+        [TestCase(TestName = "Given multiple taxonomy id search parameters when the SearchService method is called it returns records matching taxonomy ids")]
+        public void GivenMultipleTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingTaxonomyIdResults()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
             var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var serviceTaxonomy1 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy2 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy3 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy4 = EntityHelpers.CreateServiceTaxonomy();
+            serviceTaxonomy1.Service = serviceToFind1;
+            serviceTaxonomy1.Taxonomy = taxonomy1;
+            serviceTaxonomy2.Service = serviceToFind1;
+            serviceTaxonomy2.Taxonomy = taxonomy2;
+            serviceTaxonomy3.Service = serviceToFind2;
+            serviceTaxonomy3.Taxonomy = taxonomy1;
+            serviceTaxonomy4.Service = serviceToFind2;
+            serviceTaxonomy4.Taxonomy = taxonomy2;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy3);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy4);
+            DatabaseContext.SaveChanges();
+            var requestParams = new SearchServicesRequest();
+            requestParams.TaxonomyIds = new List<int> { taxonomy1.Id, taxonomy2.Id };
+            var expectedData = new List<Service>();
+            expectedData.Add(serviceToFind1);
+            expectedData.Add(serviceToFind2);
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Count.Should().Be(expectedData.Count);
+        }
+
+        [TestCase(TestName =
+    "Given that there are services in the database, if either category or demographic taxonomy id search parameters is provided services with matching taxonomy are returned")]
+        public void GivenSingleTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsResults()
+        {
+            var taxonomy1 = EntityHelpers.CreateTaxonomy();
+            var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            var taxonomy3 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            taxonomy3.Vocabulary = "demographic";
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var serviceTaxonomy1 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy2 = EntityHelpers.CreateServiceTaxonomy();
+            serviceTaxonomy1.Service = serviceToFind1;
+            serviceTaxonomy1.Taxonomy = taxonomy1;
+            serviceTaxonomy2.Service = serviceToFind2;
+            serviceTaxonomy2.Taxonomy = taxonomy1;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.Taxonomies.Add(taxonomy3);
+            DatabaseContext.SaveChanges();
+            var requestParams = new SearchServicesRequest();
+            requestParams.TaxonomyIds = new List<int> { taxonomy1.Id };
+            var expectedData = new List<Service>();
+            expectedData.Add(serviceToFind1);
+            expectedData.Add(serviceToFind2);
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Count.Should().Be(expectedData.Count);
+        }
+
+        [TestCase(TestName =
+            "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided and no services match both, nothing is returned")]
+        public void GivenTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsNothing()
+        {
+            var taxonomy1 = EntityHelpers.CreateTaxonomy();
+            var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            var taxonomy3 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            taxonomy3.Vocabulary = "demographic";
             var services = EntityHelpers.CreateServices();
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
@@ -137,15 +218,13 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             DatabaseContext.Services.Add(serviceToFind2);
             DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
             DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.Taxonomies.Add(taxonomy3);
             DatabaseContext.SaveChanges();
             var requestParams = new SearchServicesRequest();
-            requestParams.TaxonomyIds = new List<int> { taxonomy1.Id, taxonomy2.Id };
-            var expectedData = new List<Service>();
-            expectedData.Add(serviceToFind1);
-            expectedData.Add(serviceToFind2);
+            requestParams.TaxonomyIds = new List<int> { taxonomy2.Id, taxonomy3.Id };
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(expectedData.Count);
+            gatewayResult.Count.Should().Be(0);
         }
         #endregion
     }
