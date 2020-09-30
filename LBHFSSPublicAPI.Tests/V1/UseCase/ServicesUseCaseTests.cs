@@ -182,7 +182,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             usecaseResponse.Metadata.PostCodeLatitude.Should().Be(expectedPostcodeCoords.Latitude);
             usecaseResponse.Metadata.PostCodeLongitude.Should().Be(expectedPostcodeCoords.Longitude);
             usecaseResponse.Metadata.Error.Should().BeNull();
-            usecaseResponse.Locations.Should().OnlyContain(l => l.Latitude.HasValue && l.Longitude.HasValue ? l.Distance != null : l.Distance == null);
+            usecaseResponse.Service.Locations.Should().OnlyContain(l => l.Latitude.HasValue && l.Longitude.HasValue ? l.Distance != null : l.Distance == null);
         }
 
         [TestCase(TestName = "Given ExecuteGet Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway returns NULL postcode's coordinates, Then usecase response includes null distances to service locations AND null Metadata coordinate fields.")]
@@ -201,7 +201,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var usecaseResponse = _classUnderTest.ExecuteGet(request);
 
             // assert
-            usecaseResponse.Locations.Should().OnlyContain(l => l.Distance == null);
+            usecaseResponse.Service.Locations.Should().OnlyContain(l => l.Distance == null);
             usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
             usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
             usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);
@@ -225,7 +225,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var usecaseResponse = _classUnderTest.ExecuteGet(request);
 
             // assert
-            usecaseResponse.Locations.Should().OnlyContain(l => l.Distance == null);
+            usecaseResponse.Service.Locations.Should().OnlyContain(l => l.Distance == null);
             usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
             usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
             usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);

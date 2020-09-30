@@ -40,7 +40,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
                         usecaseResponse.Metadata.PostCodeLatitude = postcodeCoord.Value.Latitude;
                         usecaseResponse.Metadata.PostCodeLongitude = postcodeCoord.Value.Longitude;
 
-                        foreach (var location in usecaseResponse.Locations)
+                        foreach (var location in usecaseResponse.Service.Locations)
                             if (location.Latitude.HasValue && location.Longitude.HasValue)
                                 location.Distance =
                                     GeoCalculator.GetDistance(
