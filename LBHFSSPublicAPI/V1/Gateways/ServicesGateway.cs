@@ -37,7 +37,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
             var demographicTaxonomies = _context.Taxonomies
                 .Where(t => t.Vocabulary == "demographic" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
                 .Select(t => t.Id).ToList();
-            var categroyTaxonomies = _context.Taxonomies
+            var categoryTaxonomies = _context.Taxonomies
                 .Where(t => t.Vocabulary == "category" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
                 .Select(t => t.Id).ToList();
             if (!string.IsNullOrWhiteSpace(requestParams.Search))
@@ -61,8 +61,8 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Where(x => synonyms.Count == 0 || synonyms.Any(b => x.Name.ToUpper().Contains(b)))
                 .Where(x => demographicTaxonomies == null || demographicTaxonomies.Count == 0
                                                           || x.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
-                .Where(x => categroyTaxonomies == null || categroyTaxonomies.Count == 0
-                                                          || x.ServiceTaxonomies.Any(st => categroyTaxonomies.Contains(st.TaxonomyId)))
+                .Where(x => categoryTaxonomies == null || categoryTaxonomies.Count == 0
+                                                          || x.ServiceTaxonomies.Any(st => categoryTaxonomies.Contains(st.TaxonomyId)))
                 .Select(s => s.ToDomain())
                 .ToList();
             return services;
