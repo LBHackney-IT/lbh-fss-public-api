@@ -30,8 +30,8 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var actualService = JsonConvert.DeserializeObject<GetServiceResponse>(stringResponse);
             // assert
             response.StatusCode.Should().Be(200);
-            actualService.Id.Should().Be(expectedService.Id);
-            actualService.Status.Should().Be(service.Status);
+            actualService.Service.Id.Should().Be(expectedService.Id);
+            actualService.Service.Status.Should().Be(service.Status);
         }
     }
 }
