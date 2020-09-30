@@ -6,12 +6,12 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public ICollection<Category> Categories { get; set; }
+        public List<Category> Categories { get; set; }
         public Contact Contact { get; set; }
-        public ICollection<Demographic> Demographic { get; set; }
+        public List<Demographic> Demographic { get; set; }
         public string Description { get; set; }
         public Image Images { get; set; }
-        public ICollection<Location> Locations { get; set; }
+        public List<Location> Locations { get; set; }
         public Organization Organization { get; set; }
         public Referral Referral { get; set; }
         public Social Social { get; set; }

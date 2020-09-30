@@ -22,12 +22,12 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary.Response
             respObjType.GetProperties().Length.Should().Be(12);
             Assert.That(entity, Has.Property("Id").InstanceOf(typeof(int)));
             Assert.That(entity, Has.Property("Name").InstanceOf(typeof(string)));
-            Assert.That(entity, Has.Property("Categories").InstanceOf(typeof(ICollection<Category>)));
+            Assert.That(entity, Has.Property("Categories").InstanceOf(typeof(List<Category>)));
             Assert.That(entity, Has.Property("Contact").InstanceOf(typeof(Contact)));
-            Assert.That(entity, Has.Property("Demographic").InstanceOf(typeof(ICollection<Demographic>)));
+            Assert.That(entity, Has.Property("Demographic").InstanceOf(typeof(List<Demographic>)));
             Assert.That(entity, Has.Property("Description").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Images").InstanceOf(typeof(Image)));
-            Assert.That(entity, Has.Property("Locations").InstanceOf(typeof(ICollection<Location>)));
+            Assert.That(entity, Has.Property("Locations").InstanceOf(typeof(List<Location>)));
             Assert.That(entity, Has.Property("Organization").InstanceOf(typeof(Organization)));
             Assert.That(entity, Has.Property("Referral").InstanceOf(typeof(Referral)));
             Assert.That(entity, Has.Property("Social").InstanceOf(typeof(Social)));

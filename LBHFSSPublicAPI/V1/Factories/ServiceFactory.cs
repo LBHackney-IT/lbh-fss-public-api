@@ -3,88 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using LBHFSSPublicAPI.V1.Boundary.Response;
+using Response = LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Infrastructure;
-using org = LBHFSSPublicAPI.V1.Boundary.Response;
-using Organization = LBHFSSPublicAPI.V1.Infrastructure.Organization;
+using Entity = LBHFSSPublicAPI.V1.Infrastructure;
 
 namespace LBHFSSPublicAPI.V1.Factories
 {
     public static class ServiceFactory
     {
-        // More information on this can be found here https://github.com/LBHackney-IT/lbh-base-api/wiki/Factory-object-mappings
-        public static GetServiceResponse ToResponse(this ServiceEntity domain)
+        #region Domain to Response - Main objects
+
+        public static GetServiceResponse ToResponse(this ServiceEntity serviceDomain)
         {
-            if (domain == null)
-                return null;
-            var response = domain == null
-                ? null
-                : new GetServiceResponse
+            if (serviceDomain != null)
+                return new GetServiceResponse
                 {
-                    Id = domain.Id,
-                    Name = domain.Name,
-                    Categories = domain.ServiceTaxonomies == null
-                        ? new List<Category>()
-                        : domain.ServiceTaxonomies
-                            .Where(x => x.Taxonomy != null && x.Taxonomy.Vocabulary == "category")
-                            .Select(x => new Category
-                            {
-                                Id = x.Taxonomy.Id,
-                                Name = x.Taxonomy.Name,
-                                Description = x.Taxonomy.Description,
-                                Vocabulary = x.Taxonomy.Vocabulary,
-                                Weight = x.Taxonomy.Weight
-                            }).ToList(),
-                    Contact =
-                        new Contact { Email = domain.Email, Telephone = domain.Telephone, Website = domain.Website },
-                    Demographic = domain.ServiceTaxonomies == null
-                        ? new List<Demographic>()
-                        : domain.ServiceTaxonomies
-                            .Where(x => x.Taxonomy.Vocabulary == "demographic")
-                            .Select(x => new Demographic
-                            {
-                                Id = x.Taxonomy.Id,
-                                Name = x.Taxonomy.Name,
-                                Vocabulary = x.Taxonomy.Vocabulary,
-                            }).ToList(),
-                    Description = domain.Description,
-                    Images = new Image
-                    {
-                        // TODO:  We need to get the resized image uri for this property
-                        Medium = "new_uri_to_be_provided",
-                        Original = domain.Image.Url
-                    },
-                    Locations = domain.ServiceLocations
-                        .Select(x => new Location
-                        {
-                            Latitude = (double?) x.Latitude,
-                            Longitude = (double?) x.Longitude,
-                            //check if this is a string or integer (does it have preceding 0 or alpa characters)
-                            Uprn = x.Uprn.ToString(),
-                            Address1 = x.Address1,
-                            Address2 = x.Address2,
-                            City = x.City,
-                            StateProvince = x.StateProvince,
-                            PostalCode = x.PostalCode,
-                            Country = x.Country,
-                            Distance = null
-                        }).ToList(),
-                    Organization =
-                        new org.Organization
-                        {
-                            Id = domain.Organization.Id,
-                            Name = domain.Organization.Name,
-                            Status = domain.Organization.Status
-                        },
-                    Referral = new Referral { Email = domain.Email, Website = domain.Website },
-                    Social = new Social
-                    {
-                        Facebook = domain.Facebook,
-                        Twitter = domain.Twitter,
-                        Instagram = domain.Instagram,
-                        Linkedin = domain.Linkedin
-                    },
-                    Status = domain.Status,
+                    Service = serviceDomain.ToResponseService(),
                     Metadata = new Metadata
                     {
                         PostCode = null,
@@ -93,18 +28,184 @@ namespace LBHFSSPublicAPI.V1.Factories
                         Error = null
                     }
                 };
-            return response;
+            else
+                return null;
         }
 
-        public static GetServiceResponseList ToResponse(this ICollection<ServiceEntity> domain)
+        public static GetServiceResponseList ToResponse(this ICollection<ServiceEntity> serviceDomainList)
         {
-            return domain == null ? new GetServiceResponseList() : new GetServiceResponseList()
+            if (serviceDomainList != null)
+                return new GetServiceResponseList()
+                {
+                    Services = serviceDomainList
+                        .Select(s => s.ToResponseService())
+                        .ToList(),
+                    Metadata = new Metadata
+                    {
+                        PostCode = null,
+                        PostCodeLatitude = null,
+                        PostCodeLongitude = null,
+                        Error = null
+                    }
+                };
+            else
+                return new GetServiceResponseList();
+        }
+
+        #endregion
+
+        #region Domain to Response - Inner objects
+
+        private static Response.Service ToResponseService(this ServiceEntity serviceDomain)
+        {
+            return new Response.Service
             {
-                Services = domain.Select(s => s.ToResponse()).ToList()
+                Id = serviceDomain.Id,
+
+                Name = serviceDomain.Name,
+
+                Categories = serviceDomain.ServiceTaxonomies.ToResponseCategoryList(),
+
+                Contact = serviceDomain.ToResponseContact(),
+
+                Demographic = serviceDomain.ServiceTaxonomies.ToResponseDemographicList(),
+
+                Description = serviceDomain.Description,
+
+                Images = serviceDomain.ToResponseImage(),
+
+                Locations = serviceDomain.ServiceLocations.ToResponseServiceLocationList(),
+
+                Organization = serviceDomain.Organization.ToResponseOrganization(),
+
+                Referral = serviceDomain.ToResponseReferral(),
+
+                Social = serviceDomain.ToResponseSocial(),
+
+                Status = serviceDomain.Status
             };
         }
 
-        public static ServiceEntity ToDomain(this Service entity)
+        private static List<Category> ToResponseCategoryList(this ICollection<ServiceTaxonomy> serviceTaxonomies)
+        {
+            if (serviceTaxonomies != null)
+                return serviceTaxonomies
+                    .Where(
+                        st => st.Taxonomy != null &&
+                        st.Taxonomy.Vocabulary == "category"
+                    )
+                    .Select(
+                        st => new Category
+                        {
+                            Id = st.Taxonomy.Id,
+                            Name = st.Taxonomy.Name,
+                            Description = st.Taxonomy.Description,
+                            Vocabulary = st.Taxonomy.Vocabulary,
+                            Weight = st.Taxonomy.Weight
+                        })
+                    .ToList();
+            else
+                return new List<Category>();
+        }
+
+        private static Contact ToResponseContact(this ServiceEntity serviceDomain)
+        {
+            return
+                new Contact
+                {
+                    Email = serviceDomain.Email,
+                    Telephone = serviceDomain.Telephone,
+                    Website = serviceDomain.Website
+                };
+        }
+
+        private static List<Demographic> ToResponseDemographicList(this ICollection<ServiceTaxonomy> serviceTaxonomies)
+        {
+            if (serviceTaxonomies != null)
+                return serviceTaxonomies
+                    .Where(
+                        st => st.Taxonomy != null &&
+                        st.Taxonomy.Vocabulary == "demographic"
+                    )
+                    .Select(st => new Demographic
+                    {
+                        Id = st.Taxonomy.Id,
+                        Name = st.Taxonomy.Name,
+                        Vocabulary = st.Taxonomy.Vocabulary,
+                    })
+                    .ToList();
+            else
+                return new List<Demographic>();
+        }
+
+        private static Image ToResponseImage(this ServiceEntity serviceDomain)
+        {
+            return
+                new Image
+                {
+                    // TODO:  We need to get the resized image uri for this property
+                    Medium = "new_uri_to_be_provided",
+                    Original = serviceDomain.Image.Url
+                };
+        }
+
+        private static List<Location> ToResponseServiceLocationList(this ICollection<ServiceLocation> serviceLocations)
+        {
+            return serviceLocations
+                ?.Select(x => new Location
+                {
+                    Latitude = (double?) x.Latitude,
+                    Longitude = (double?) x.Longitude,
+                    //check if this is a string or integer (does it have preceding 0 or alpa characters)
+                    Uprn = x.Uprn.ToString(),
+                    Address1 = x.Address1,
+                    Address2 = x.Address2,
+                    City = x.City,
+                    StateProvince = x.StateProvince,
+                    PostalCode = x.PostalCode,
+                    Country = x.Country,
+                    Distance = null
+                }).ToList();
+        }
+
+        private static Response.Organization ToResponseOrganization(this Entity.Organization organization) // yes! it's entity within a domain object
+        {
+            return
+                new Response.Organization
+                {
+                    Id = organization.Id,
+                    Name = organization.Name,
+                    Status = organization.Status
+                };
+        }
+
+        private static Referral ToResponseReferral(this ServiceEntity serviceDomain)
+        {
+            return
+                new Referral
+                {
+                    Email = serviceDomain.Email,
+                    Website = serviceDomain.Website
+                };
+        }
+
+        private static Social ToResponseSocial(this ServiceEntity serviceDomain)
+        {
+            return
+                new Social
+                {
+                    Facebook = serviceDomain.Facebook,
+                    Twitter = serviceDomain.Twitter,
+                    Instagram = serviceDomain.Instagram,
+                    Linkedin = serviceDomain.Linkedin
+                };
+        }
+
+        #endregion
+
+        #region Entity to Domain
+
+        public static ServiceEntity ToDomain(this Entity.Service entity)
         {
             if (entity == null)
                 return null;
@@ -135,11 +236,13 @@ namespace LBHFSSPublicAPI.V1.Factories
             };
         }
 
-        public static ICollection<ServiceEntity> ToDomain(this ICollection<Service> entities)
+        public static ICollection<ServiceEntity> ToDomain(this ICollection<Entity.Service> entities)
         {
             if (entities == null)
                 return new List<ServiceEntity>();
             return entities.Select(e => e.ToDomain()).ToList();
         }
+
+        #endregion
     }
 }
