@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary.Response;
+using R = LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Newtonsoft.Json;
@@ -20,13 +22,14 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         {
             var services = EntityHelpers.CreateServices().ToList();
             var expectedResponse = new GetServiceResponseList();
+            expectedResponse.Services = new List<R.Service>();
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
             var searchTerm = Randomm.Text();
             serviceToFind1.Name += searchTerm;
             serviceToFind2.Name += searchTerm;
-            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponse());
-            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponse());
+            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponse().Service);
+            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponse().Service);
             await DatabaseContext.Services.AddRangeAsync(services).ConfigureAwait(true);
             await DatabaseContext.Services.AddAsync(serviceToFind1).ConfigureAwait(true);
             await DatabaseContext.Services.AddAsync(serviceToFind2).ConfigureAwait(true);
