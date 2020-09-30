@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Factories;
@@ -35,6 +34,12 @@ namespace LBHFSSPublicAPI.V1.Gateways
         public ICollection<ServiceEntity> SearchServices(SearchServicesRequest requestParams)
         {
             var synonyms = new HashSet<string>();
+            var demographicTaxonomies = _context.Taxonomies
+                .Where(t => t.Vocabulary == "demographic" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
+                .Select(t => t.Id).ToList();
+            var categroyTaxonomies = _context.Taxonomies
+                .Where(t => t.Vocabulary == "category" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
+                .Select(t => t.Id).ToList();
             if (!string.IsNullOrWhiteSpace(requestParams.Search))
             {
                 synonyms.Add(requestParams.Search.ToUpper());
@@ -54,8 +59,10 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .ThenInclude(st => st.Taxonomy)
                 .AsEnumerable()
                 .Where(x => synonyms.Count == 0 || synonyms.Any(b => x.Name.ToUpper().Contains(b)))
-                .Where(x => requestParams.TaxonomyIds == null || requestParams.TaxonomyIds.Count == 0
-                            || x.ServiceTaxonomies.Any(st => requestParams.TaxonomyIds.Contains(st.TaxonomyId)))
+                .Where(x => demographicTaxonomies == null || demographicTaxonomies.Count == 0
+                                                          || x.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
+                .Where(x => categroyTaxonomies == null || categroyTaxonomies.Count == 0
+                                                          || x.ServiceTaxonomies.Any(st => categroyTaxonomies.Contains(st.TaxonomyId)))
                 .Select(s => s.ToDomain())
                 .ToList();
             return services;
