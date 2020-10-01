@@ -56,7 +56,7 @@ namespace LBHFSSPublicAPI.V1.Factories
 
         #region Domain to Response - Inner objects
 
-        private static Response.Service ToResponseService(this ServiceEntity serviceDomain)
+        public static Response.Service ToResponseService(this ServiceEntity serviceDomain)
         {
             return new Response.Service
             {
@@ -184,8 +184,8 @@ namespace LBHFSSPublicAPI.V1.Factories
             return
                 new Referral
                 {
-                    Email = serviceDomain.Email,
-                    Website = serviceDomain.Website
+                    Email = serviceDomain.ReferralEmail,
+                    Website = serviceDomain.ReferralLink
                 };
         }
 
