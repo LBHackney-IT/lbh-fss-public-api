@@ -233,5 +233,20 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         }
 
         #endregion
+
+        #region Search Services
+        [TestCase(TestName = "Given a url encoded search parameter when the use case is called the gateway will be called with the unencoded parameter")]
+        public void GivenAUrlEncodedSearchTermGatewayIsCalledWithDecodedTerm()
+        {
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+            var searchTerm = Randomm.Text();
+            var urlencodedSearch = searchTerm.Replace(" ","%2520");
+            var reqParams = new SearchServicesRequest();
+            reqParams.Search = urlencodedSearch;
+            _classUnderTest.ExecuteGet(reqParams);
+            _mockServicesGateway.Verify(g => g.SearchServices(It.Is<SearchServicesRequest>(p => p.Search == searchTerm)), Times.Once);
+        }
+        #endregion
     }
 }
