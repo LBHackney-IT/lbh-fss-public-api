@@ -64,12 +64,45 @@ namespace LBHFSSPublicAPI.V1.UseCase
             return usecaseResponse;
         }
 
-        public GetServiceResponseList ExecuteGet(SearchServicesRequest searchParams)
+        public GetServiceResponseList ExecuteGet(SearchServicesRequest requestParams)
         {
-            var gatewayResponse = _servicesGateway.SearchServices(searchParams);
-            var response = gatewayResponse.ToResponse();
-            response.Metadata.PostCode = searchParams.PostCode;
-            return response;
+            var gatewayResponse = _servicesGateway.SearchServices(requestParams);
+            var usecaseResponse = gatewayResponse.ToResponse();
+            usecaseResponse.Metadata.PostCode = string.IsNullOrEmpty(requestParams.PostCode) ? null : requestParams.PostCode;
+
+            if (!string.IsNullOrEmpty(requestParams.PostCode))
+                try
+                {
+                    Coordinate? postcodeCoord = _addressesGateway.GetPostcodeCoordinates(requestParams.PostCode);
+
+                    if (postcodeCoord.HasValue)
+                    {
+                        usecaseResponse.Metadata.PostCodeLatitude = postcodeCoord.Value.Latitude;
+                        usecaseResponse.Metadata.PostCodeLongitude = postcodeCoord.Value.Longitude;
+
+                        foreach (var service in usecaseResponse.Services)
+                            foreach (var location in service.Locations)
+                                if (location.Latitude.HasValue && location.Longitude.HasValue)
+                                    location.Distance =
+                                        GeoCalculator.GetDistance(
+                                            postcodeCoord.Value,
+                                            new Coordinate(location.Latitude.Value, location.Longitude.Value),
+                                            decimalPlaces: 1,
+                                            DistanceUnit.Miles
+                                        ) + " miles";
+
+                    }
+                    else
+                    {
+                        usecaseResponse.Metadata.Error = "Postcode coordinates not found.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    usecaseResponse.Metadata.Error = ex.Message;
+                }
+
+            return usecaseResponse;
         }
     }
 }

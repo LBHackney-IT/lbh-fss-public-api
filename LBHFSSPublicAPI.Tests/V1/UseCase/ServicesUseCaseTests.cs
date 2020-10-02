@@ -58,11 +58,86 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var responseData = EntityHelpers.CreateServices().ToDomain();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(responseData);
             var expectedResponse = responseData.ToResponse();
-            expectedResponse.Metadata.PostCode = requestParams.PostCode;
             var response = _classUnderTest.ExecuteGet(requestParams);
             response.Should().NotBeNull();
-            response.Should().BeEquivalentTo(expectedResponse);
+            response.Services.Should().BeEquivalentTo(expectedResponse.Services);
         }
+
+        // Gateway coordinates:
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway returns related postcode's coordinates, Then usecase response includes non null distances to service locations and non null Metadata coordinate fields.")]
+        public void WhenAddressesGatewayReturnsNullThenGetMultipleUsecasePopulatesDistanceAndMetadataFields()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            var expectedPostcodeCoords = Randomm.Coordinates();
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(expectedPostcodeCoords);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(expectedPostcodeCoords.Latitude);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(expectedPostcodeCoords.Longitude);
+            usecaseResponse.Metadata.Error.Should().BeNull();
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Latitude.HasValue && l.Longitude.HasValue ? l.Distance != null : l.Distance == null));
+        }
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway returns NULL postcode's coordinates, Then usecase response includes null distances to service locations AND null Metadata coordinate fields.")]
+        public void WhenAddressesGatewayReturnsNullThenGetMultipleUsecasePopulatesDistanceAndMetadataFieldsWithNull()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(null as Coordinate?);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);
+            usecaseResponse.Metadata.Error.Should().NotBeNull();
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Distance == null));
+        }
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway throws an exception, Then usecase response includes null distances to service locations AND null Metadata coordinate fields AND non null Error field.")]
+        public void WhenAddressesGatewayThrowsAnExceptionThenGetMultipleUsecasePopulatesTheMetadataErrorField()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            var expectedException = new Exception(Randomm.Text());
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Throws(expectedException);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);
+            usecaseResponse.Metadata.Error.Should().Be(expectedException.Message);
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Distance == null));
+        }
+
+        // TODO: Sorting!
+
         #endregion
 
         #region Get Single Service by Id
