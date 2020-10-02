@@ -124,11 +124,11 @@ namespace LBHFSSPublicAPI
 
         private static void ConfigureAddressesAPIContext(IServiceCollection services)
         {
-            var apiBaseUrl = Environment.GetEnvironmentVariable("ADDRESSES_API_BASE_URL") ?? "test";
-            //?? throw new ArgumentNullException("Addresses API base url");
+            var apiBaseUrl = Environment.GetEnvironmentVariable("ADDRESSES_API_BASE_URL")
+            ?? throw new ArgumentNullException("Addresses API base url");
 
-            var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY") ?? "test";
-            //?? throw new ArgumentNullException("Addresses API key");
+            var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY")
+            ?? throw new ArgumentNullException("Addresses API key");
 
             var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey);
 
