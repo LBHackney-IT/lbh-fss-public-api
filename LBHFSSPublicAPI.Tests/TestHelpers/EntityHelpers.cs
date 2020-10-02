@@ -14,7 +14,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 .Without(s => s.Id)
                 .With(s => s.Organization, CreateOrganization())
                 .With(s => s.Image, CreateFile)
-                .With(s => s.ServiceTaxonomies, CreateServiceTaxonomies(1))
+                .With(s => s.ServiceTaxonomies, CreateServiceTaxonomies(20)) // Has to be high number to avoid empty collections
                 .With(s => s.ServiceLocations, CreateServiceLocations())
                 .Create();
             return service;
@@ -91,6 +91,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             var taxonomy = Randomm.Build<Taxonomy>()
                 .Without(t => t.Id)
+                .With(
+                    t => t.Vocabulary,
+                    Randomm.Bool()
+                        ? "category"
+                        : "demographic"
+                )
                 .Create();
             return taxonomy;
         }
@@ -113,7 +119,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                     .With(s => s.Organization, CreateOrganization())
                     .With(s => s.Image, CreateFile)
                     .Create())
-                .With(st => st.Taxonomy, Randomm.Build<Taxonomy>().Without(t => t.Id).Create())
+                .With(st => st.Taxonomy, CreateTaxonomy())
                 .Create();
             return serviceTaxonomy;
         }

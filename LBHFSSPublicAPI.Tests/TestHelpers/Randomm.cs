@@ -22,6 +22,10 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             IgnoreVirtualMethods();
         }
+        public static bool Bool()
+        {
+            return _faker.Random.Bool();
+        }
         public static int Id(int minimum = 0, int maximum = 10000)
         {
             return _faker.Random.Int(minimum, maximum);
