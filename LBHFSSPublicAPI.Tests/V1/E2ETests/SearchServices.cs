@@ -158,14 +158,15 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         {
             var services = EntityHelpers.CreateServices().ToList();
             var expectedResponse = new GetServiceResponseList();
+            expectedResponse.Services = new List<R.Service>();
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
             var searchTerm = Randomm.Text();
             var urlencodedSearch = searchTerm.Replace(" ", "%2520");
             serviceToFind1.Name += searchTerm;
             serviceToFind2.Name += searchTerm;
-            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponse());
-            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponse());
+            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponseService());
+            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponseService());
             await DatabaseContext.Services.AddRangeAsync(services).ConfigureAwait(true);
             await DatabaseContext.Services.AddAsync(serviceToFind1).ConfigureAwait(true);
             await DatabaseContext.Services.AddAsync(serviceToFind2).ConfigureAwait(true);
@@ -178,6 +179,5 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
             deserializedBody.Services.Count.Should().Be(2);
         }
-
     }
 }
