@@ -25,5 +25,13 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
             var decodedParams = UrlHelper.DecodeParams(urlencodedSearch);
             decodedParams.Should().Be(searchTerm);
         }
+
+        [TestCase(TestName = "Given a % in string a string is returned")]
+        public void PercentCharacterStringGetsReturned()
+        {
+            var searchTerm = Randomm.Text().Replace(" ", "%");
+            var decodedParams = UrlHelper.DecodeParams(searchTerm);
+            decodedParams.Should().Be(searchTerm);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace LBHFSSPublicAPI.V1.Helpers
@@ -8,7 +9,9 @@ namespace LBHFSSPublicAPI.V1.Helpers
         {
             while (true)
             {
-                if (term.Contains('%'))
+                var regex = new Regex(@"%[0-9]{2}");
+                Match m = regex.Match(term);
+                if (m.Success)
                 {
                     term = HttpUtility.UrlDecode(term);
                     continue;
