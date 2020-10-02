@@ -37,25 +37,6 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             _mockUseCase.Verify(uc => uc.ExecuteGet(It.Is<GetServiceByIdRequest>(p => p == requestParams)), Times.Once);
         }
 
-        [TestCase(TestName = "When the services controller GetService action is called with a valid Id the ServicesUseCase ExecuteGet method is called once with the parameter specified")]
-        public void ServiceControllerSearchServiceActionCallsTheServicesUseCase()
-        {
-            var searchParams = Randomm.Create<SearchServicesRequest>();
-            _classUnderTest.SearchServices(searchParams);
-            _mockUseCase.Verify(uc =>
-                uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p == searchParams)), Times.Once);
-        }
-
-        [TestCase(TestName = "When the services controller GetService action is called with a taxonomy id the ServicesUseCase ExecuteGet method is called once with the parameter specified")]
-        public void ServiceControllerSearchServiceActionWithTaxonomyIdCallsTheServicesUseCaseWithTheCorrectTaxonomyId()
-        {
-            var searchParams = Randomm.Create<SearchServicesRequest>();
-            _classUnderTest.SearchServices(searchParams);
-            _mockUseCase.Verify(uc =>
-                uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p.TaxonomyIds == searchParams.TaxonomyIds)), Times.Once);
-        }
-
-
         [Test]
         public void ReturnsResponseWithStatus()
         {
@@ -68,6 +49,26 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             response.Value.Should().BeEquivalentTo(expected);
         }
 
+        #endregion
+
+        #region Search Services
+        [TestCase(TestName = "When the services controller SearchServices action is called with a valid Id the ServicesUseCase ExecuteGet method is called once with the parameter specified")]
+        public void ServiceControllerSearchServiceActionCallsTheServicesUseCase()
+        {
+            var searchParams = Randomm.Create<SearchServicesRequest>();
+            _classUnderTest.SearchServices(searchParams);
+            _mockUseCase.Verify(uc =>
+                uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p == searchParams)), Times.Once);
+        }
+
+        [TestCase(TestName = "When the services controller SearchServices action is called with a taxonomy id the ServicesUseCase ExecuteGet method is called once with the parameter specified")]
+        public void ServiceControllerSearchServiceActionWithTaxonomyIdCallsTheServicesUseCaseWithTheCorrectTaxonomyId()
+        {
+            var searchParams = Randomm.Create<SearchServicesRequest>();
+            _classUnderTest.SearchServices(searchParams);
+            _mockUseCase.Verify(uc =>
+                uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p.TaxonomyIds == searchParams.TaxonomyIds)), Times.Once);
+        }
         #endregion
     }
 }

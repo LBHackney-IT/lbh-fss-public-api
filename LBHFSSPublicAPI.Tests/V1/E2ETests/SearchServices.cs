@@ -152,5 +152,32 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             deserializedBody.Services.Count.Should().Be(0);
         }
 
+        [TestCase(TestName =
+            "Given that there are services in the database, if a url encoded search parameter is provided, services that match unencoded search term are returned")]
+        public async Task GetServicesByUrlencodedSearchParamsReturnServicesIfMatched()
+        {
+            var services = EntityHelpers.CreateServices().ToList();
+            var expectedResponse = new GetServiceResponseList();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var searchTerm = Randomm.Text();
+            var urlencodedSearch = searchTerm.Replace(" ", "%2520");
+            serviceToFind1.Name += searchTerm;
+            serviceToFind2.Name += searchTerm;
+            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponse());
+            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponse());
+            await DatabaseContext.Services.AddRangeAsync(services).ConfigureAwait(true);
+            await DatabaseContext.Services.AddAsync(serviceToFind1).ConfigureAwait(true);
+            await DatabaseContext.Services.AddAsync(serviceToFind2).ConfigureAwait(true);
+            await DatabaseContext.SaveChangesAsync().ConfigureAwait(true);
+            var requestUri = new Uri($"api/v1/services?search={urlencodedSearch}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            response.StatusCode.Should().Be(200);
+            var content = response.Content;
+            var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
+            var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
+            deserializedBody.Services.Count.Should().Be(2);
+        }
+
     }
 }
