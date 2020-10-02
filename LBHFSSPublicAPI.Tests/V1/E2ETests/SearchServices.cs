@@ -158,7 +158,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
             var searchTerm = Randomm.Text();
-            var urlencodedSearch = searchTerm.Replace(" ","%2520");
+            var urlencodedSearch = searchTerm.Replace(" ", "%2520");
             serviceToFind1.Name += searchTerm;
             serviceToFind2.Name += searchTerm;
             expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponse());

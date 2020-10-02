@@ -12,7 +12,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
         public void UrlEncodedStringGetsDecoded()
         {
             var searchTerm = Randomm.Text();
-            var urlencodedSearch = searchTerm.Replace(" ","%20");
+            var urlencodedSearch = searchTerm.Replace(" ", "%20");
             var decodedParams = UrlHelper.DecodeParams(urlencodedSearch);
             decodedParams.Should().Be(searchTerm);
         }
@@ -21,7 +21,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Helper
         public void DoubleUrlEncodedStringGetsDecoded()
         {
             var searchTerm = Randomm.Text();
-            var urlencodedSearch = searchTerm.Replace(" ","%2520");
+            var urlencodedSearch = searchTerm.Replace(" ", "%2520");
             var decodedParams = UrlHelper.DecodeParams(urlencodedSearch);
             decodedParams.Should().Be(searchTerm);
         }

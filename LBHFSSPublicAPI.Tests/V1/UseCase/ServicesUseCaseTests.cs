@@ -241,7 +241,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var expectedService = EntityHelpers.CreateServices().ToDomain();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
             var searchTerm = Randomm.Text();
-            var urlencodedSearch = searchTerm.Replace(" ","%2520");
+            var urlencodedSearch = searchTerm.Replace(" ", "%2520");
             var reqParams = new SearchServicesRequest();
             reqParams.Search = urlencodedSearch;
             _classUnderTest.ExecuteGet(reqParams);
