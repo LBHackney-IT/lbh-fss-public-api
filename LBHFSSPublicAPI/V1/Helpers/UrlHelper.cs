@@ -9,7 +9,7 @@ namespace LBHFSSPublicAPI.V1.Helpers
         {
             while (true)
             {
-                var regex = new Regex(@"%[a-fA-F0-9a-fA-F]{2}");
+                var regex = new Regex(@"%20|%25");
                 Match m = regex.Match(term);
                 if (m.Success)
                 {
