@@ -15,7 +15,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 .With(s => s.Organization, CreateOrganization())
                 .With(s => s.Image, CreateFile)
                 .With(s => s.ServiceTaxonomies, CreateServiceTaxonomies(20)) // Has to be high number to avoid empty collections
-                .With(s => s.ServiceLocations, CreateServiceLocations())
+                .With(s => s.ServiceLocations, CreateServiceLocations(5))
                 .Create();
             return service;
         }

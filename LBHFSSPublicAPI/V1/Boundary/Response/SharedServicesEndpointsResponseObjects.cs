@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LBHFSSPublicAPI.V1.Boundary.Response
 {
-    public class Service
+    public class Service : IComparable<Service>
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -16,6 +18,24 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public Referral Referral { get; set; }
         public Social Social { get; set; }
         public string Status { get; set; }
+
+        public int CompareTo(Service other)
+        {
+            string thisMinDistance = this.Locations.Min(sl => sl.Distance);
+            string otherMinDistance = other.Locations.Min(sl => sl.Distance);
+
+            bool isThisDistEmpty = string.IsNullOrEmpty(thisMinDistance);
+            bool isOtherDistEmpty = string.IsNullOrEmpty(otherMinDistance);
+
+            if (!isThisDistEmpty && !isOtherDistEmpty)
+                return thisMinDistance.CompareTo(otherMinDistance);
+            else if (isThisDistEmpty && !isOtherDistEmpty)
+                return 1;
+            else if (!isThisDistEmpty && isOtherDistEmpty)
+                return -1;
+            else
+                return 0;
+        }
     }
 
     public class Contact

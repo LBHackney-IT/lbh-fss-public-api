@@ -102,6 +102,13 @@ namespace LBHFSSPublicAPI.V1.UseCase
                     usecaseResponse.Metadata.Error = ex.Message;
                 }
 
+            if (!string.IsNullOrEmpty(requestParams.PostCode))
+                usecaseResponse.Services.Sort();
+            else
+                usecaseResponse.Services.Sort(
+                    (s1, s2) => string.Compare(s1.Name, s2.Name)
+                  );
+
             return usecaseResponse;
         }
     }
