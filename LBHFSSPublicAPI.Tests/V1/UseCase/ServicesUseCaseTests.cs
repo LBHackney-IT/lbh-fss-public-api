@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Geolocation;
@@ -31,10 +32,10 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             _classUnderTest = new ServicesUseCase(_mockServicesGateway.Object, _mockAddressesGateway.Object);
         }
 
-        #region Get Services with/without filter
+        #region Get Multiple Services
 
         [TestCase(TestName = "Given a valid request parameter when the use case is called the gateway will be called with the unwrapped id")]
-        public void GetServicesUseCaseCallsGatewayGetServices()
+        public void GetServicesUseCaseCallsGatewayGetServices() // ???? Duplicate test. I think the intention was to test the other endpoint. TODO: change upon refactoring. 
         {
             // dummy setup
             var expectedService = EntityHelpers.CreateService().ToDomain();
@@ -58,17 +59,190 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var responseData = EntityHelpers.CreateServices().ToDomain();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(responseData);
             var expectedResponse = responseData.ToResponse();
-            expectedResponse.Metadata.PostCode = requestParams.PostCode;
             var response = _classUnderTest.ExecuteGet(requestParams);
             response.Should().NotBeNull();
-            response.Should().BeEquivalentTo(expectedResponse);
+            response.Services.Should().BeEquivalentTo(expectedResponse.Services);
         }
+
+        // Gateway coordinates:
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway returns related postcode's coordinates, Then usecase response includes non null distances to service locations and non null Metadata coordinate fields.")]
+        public void WhenAddressesGatewayReturnsNullThenGetMultipleUsecasePopulatesDistanceAndMetadataFields()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            var expectedPostcodeCoords = Randomm.Coordinates();
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(expectedPostcodeCoords);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(expectedPostcodeCoords.Latitude);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(expectedPostcodeCoords.Longitude);
+            usecaseResponse.Metadata.Error.Should().BeNull();
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Latitude.HasValue && l.Longitude.HasValue ? l.Distance != null : l.Distance == null));
+        }
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway returns NULL postcode's coordinates, Then usecase response includes null distances to service locations AND null Metadata coordinate fields.")]
+        public void WhenAddressesGatewayReturnsNullThenGetMultipleUsecasePopulatesDistanceAndMetadataFieldsWithNull()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(null as Coordinate?);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);
+            usecaseResponse.Metadata.Error.Should().NotBeNull();
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Distance == null));
+        }
+
+        [TestCase(TestName = "Given ExecuteGet GetMultiple Service usecase's method calls Addresses gateway GetPostcodeCoordinates method, When gateway throws an exception, Then usecase response includes null distances to service locations AND null Metadata coordinate fields AND non null Error field.")]
+        public void WhenAddressesGatewayThrowsAnExceptionThenGetMultipleUsecasePopulatesTheMetadataErrorField()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var expectedService = EntityHelpers.CreateServices().ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+
+            var expectedException = new Exception(Randomm.Text());
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Throws(expectedException);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Metadata.PostCode.Should().Be(request.PostCode);
+            usecaseResponse.Metadata.PostCodeLatitude.Should().Be(null);
+            usecaseResponse.Metadata.PostCodeLongitude.Should().Be(null);
+            usecaseResponse.Metadata.Error.Should().Be(expectedException.Message);
+            usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Distance == null));
+        }
+
+        // TODO: Sorting!
+
+        [TestCase(TestName = "Given no postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the service name.")]
+        public void GivenNoPostcodeReturnedServicesAreOrderedAscByName()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = null;
+            var gatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
+
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Services.Should().BeInAscendingOrder(s => s.Name);
+
+        }
+
+        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance AND if service has no locations THEN that service will be at the end of the list.")]
+        public void GivenAPostcodeReturnedServicesAreOrderedInAWayWhereIfTheyHaveNoChildLocationsTheyAreConsideredTheMostDistant()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var addressGatewayResponse = Randomm.Coordinates();
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
+
+            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
+            var serviceNoLocsName = serviceGatewayResponse.FirstOrDefault().Name; //unique enough due to being generated as hash
+            serviceGatewayResponse.FirstOrDefault().ServiceLocations = new List<ServiceLocation>();
+
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Services.Last().Name.Should().Be(serviceNoLocsName); // the service with no locations should be last
+
+            var remainingServices = usecaseResponse.Services.Take(usecaseResponse.Services.Count - 1).ToList();
+
+            var previousDistance = "";
+            foreach (var service in remainingServices)
+            {
+                var currentDistance = service.Locations.Min(sl => sl.Distance);
+                Assert.LessOrEqual(previousDistance, currentDistance);
+                previousDistance = currentDistance;
+            }
+        }
+
+        // I'm assuming that if the sorting works by taking the shortest sl distance and then sorting by that.
+        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance.")]
+        public void GivenAPostcodeReturnedServicesAreOrderedAscByDistance()
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var addressGatewayResponse = Randomm.Coordinates();
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
+
+            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            var previousDistance = "";
+            foreach (var service in usecaseResponse.Services)
+            {
+                var currentDistance = service.Locations.Min(sl => sl.Distance);
+                Assert.LessOrEqual(previousDistance, currentDistance);
+                previousDistance = currentDistance;
+            }
+        }
+
+        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called AND no services are found, Then it returns an empty collection of services AND doesn't crash.")]
+        public void GivenAPostcodeIfServicesGatewayReturnsAnEmptyCollectionThenUsecaseAlsoReturnsEmptyCollection() // essentially a test to see if the sorting implementation doesn't fall over upon empty collection.
+        {
+            // arrange
+            var request = Randomm.Create<SearchServicesRequest>();
+            request.PostCode = Randomm.Postcode();
+
+            var addressGatewayResponse = Randomm.Coordinates();
+            _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
+
+            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain().Take(0).ToList();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
+
+            // act
+            var usecaseResponse = _classUnderTest.ExecuteGet(request);
+
+            // assert
+            usecaseResponse.Services.Should().BeEmpty();
+        }
+
         #endregion
 
         #region Get Single Service by Id
 
         [TestCase(TestName = "Given a valid request parameter when the use case is called the gateway will be called with the unwrapped id")]
-        public void GivenAnIdWhenGetServiceyUseCaseIsCalledThenItCallsGetServiceyGatewayMethodAndPassesInThatId()
+        public void GivenAnIdWhenGetServiceyUseCaseIsCalledThenItCallsGetServiceGatewayMethodAndPassesInThatId()
         {
             // dummy setup
             var expectedService = EntityHelpers.CreateService().ToDomain();
