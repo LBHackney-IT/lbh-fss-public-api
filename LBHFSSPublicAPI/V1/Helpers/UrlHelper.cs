@@ -7,6 +7,8 @@ namespace LBHFSSPublicAPI.V1.Helpers
     {
         public static string DecodeParams(string term)
         {
+            if (string.IsNullOrWhiteSpace(term))
+                return term;
             while (true)
             {
                 var regex = new Regex(@"%20|%25");
