@@ -484,15 +484,16 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.Property(e => e.RoleId).HasColumnName("role_id");
 
-                entity.HasOne(d => d.IdNavigation)
-                    .WithOne(p => p.UserRoles)
-                    .HasForeignKey<UserRole>(d => d.Id)
-                    .HasConstraintName("user_roles_id_fkey");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.UserRoles)
                     .HasForeignKey(d => d.RoleId)
                     .HasConstraintName("user_roles_role_id_fkey");
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserRoles)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("user_roles_user_id_fkey");
             });
 
             modelBuilder.Entity<User>(entity =>

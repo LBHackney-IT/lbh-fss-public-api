@@ -152,5 +152,71 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             deserializedBody.Services.Count.Should().Be(0);
         }
 
+        [TestCase(TestName =
+            "Given that there are services in the database, if a url encoded search parameter is provided, services that match unencoded search term are returned")]
+        public async Task GetServicesByUrlencodedSearchParamsReturnServicesIfMatched()
+        {
+            var services = EntityHelpers.CreateServices().ToList();
+            var expectedResponse = new GetServiceResponseList();
+            expectedResponse.Services = new List<R.Service>();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var searchTerm = Randomm.Text();
+            var urlencodedSearch = searchTerm.Replace(" ", "%2520");
+            serviceToFind1.Name += searchTerm;
+            serviceToFind2.Name += searchTerm;
+            expectedResponse.Services.Add(serviceToFind1.ToDomain().ToResponseService());
+            expectedResponse.Services.Add(serviceToFind2.ToDomain().ToResponseService());
+            await DatabaseContext.Services.AddRangeAsync(services).ConfigureAwait(true);
+            await DatabaseContext.Services.AddAsync(serviceToFind1).ConfigureAwait(true);
+            await DatabaseContext.Services.AddAsync(serviceToFind2).ConfigureAwait(true);
+            await DatabaseContext.SaveChangesAsync().ConfigureAwait(true);
+            var requestUri = new Uri($"api/v1/services?search={urlencodedSearch}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            response.StatusCode.Should().Be(200);
+            var content = response.Content;
+            var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
+            var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
+            deserializedBody.Services.Count.Should().Be(2);
+        }
+
+        [TestCase(TestName =
+            "Given that there are services in the database, if a taxonomy only params are provided, services that match are returned")]
+        public async Task GetServicesByTaxonomyParamsReturnServicesIfMatched()
+        {
+            var taxonomy1 = EntityHelpers.CreateTaxonomy();
+            var taxonomy2 = EntityHelpers.CreateTaxonomy();
+            taxonomy1.Vocabulary = "demographic";
+            taxonomy2.Vocabulary = "category";
+            var services = EntityHelpers.CreateServices();
+            var serviceToFind1 = EntityHelpers.CreateService();
+            var serviceToFind2 = EntityHelpers.CreateService();
+            var serviceTaxonomy1 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy2 = EntityHelpers.CreateServiceTaxonomy();
+            var serviceTaxonomy3 = EntityHelpers.CreateServiceTaxonomy();
+            var searchTerm = Randomm.Create<string>();
+            serviceToFind1.Name += searchTerm;
+            serviceToFind2.Name += searchTerm;
+            serviceTaxonomy1.Service = serviceToFind1;
+            serviceTaxonomy1.Taxonomy = taxonomy1;
+            serviceTaxonomy2.Service = serviceToFind1;
+            serviceTaxonomy2.Taxonomy = taxonomy2;
+            serviceTaxonomy3.Service = services.First();
+            serviceTaxonomy3.Taxonomy = taxonomy2;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.Services.Add(serviceToFind1);
+            DatabaseContext.Services.Add(serviceToFind2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy1);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy2);
+            DatabaseContext.ServiceTaxonomies.Add(serviceTaxonomy3);
+            DatabaseContext.SaveChanges();
+            var requestUri = new Uri($"api/v1/services?taxonomyids={taxonomy1.Id}&taxonomyids={taxonomy2.Id}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            response.StatusCode.Should().Be(200);
+            var content = response.Content;
+            var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
+            var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
+            deserializedBody.Services.Count.Should().Be(1);
+        }
     }
 }
