@@ -15,16 +15,16 @@ namespace LBHFSSPublicAPI.V1.Gateways
             _databaseContext = databaseContext;
         }
 
-        public Entity GetEntityById(int id)
-        {
-            var result = _databaseContext.DatabaseEntities.Find(id);
+        // public Entity GetEntityById(int id)
+        // {
+        //     var result = _databaseContext.Services.Find(id);
+        //
+        //     return result?.ToDomain();
+        // }
 
-            return result?.ToDomain();
-        }
-
-        public List<Entity> GetAll()
-        {
-            return new List<Entity>();
-        }
+        // public List<Entity> GetAll()
+        // {
+        //     return new List<Entity>();
+        // }
     }
 }

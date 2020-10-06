@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using LBHFSSPublicAPI.V1.Gateways;
+using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using LBHFSSPublicAPI.V1.UseCase;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
+
 namespace LBHFSSPublicAPI
 {
     public class Startup
@@ -31,14 +33,16 @@ namespace LBHFSSPublicAPI
 
         public IConfiguration Configuration { get; }
         private static List<ApiVersionDescription> _apiVersions { get; set; }
-        //TODO update the below to the name of your API
-        private const string ApiName = "Your API Name";
+        private const string ApiName = "LBHFSSPublicAPI";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public static void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc()
+                .AddMvc(setupAction =>
+                {
+                    setupAction.EnableEndpointRouting = false;
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddApiVersioning(o =>
             {
@@ -46,7 +50,7 @@ namespace LBHFSSPublicAPI
                 o.AssumeDefaultVersionWhenUnspecified = true; // assume that the caller wants the default version if they don't specify
                 o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
             });
-
+            services.AddCors();
             services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
 
             services.AddSwaggerGen(c =>
@@ -94,7 +98,7 @@ namespace LBHFSSPublicAPI
                     {
                         Title = $"{ApiName}-api {version}",
                         Version = version,
-                        Description = $"{ApiName} version {version}. Please check older versions for depreciated endpoints."
+                        Description = $"{ApiName} version {version}. Please check older versions for deprecated endpoints."
                     });
                 }
 
@@ -102,39 +106,62 @@ namespace LBHFSSPublicAPI
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
+                if (System.IO.File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
             });
             ConfigureDbContext(services);
+            ConfigureAddressesAPIContext(services);
             RegisterGateways(services);
             RegisterUseCases(services);
         }
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Host=;Database=;";
             services.AddDbContext<DatabaseContext>(
                 opt => opt.UseNpgsql(connectionString));
         }
 
+        private static void ConfigureAddressesAPIContext(IServiceCollection services)
+        {
+            var apiBaseUrl = Environment.GetEnvironmentVariable("ADDRESSES_API_BASE_URL")
+            ?? throw new ArgumentNullException("Addresses API base url");
+
+            var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY")
+            ?? throw new ArgumentNullException("Addresses API key");
+
+            var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey);
+
+            services.AddScoped<IAddressesAPIContext>(s =>
+            {
+                return new AddressesAPIContext(connOptions);
+            });
+        }
+
         private static void RegisterGateways(IServiceCollection services)
         {
-            services.AddScoped<IExampleGateway, ExampleGateway>();
+            services.AddScoped<ITaxonomiesGateway, TaxonomiesGateway>();
+            services.AddScoped<IServicesGateway, ServicesGateway>();
+            services.AddScoped<IAddressesGateway, AddressesGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddScoped<IGetAllUseCase, GetAllUseCase>();
-            services.AddScoped<IGetByIdUseCase, GetByIdUseCase>();
+            services.AddScoped<ITaxonomiesUseCase, TaxonomiesUseCase>();
+            services.AddScoped<IServicesUseCase, ServicesUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            env.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                {
+                    scope.ServiceProvider.GetService<DatabaseContext>().Database.Migrate();
+                }
             }
             else
             {
@@ -157,6 +184,11 @@ namespace LBHFSSPublicAPI
             });
             app.UseSwagger();
             app.UseRouting();
+            app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
             app.UseEndpoints(endpoints =>
             {
                 // SwaggerGen won't find controllers that are routed via this technique.

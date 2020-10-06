@@ -60,6 +60,7 @@ bin/
 tmp/
 .vs/
 /LBHFSSPublicAPI.Tests/Properties/launchSettings.json
-
+/terraform/development/.terraform/
+dotnet-format-local/
 .fake
 .ionide

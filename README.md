@@ -88,6 +88,21 @@ Both the API and Test projects have been set up to **treat all warnings from the
 However, we can select which errors to suppress by setting the severity of the responsible rule to none, e.g `dotnet_analyzer_diagnostic.<Category-or-RuleId>.severity = none`, within the `.editorconfig` file.
 Documentation on how to do this can be found [here](https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers?view=vs-2019).
 
+## Adding a migration
+
+For this API we have a database in RDS, we are using EF Core Code first migrations to manage the schema for this database.
+To make changes to the database structure follow these steps.
+
+1. If you haven't done so previously, you need to install the [dotnet ef cli tool](https://docs.microsoft.com/en-us/ef/core/miscellaneous/cli/dotnet) by running `dotnet tool install --global dotnet-ef`.
+2. Make the necessary changes to the database model in the code, namely in `DatabaseContext` or any of the DbSet's listed in the file.
+3. In your terminal navigate to the project root folder and run `dotnet ef migrations add -o ./V1/Infrastructure/Migrations -p LBHFSSPublicAPI [NameOfThisMigration]` to create the migration files. NameOfThisMigration should be replaced with your migration name e.g. AddColumnNameToPeopleTable.
+4. Go to the folder /LBHFSSPublicAPI/V1/Infrastructure/Migrations and you should see two new files for the migration. In the one which doesn't end in `.Designer` you can check through the migration script to make sure everything is being created as you expect.
+5. If the migration file looks wrong or you have missed something, you can either run `CONNECTION_STRING="Host=127.0.0.1;Database=testdb;Username=postgres;Password=mypassword;" dotnet ef migrations remove -p LBHFSSPublicAPI` with the database in the connection string running or just delete the migration files and revert the changes to `DatabaseContextModelSnapshot.cs`. Make the necessary changes to the context, then create the migration files again.
+6. The CircleCI [configuration file](https://github.com/LBHackney-IT/lbh-fss-public-api/blob/master/.circleci/config.yml) has been set up to run any new migrations to the specified AWS RDS database prior to deploying the API.
+
+Note: You must not change any DbSet that is listed in `DatabaseContext` without creating a migration as the change then won't be reflected in the database and will cause errors.
+
+
 ## Testing
 
 ### Run the tests
@@ -98,7 +113,7 @@ $ make test
 
 To run database tests locally (e.g. via Visual Studio) the `CONNECTION_STRING` environment variable will need to be populated with:
 
-`Host=localhost;Database=entitycore;Username=postgres;Password=mypassword"`
+`Host=localhost;Database=testdb;Username=postgres;Password=mypassword"`
 
 Note: The Host name needs to be the name of the stub database docker-compose service, in order to run tests via Docker.
 
