@@ -54,7 +54,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
                 domainService.ServiceLocations.Any(sl =>
                     (double?) sl.Latitude == l.Latitude &&
                     (double?) sl.Longitude == l.Longitude &&
-                    sl.Uprn.ToString() == l.Uprn &&
+                    sl.Uprn == l.Uprn &&
                     sl.Address1 == l.Address1 &&
                     sl.Address2 == l.Address2 &&
                     sl.City == l.City &&
