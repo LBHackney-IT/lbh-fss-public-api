@@ -16,7 +16,7 @@ namespace LBHFSSPublicAPI.V1.Domain
         //public int RevisionId { get; set; }
 
         public string StateProvince { get; set; }
-        public int? Uprn { get; set; }
+        public string Uprn { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }
