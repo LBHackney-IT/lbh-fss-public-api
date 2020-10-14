@@ -62,7 +62,7 @@ module "postgres_db_staging" {
   environment_name = "staging"
   vpc_id = data.aws_vpc.staging_vpc.id
   db_engine = "postgres"
-  db_engine_version = "11.1"
+  db_engine_version = "11.8"
   db_identifier = "fss-public-staging"
   db_instance_class = "db.t2.micro"
   db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
