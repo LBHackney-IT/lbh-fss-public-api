@@ -91,7 +91,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Domain
         public void ServiceRevisionEntitiesHaveAUprn()
         {
             var entity = new ServiceLocationEntity();
-            var uprn = 100054225;
+            var uprn = "100054225";
             entity.Uprn = uprn;
             entity.Uprn.Should().Be(uprn);
         }
