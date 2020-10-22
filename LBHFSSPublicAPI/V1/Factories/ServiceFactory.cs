@@ -145,7 +145,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                 {
                     // TODO:  We need to get the resized image uri for this property
                     Medium = "new_uri_to_be_provided",
-                    Original = serviceDomain.Image.Url
+                    Original = serviceDomain.Image?.Url
                 };
         }
 
