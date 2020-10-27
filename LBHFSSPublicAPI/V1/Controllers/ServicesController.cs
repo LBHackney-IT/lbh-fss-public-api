@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.Boundary.Request;
@@ -34,8 +35,19 @@ namespace LBHFSSPublicAPI.V1.Controllers
         [HttpGet]
         public IActionResult SearchServices([FromQuery] SearchServicesRequest requestParams)
         {
-            var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
-            return Ok(usecaseResult);
+            try
+            {
+                var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
+                return Ok(usecaseResult);
+            }
+            catch (Exception ex) when (ex.InnerException != null)
+            {
+                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ErrorResponse(ex.Message));
+            }
         }
     }
 }

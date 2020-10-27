@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bogus.DataSets;
 using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
+using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Controllers;
@@ -11,6 +14,7 @@ using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
+using static LBHFSSPublicAPI.Tests.TestHelpers.ExceptionThrower;
 
 namespace LBHFSSPublicAPI.Tests.V1.Controllers
 {
@@ -69,6 +73,83 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             _mockUseCase.Verify(uc =>
                 uc.ExecuteGet(It.Is<SearchServicesRequest>(p => p.TaxonomyIds == searchParams.TaxonomyIds)), Times.Once);
         }
+
+        [TestCase(TestName = "Given an unexpected exception is thrown, When SearchServices Service controller method is called, Then controller returns an Error response")]
+        public void UponUnexpectedExceptionTheServiceControllerSearchServicesMethodReturnsErrorResponseObject()
+        {
+            //arrange
+            var randomExpectedException = GenerateException();
+
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
+
+            //act
+            var controllerResponse = _classUnderTest.SearchServices(null);
+            var controllerObjectResult = controllerResponse as ObjectResult;
+            var returnedContent = controllerObjectResult.Value;
+
+            //assert
+            controllerResponse.Should().NotBeNull();
+            controllerObjectResult.Should().NotBeNull();
+            returnedContent.Should().BeOfType<ErrorResponse>();
+            returnedContent.Should().NotBeNull();
+        }
+
+        [TestCase(TestName = "Given the services controller SearchServices method is called, When a simple exception during code execution is raised, Then the controller method returns custom error response with a message")]
+        public void ServiceControllerSearchServiceMethodHandlesSimpleExceptionsByReturningCustomErrorObject()
+        {
+            // arrange
+            (var randomExpectedException, var expectedExceptionMessages) =
+                GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.SimpleException);
+
+            var expectedExceptionMessage = expectedExceptionMessages[0];
+
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
+
+            //act
+            var controllerResponse = _classUnderTest.SearchServices(null);
+
+            //assert
+            var controllerObjectResult = controllerResponse as ObjectResult;
+            var returnedContent = controllerObjectResult.Value as ErrorResponse;
+            var actualExceptionMessage = returnedContent.Errors[0];
+
+            returnedContent.Should().NotBeNull();
+            returnedContent.Errors.Count.Should().Be(expectedExceptionMessages.Count);
+            returnedContent.Errors.Count.Should().Be(1);
+
+            actualExceptionMessage.Should().Be(expectedExceptionMessage);
+        }
+
+
+        [TestCase(TestName = "Given the services controller SearchServices method is called, When a nested exception during code execution is raised, Then the controller method returns custom error response with exception messages")]
+        public void ServiceControllerSearchServiceMethodHandlesNestedExceptionsByReturningCustomErrorObject()
+        {
+            // arrange
+            (var randomExpectedException, var expectedExceptionMessages) =
+                GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.InnerException);
+
+            var expectedExceptionMessage = expectedExceptionMessages[0];
+            var expectedInnerExceptionMessage = expectedExceptionMessages[1];
+
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
+
+            //act
+            var controllerResponse = _classUnderTest.SearchServices(null);
+
+            //assert
+            var controllerObjectResult = controllerResponse as ObjectResult;
+            var returnedContent = controllerObjectResult.Value as ErrorResponse;
+            var actualExceptionMessage = returnedContent.Errors[0];
+            var actualInnerExceptionMessage = returnedContent.Errors[1];
+
+            returnedContent.Should().NotBeNull();
+            returnedContent.Errors.Count.Should().Be(expectedExceptionMessages.Count);
+            returnedContent.Errors.Count.Should().Be(2);
+
+            actualExceptionMessage.Should().Be(expectedExceptionMessage);
+            actualInnerExceptionMessage.Should().Be(expectedInnerExceptionMessage);
+        }
+
         #endregion
     }
 }
