@@ -85,6 +85,32 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Count.Should().Be(1);
         }
 
+        [TestCase(TestName = "When SearchService Service controller method is called, Then it returns all ACTIVE services")] // ignores deleted ones // Assuming no default pagination - there's none yet
+        public void SearchServiceEndpointReturnsAllActiveServices() // behaviour does not depend on filters
+        {
+            // arrange
+            var services = EntityHelpers.CreateServices(10).ToList();
+            List<ServiceEntity> expectedData = services.Select(s => s.ToDomain()).ToList();
+
+            var deletedService = EntityHelpers.CreateService();
+            deletedService.Status = "deleted";
+            deletedService.OrganizationId = null;
+            deletedService.Organization = null;
+            services.Add(deletedService);                           // added 11th service (broken)
+
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(new SearchServicesRequest()).ToList();
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Should().BeOfType<List<ServiceEntity>>();
+            gatewayResult.Count.Should().Be(10);
+            gatewayResult.Should().NotContain(s => s.Status == "deleted");
+        }
+
         [TestCase(TestName = "Given search parameters when the SearchService method is called it returns records matching applied synonym group")]
         public void GivenSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingSynonymGroupResults()
         {

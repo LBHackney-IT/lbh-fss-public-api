@@ -58,6 +58,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
                 .AsEnumerable()
+                .Where(s => s.Status == "active")
                 .Where(x => synonyms.Count == 0 || synonyms.Any(b => x.Name.ToUpper().Contains(b)))
                 .Where(x => demographicTaxonomies == null || demographicTaxonomies.Count == 0
                                                           || x.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
