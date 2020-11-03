@@ -69,7 +69,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
         {
             requestParams.Search = UrlHelper.DecodeParams(requestParams.Search);
             var gatewayResponse = _servicesGateway.SearchServices(requestParams);
-            var usecaseResponse = gatewayResponse.ToResponse();
+            var usecaseResponse = gatewayResponse.FullMatchServices.ToResponse(); //TODO: need to change factory and implementation
             usecaseResponse.Metadata.PostCode = string.IsNullOrEmpty(requestParams.PostCode) ? null : requestParams.PostCode;
 
             if (!string.IsNullOrEmpty(requestParams.PostCode))

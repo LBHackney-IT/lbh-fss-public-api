@@ -79,10 +79,12 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
 
             // act
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(1);
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(1);
         }
 
         [TestCase(TestName = "When SearchService Service controller method is called, Then it returns all ACTIVE services")] // ignores deleted ones // Assuming no default pagination - there's none yet
@@ -102,13 +104,21 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             DatabaseContext.SaveChanges();
 
             // act
-            var gatewayResult = _classUnderTest.SearchServices(new SearchServicesRequest()).ToList();
+            var gatewayResult = _classUnderTest.SearchServices(new SearchServicesRequest());
+            var fullMatches = gatewayResult.FullMatchServices;
+            var splitMatches = gatewayResult.SplitMatchServices;
+            var returnedServices = fullMatches.Concat(splitMatches).ToList();
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Should().BeOfType<List<ServiceEntity>>();
-            gatewayResult.Count.Should().Be(10);
-            gatewayResult.Should().NotContain(s => s.Status == "deleted");
+            fullMatches.Should().NotBeNull();
+            splitMatches.Should().NotBeNull();
+
+            fullMatches.Should().BeOfType<List<ServiceEntity>>();
+            splitMatches.Should().BeOfType<List<ServiceEntity>>();
+
+            returnedServices.Should().NotContain(s => s.Status == "deleted");
+            returnedServices.Count.Should().Be(10);
         }
 
         [TestCase(TestName = "Given search parameters when the SearchService method is called it returns records matching applied synonym group")]
@@ -138,10 +148,16 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
 
             // act
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
+            var splitMatches = gatewayResult.SplitMatchServices;
+            var returnedServices = fullMatches.Concat(splitMatches).ToList();
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(expectedData.Count);
+            fullMatches.Should().NotBeNull();
+            splitMatches.Should().NotBeNull();
+
+            returnedServices.Count.Should().Be(expectedData.Count);
         }
 
         [TestCase(TestName = "Given user provided search term consisting of multiple words, When services get filtered in SearchService method, Then the returned result includes service matches of individual search term words.")]
@@ -170,13 +186,62 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
 
             // act
             var gatewayResult = _classUnderTest.SearchServices(request);
+            var fullMatches = gatewayResult.FullMatchServices;
+            var splitMatches = gatewayResult.SplitMatchServices;
+            var returnedServices = fullMatches.Concat(splitMatches).ToList();
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Should().HaveCount(3);
-            gatewayResult.Should().Contain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
-            gatewayResult.Should().Contain(s => s.Name.Contains(word1, StringComparison.OrdinalIgnoreCase));
-            gatewayResult.Should().Contain(s => s.Name.Contains(word2, StringComparison.OrdinalIgnoreCase));
+            fullMatches.Should().NotBeNull();
+            splitMatches.Should().NotBeNull();
+
+            returnedServices.Should().Contain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+            returnedServices.Should().Contain(s => s.Name.Contains(word1, StringComparison.OrdinalIgnoreCase));
+            returnedServices.Should().Contain(s => s.Name.Contains(word2, StringComparison.OrdinalIgnoreCase));
+            returnedServices.Should().HaveCount(3);
+        }
+
+        [TestCase(TestName = "Given user provided search term consisting of multiple words, When services get filtered in SearchService method, Then the returned services are categorized into Full user input match Or Split match.")] // done so to ensure the less relevant services are in the separate collection
+        public void SearchServiceGatewaySeparatesOutFullMatchResultsFromSplitMatch()
+        {
+            // arrange
+            var word1 = Randomm.Word();
+            var word2 = Randomm.Word();
+            var userSearchInput = $"{word1} {word2}";
+
+            var request = new SearchServicesRequest() { Search = userSearchInput };
+
+            var services = new List<Service>();
+            var serviceToFind1 = EntityHelpers.CreateService();                 // full match
+            serviceToFind1.Name += userSearchInput;
+            var serviceToFind2 = EntityHelpers.CreateService();                 // split match 1
+            serviceToFind2.Name += word1;
+            var serviceToFind3 = EntityHelpers.CreateService();                 // split match 2
+            serviceToFind3.Name += word2;
+
+            services.Add(serviceToFind1);
+            services.Add(serviceToFind2);
+            services.Add(serviceToFind3);
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(request);
+            var fullMatches = gatewayResult.FullMatchServices;
+            var splitMatches = gatewayResult.SplitMatchServices;
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            fullMatches.Should().NotBeNull();
+            splitMatches.Should().NotBeNull();
+
+            fullMatches.Should().Contain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+            fullMatches.Should().HaveCount(1);
+
+            splitMatches.Should().Contain(s => s.Name.Contains(word1, StringComparison.OrdinalIgnoreCase));
+            splitMatches.Should().Contain(s => s.Name.Contains(word2, StringComparison.OrdinalIgnoreCase));
+            splitMatches.Should().NotContain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+            splitMatches.Should().HaveCount(2);
         }
 
         [TestCase(TestName = "Given user provided search term consisting of multiple words, When services get filtered in SearchService method, Then the returned result does not include service matches of individual search term words that consist of 3 or less characters.")]
@@ -193,24 +258,27 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
 
             var services = EntityHelpers.CreateServices(5).ToList();                // dummy services
                                                                                     // assuming there's no full match. due to full match containing a shortword, the assertion at the bottom wouldn't be able to test what's needed.
-            var serviceToFind1 = EntityHelpers.CreateService();                     // word 1 match
-            serviceToFind1.Name = serviceToFind1.Name.Replace(shortWord, "test");   // ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
-            serviceToFind1.Name += word;
+            var serviceToFind = EntityHelpers.CreateService();                      // word 1 match
+            serviceToFind.Name = serviceToFind.Name.Replace(shortWord, "test");     // ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
+            serviceToFind.Name += word;
             var serviceToNotFind = EntityHelpers.CreateService();                   // shortword no match. this ensures that the test can fail if the implementation is wrong or not present.
             serviceToNotFind.Name += shortWord;
 
-            services.Add(serviceToFind1);
+            services.Add(serviceToFind);
             services.Add(serviceToNotFind);
             DatabaseContext.Services.AddRange(services);
             DatabaseContext.SaveChanges();
 
             // act
             var gatewayResult = _classUnderTest.SearchServices(request);
+            var splitMatches = gatewayResult.SplitMatchServices;
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Should().HaveCount(1);
-            gatewayResult.Should().NotContain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+            splitMatches.Should().NotBeNull();
+
+            splitMatches.Should().NotContain(s => s.Name.Contains(shortWord, StringComparison.OrdinalIgnoreCase));
+            splitMatches.Should().HaveCount(1);
         }
 
         [TestCase(TestName = "Given multiple taxonomy id search parameters when the SearchService method is called it returns records matching taxonomy ids")]
@@ -249,8 +317,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             expectedData.Add(serviceToFind1);
             expectedData.Add(serviceToFind2);
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(expectedData.Count);
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(expectedData.Count);
         }
 
         [TestCase(TestName =
@@ -285,8 +355,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             expectedData.Add(serviceToFind1);
             expectedData.Add(serviceToFind2);
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(expectedData.Count);
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(expectedData.Count);
         }
 
         [TestCase(TestName =
@@ -318,8 +390,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var requestParams = new SearchServicesRequest();
             requestParams.TaxonomyIds = new List<int> { taxonomy2.Id, taxonomy3.Id };
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Count.Should().Be(0);
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(0);
         }
         #endregion
     }

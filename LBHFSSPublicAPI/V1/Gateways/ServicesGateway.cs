@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LBHFSSPublicAPI.V1.Boundary.HelperWrappers;
 using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Factories;
@@ -31,7 +32,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
             return service;
         }
 
-        public ICollection<ServiceEntity> SearchServices(SearchServicesRequest requestParams)
+        public SearchServiceGatewayResult SearchServices(SearchServicesRequest requestParams)
         {
             var synonyms = new HashSet<string>();
             var demographicTaxonomies = _context.Taxonomies
@@ -74,7 +75,8 @@ namespace LBHFSSPublicAPI.V1.Gateways
                                                           || s.ServiceTaxonomies.Any(st => categoryTaxonomies.Contains(st.TaxonomyId)))
                 .Select(s => s.ToDomain())
                 .ToList();
-            return services;
+
+            return new SearchServiceGatewayResult(services, new List<ServiceEntity>());
         }
     }
 }
