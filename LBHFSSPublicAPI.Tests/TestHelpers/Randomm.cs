@@ -38,6 +38,10 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             return string.Join(" ", _faker.Random.Words(5));
         }
+        public static T RandomItem<T>(this ICollection<T> collection )
+        {
+            return _faker.Random.CollectionItem(collection);
+        }
         public static T Create<T>()
         {
             return _fixture.Create<T>();

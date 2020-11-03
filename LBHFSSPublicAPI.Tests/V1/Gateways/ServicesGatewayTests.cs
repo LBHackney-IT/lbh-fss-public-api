@@ -179,6 +179,40 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Should().Contain(s => s.Name.Contains(word2, StringComparison.OrdinalIgnoreCase));
         }
 
+        [TestCase(TestName = "Given user provided search term consisting of multiple words, When services get filtered in SearchService method, Then the returned result does not include service matches of individual search term words that consist of 3 or less characters.")]
+        public void WhenDoingPartialTextSearchMatchesWordsOf3orLessCharactersLongGetIgnored()  //it's too short - these will be searched and found inside other words in DB
+        {
+            // arrange
+            var shortWordList = new List<string> { "and", "a", "an", "the", "bfg", "42" };
+            var shortWord = shortWordList.RandomItem();
+
+            var word = Randomm.Word().Replace(shortWord, "test"); // have to ensure the shortword is not contained in the actual word for the sake of test
+            var userSearchInput = $"{shortWord} {word}";
+
+            var request = new SearchServicesRequest() { Search = userSearchInput };
+
+            var services = EntityHelpers.CreateServices(5).ToList();                // dummy services
+                                                                                    // assuming there's no full match. due to full match containing a shortword, the assertion at the bottom wouldn't be able to test what's needed.
+            var serviceToFind1 = EntityHelpers.CreateService();                     // word 1 match
+            serviceToFind1.Name = serviceToFind1.Name.Replace(shortWord, "test");   // ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
+            serviceToFind1.Name += word;
+            var serviceToNotFind = EntityHelpers.CreateService();                   // shortword no match. this ensures that the test can fail if the implementation is wrong or not present.
+            serviceToNotFind.Name += shortWord;
+
+            services.Add(serviceToFind1);
+            services.Add(serviceToNotFind);
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(request);
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Should().HaveCount(1);
+            gatewayResult.Should().NotContain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+        }
+
         [TestCase(TestName = "Given multiple taxonomy id search parameters when the SearchService method is called it returns records matching taxonomy ids")]
         public void GivenMultipleTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingTaxonomyIdResults()
         {

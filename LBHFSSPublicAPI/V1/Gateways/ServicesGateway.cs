@@ -46,6 +46,8 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 var keywords = searchInputText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 keywords.Append(searchInputText);           // the concatinated value might be in the synonyms database
 
+                keywords = keywords.Where(k => k.Length > 3).ToArray();
+
                 foreach (var keyword in keywords)
                     synonyms.Add(keyword);
 
