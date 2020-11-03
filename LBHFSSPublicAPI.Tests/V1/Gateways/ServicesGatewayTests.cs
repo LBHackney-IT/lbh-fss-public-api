@@ -90,7 +90,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
         {
             // arrange
             var services = EntityHelpers.CreateServices(10).ToList();
-            List<ServiceEntity> expectedData = services.Select(s => s.ToDomain()).ToList();
+            //List<ServiceEntity> expectedData = services.Select(s => s.ToDomain()).ToList();
 
             var deletedService = EntityHelpers.CreateService();
             deletedService.Status = "deleted";
@@ -142,6 +142,41 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // assert
             gatewayResult.Should().NotBeNull();
             gatewayResult.Count.Should().Be(expectedData.Count);
+        }
+
+        [TestCase(TestName = "Given user provided search term consisting of multiple words, When services get filtered in SearchService method, Then the returned result includes service matches of individual search term words.")]
+        public void UponFilteringServicesByAMultiWordInputTheReturnedResultsIncludePartialMatches()
+        {
+            // arrange
+            var word1 = Randomm.Word();
+            var word2 = Randomm.Word();
+            var userSearchInput = $"{word1} {word2}";
+
+            var request = new SearchServicesRequest() { Search = userSearchInput };
+
+            var services = EntityHelpers.CreateServices(5).ToList();            // dummy services
+            var serviceToFind1 = EntityHelpers.CreateService();                 // full match
+            serviceToFind1.Name += userSearchInput;
+            var serviceToFind2 = EntityHelpers.CreateService();                 // word 1 match
+            serviceToFind2.Name += word1;
+            var serviceToFind3 = EntityHelpers.CreateService();                 // word 2 match
+            serviceToFind3.Name += word2;
+
+            services.Add(serviceToFind1);
+            services.Add(serviceToFind2);
+            services.Add(serviceToFind3);
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(request);
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            gatewayResult.Should().HaveCount(3);
+            gatewayResult.Should().Contain(s => s.Name.Contains(userSearchInput, StringComparison.OrdinalIgnoreCase));
+            gatewayResult.Should().Contain(s => s.Name.Contains(word1, StringComparison.OrdinalIgnoreCase));
+            gatewayResult.Should().Contain(s => s.Name.Contains(word2, StringComparison.OrdinalIgnoreCase));
         }
 
         [TestCase(TestName = "Given multiple taxonomy id search parameters when the SearchService method is called it returns records matching taxonomy ids")]

@@ -42,8 +42,14 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Select(t => t.Id).ToList();
             if (!string.IsNullOrWhiteSpace(requestParams.Search))
             {
-                synonyms.Add(requestParams.Search.ToUpper());
-                var matchedSynonyms = _context.SynonymWords
+                var searchInputText = requestParams.Search.ToUpper();
+                var keywords = searchInputText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                keywords.Append(searchInputText);           // the concatinated value might be in the synonyms database
+
+                foreach (var keyword in keywords)
+                    synonyms.Add(keyword);
+
+                var matchedSynonyms = _context.SynonymWords // This variable is not being used! Does it even need to be here?
                     .Include(sw => sw.Group)
                     .ThenInclude(sg => sg.SynonymWords)
                     .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
@@ -59,11 +65,11 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .ThenInclude(st => st.Taxonomy)
                 .AsEnumerable()
                 .Where(s => s.Status == "active")
-                .Where(x => synonyms.Count == 0 || synonyms.Any(b => x.Name.ToUpper().Contains(b)))
-                .Where(x => demographicTaxonomies == null || demographicTaxonomies.Count == 0
-                                                          || x.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
-                .Where(x => categoryTaxonomies == null || categoryTaxonomies.Count == 0
-                                                          || x.ServiceTaxonomies.Any(st => categoryTaxonomies.Contains(st.TaxonomyId)))
+                .Where(s => synonyms.Count == 0 || synonyms.Any(b => s.Name.ToUpper().Contains(b)))
+                .Where(s => demographicTaxonomies == null || demographicTaxonomies.Count == 0
+                                                          || s.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
+                .Where(s => categoryTaxonomies == null || categoryTaxonomies.Count == 0
+                                                          || s.ServiceTaxonomies.Any(st => categoryTaxonomies.Contains(st.TaxonomyId)))
                 .Select(s => s.ToDomain())
                 .ToList();
             return services;
