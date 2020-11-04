@@ -136,7 +136,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return taxonomies;
         }
 
-        public static ICollection<Service> CreateServices(int count = 3)
+        public static List<Service> CreateServices(int count = 3)
         {
             var services = new List<Service>();
             for (var a = 0; a < count; a++)

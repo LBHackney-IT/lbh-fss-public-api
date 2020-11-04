@@ -13,7 +13,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             if (entities == null)
                 return new List<ServiceEntity>();
-            
+
             return entities.Select(e => e.ToDomain()).ToList();
         }
     }
