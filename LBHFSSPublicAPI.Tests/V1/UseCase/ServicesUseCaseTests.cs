@@ -6,6 +6,7 @@ using Geolocation;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Boundary.Response;
+using Response = LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
@@ -14,6 +15,7 @@ using LBHFSSPublicAPI.V1.UseCase;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Moq;
 using NUnit.Framework;
+using LBHFSSPublicAPI.V1.Boundary.HelperWrappers;
 
 namespace LBHFSSPublicAPI.Tests.V1.UseCase
 {
@@ -56,9 +58,11 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         public void ReturnsServicesIfSeachParamIsProvided() //Wrap up
         {
             var requestParams = Randomm.Create<SearchServicesRequest>();
-            var responseData = EntityHelpers.CreateServices().ToDomain();
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(responseData);
-            var expectedResponse = responseData.ToResponse();
+            var gatewayResponse = Randomm.SSGatewayResult();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
+
+
+            var expectedResponse = gatewayResponse.ToResponse();           // TODO: figure out how to fix this
             var response = _classUnderTest.ExecuteGet(requestParams);
             response.Should().NotBeNull();
             response.Services.Should().BeEquivalentTo(expectedResponse.Services);
@@ -73,8 +77,8 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var request = Randomm.Create<SearchServicesRequest>();
             request.PostCode = Randomm.Postcode();
 
-            var expectedService = EntityHelpers.CreateServices().ToDomain();
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+            var gatewayResponse = Randomm.SSGatewayResult();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
 
             var expectedPostcodeCoords = Randomm.Coordinates();
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(expectedPostcodeCoords);
@@ -97,8 +101,8 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var request = Randomm.Create<SearchServicesRequest>();
             request.PostCode = Randomm.Postcode();
 
-            var expectedService = EntityHelpers.CreateServices().ToDomain();
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+            var gatewayResponse = Randomm.SSGatewayResult();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
 
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(null as Coordinate?);
 
@@ -120,8 +124,8 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var request = Randomm.Create<SearchServicesRequest>();
             request.PostCode = Randomm.Postcode();
 
-            var expectedService = EntityHelpers.CreateServices().ToDomain();
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+            var gatewayResponse = Randomm.SSGatewayResult();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
 
             var expectedException = new Exception(Randomm.Text());
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Throws(expectedException);
@@ -145,7 +149,10 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             // arrange
             var request = Randomm.Create<SearchServicesRequest>();
             request.PostCode = null;
-            var gatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
+
+            var gatewayResponse = Randomm.SSGatewayResult();
+            var fullMLength = gatewayResponse.FullMatchServices.Count;
+            var splitMLength = gatewayResponse.SplitMatchServices.Count;
 
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
 
@@ -153,8 +160,9 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var usecaseResponse = _classUnderTest.ExecuteGet(request);
 
             // assert
-            usecaseResponse.Services.Should().BeInAscendingOrder(s => s.Name);
-
+            usecaseResponse.Services.Take(fullMLength).Should().BeInAscendingOrder(s => s.Name);
+            usecaseResponse.Services.Skip(fullMLength).Should().BeInAscendingOrder(s => s.Name);
+            usecaseResponse.Services.Should().HaveCount(fullMLength + splitMLength);
         }
 
         [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance AND if service has no locations THEN that service will be at the end of the list.")]
@@ -167,31 +175,45 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var addressGatewayResponse = Randomm.Coordinates();
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
 
-            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
-            var serviceNoLocsName = serviceGatewayResponse.FirstOrDefault().Name; //unique enough due to being generated as hash
-            serviceGatewayResponse.FirstOrDefault().ServiceLocations = new List<ServiceLocation>();
-
+            var serviceGatewayResponse = Randomm.SSGatewayResult();
+            serviceGatewayResponse.FullMatchServices.FirstOrDefault().ServiceLocations = new List<ServiceLocation>();
+            serviceGatewayResponse.SplitMatchServices.FirstOrDefault().ServiceLocations = new List<ServiceLocation>();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
+
+            var fullMLength = serviceGatewayResponse.FullMatchServices.Count;
+            var splitMLength = serviceGatewayResponse.SplitMatchServices.Count;
+            var fullMatchServiceNoLocationsName = serviceGatewayResponse.FullMatchServices.FirstOrDefault().Name; //unique enough due to being generated as hash
+            var splitMatchServiceNoLocationsName = serviceGatewayResponse.SplitMatchServices.FirstOrDefault().Name;
 
             // act
             var usecaseResponse = _classUnderTest.ExecuteGet(request);
 
             // assert
-            usecaseResponse.Services.Last().Name.Should().Be(serviceNoLocsName); // the service with no locations should be last
+            usecaseResponse.Services.Take(fullMLength).Last().Name.Should().Be(fullMatchServiceNoLocationsName); // the service with no locations should be last
+            usecaseResponse.Services.Last().Name.Should().Be(splitMatchServiceNoLocationsName);
 
-            var remainingServices = usecaseResponse.Services.Take(usecaseResponse.Services.Count - 1).ToList();
+            var fullMServicesWithLocations = usecaseResponse.Services.Take(fullMLength - 1).ToList();
+            var splitMServicesWithLocations = usecaseResponse.Services.Skip(fullMLength).Take(splitMLength - 1).ToList();
 
+            AssertThatServiceCollectionIsInAscendingDistancesOrder(fullMServicesWithLocations); // checking whether sorting works in the context of empty service location existing. essentially a check that sorting doesn't stop half way just because it encountered an exceptional service with no locations
+            AssertThatServiceCollectionIsInAscendingDistancesOrder(splitMServicesWithLocations);
+        }
+
+        private static void AssertThatServiceCollectionIsInAscendingDistancesOrder(List<Response.Service> collection)
+        {
             var previousDistance = "";
-            foreach (var service in remainingServices)
+            var currentDistance = "";
+
+            foreach (var service in collection)
             {
-                var currentDistance = service.Locations.Min(sl => sl.Distance);
+                currentDistance = service.Locations.Min(sl => sl.Distance);
                 Assert.LessOrEqual(previousDistance, currentDistance);
                 previousDistance = currentDistance;
             }
         }
 
         // I'm assuming that if the sorting works by taking the shortest sl distance and then sorting by that.
-        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance.")]
+        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance.")] // just as above, except this confirms that sorting works fine under normal conditions
         public void GivenAPostcodeReturnedServicesAreOrderedAscByDistance()
         {
             // arrange
@@ -201,23 +223,22 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var addressGatewayResponse = Randomm.Coordinates();
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
 
-            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain();
+            var serviceGatewayResponse = Randomm.SSGatewayResult();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
+
+            var fullMLength = serviceGatewayResponse.FullMatchServices.Count;
 
             // act
             var usecaseResponse = _classUnderTest.ExecuteGet(request);
+            var fullMServicesWithLocations = usecaseResponse.Services.Take(fullMLength).ToList();
+            var splitMServicesWithLocations = usecaseResponse.Services.Skip(fullMLength).ToList();
 
             // assert
-            var previousDistance = "";
-            foreach (var service in usecaseResponse.Services)
-            {
-                var currentDistance = service.Locations.Min(sl => sl.Distance);
-                Assert.LessOrEqual(previousDistance, currentDistance);
-                previousDistance = currentDistance;
-            }
+            AssertThatServiceCollectionIsInAscendingDistancesOrder(fullMServicesWithLocations);
+            AssertThatServiceCollectionIsInAscendingDistancesOrder(splitMServicesWithLocations);
         }
 
-        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called AND no services are found, Then it returns an empty collection of services AND doesn't crash.")]
+        [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called AND no services are found, Then it returns an empty collection of services.")]
         public void GivenAPostcodeIfServicesGatewayReturnsAnEmptyCollectionThenUsecaseAlsoReturnsEmptyCollection() // essentially a test to see if the sorting implementation doesn't fall over upon empty collection.
         {
             // arrange
@@ -227,7 +248,11 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             var addressGatewayResponse = Randomm.Coordinates();
             _mockAddressesGateway.Setup(g => g.GetPostcodeCoordinates(It.IsAny<string>())).Returns(addressGatewayResponse);
 
-            var serviceGatewayResponse = EntityHelpers.CreateServices(5).ToDomain().Take(0).ToList();
+            var serviceGatewayResponse = new SearchServiceGatewayResult(
+                fullMatchServices: new List<ServiceEntity>(),
+                splitMatchServices: new List<ServiceEntity>()
+                );
+
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(serviceGatewayResponse);
 
             // act
