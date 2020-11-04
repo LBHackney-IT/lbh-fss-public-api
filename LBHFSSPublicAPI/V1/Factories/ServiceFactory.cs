@@ -32,24 +32,25 @@ namespace LBHFSSPublicAPI.V1.Factories
                 return null;
         }
 
-        public static GetServiceResponseList ToResponse(this ICollection<ServiceEntity> serviceDomainList)
+        public static GetServiceResponseList SearchServiceUsecaseResponse(List<Response.Service> fullMatches, List<Response.Service> splitMatches)
         {
-            if (serviceDomainList != null)
-                return new GetServiceResponseList()
-                {
-                    Services = serviceDomainList
-                        .Select(s => s.ToResponseService())
-                        .ToList(),
-                    Metadata = new Metadata
-                    {
-                        PostCode = null,
-                        PostCodeLatitude = null,
-                        PostCodeLongitude = null,
-                        Error = null
-                    }
-                };
-            else
-                return new GetServiceResponseList();
+            var metadata = new Metadata
+            {
+                PostCode = null,
+                PostCodeLatitude = null,
+                PostCodeLongitude = null,
+                Error = null
+            };
+
+            var combinedServicesList = new List<Response.Service>();
+
+            if (fullMatches != null)
+                combinedServicesList.AddRange(fullMatches);
+
+            if (splitMatches != null)
+                combinedServicesList.AddRange(splitMatches);
+
+            return new GetServiceResponseList(combinedServicesList, metadata);
         }
 
         #endregion
@@ -84,6 +85,11 @@ namespace LBHFSSPublicAPI.V1.Factories
 
                 Status = serviceDomain.Status
             };
+        }
+
+        public static List<Response.Service> ToResponseServices(this List<ServiceEntity> collection)
+        {
+            return collection.Select(s => s.ToResponseService()).ToList();
         }
 
         private static List<Category> ToResponseCategoryList(this ICollection<ServiceTaxonomy> serviceTaxonomies)
@@ -234,13 +240,6 @@ namespace LBHFSSPublicAPI.V1.Factories
                 ReferralEmail = entity.ReferralEmail,
                 ReferralLink = entity.ReferralLink
             };
-        }
-
-        public static ICollection<ServiceEntity> ToDomain(this ICollection<Entity.Service> entities)
-        {
-            if (entities == null)
-                return new List<ServiceEntity>();
-            return entities.Select(e => e.ToDomain()).ToList();
         }
 
         #endregion

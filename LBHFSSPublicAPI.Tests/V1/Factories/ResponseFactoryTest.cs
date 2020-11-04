@@ -1,9 +1,11 @@
 using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
+using Response = LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Factories;
 using NUnit.Framework;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace LBHFSSPublicAPI.Tests.V1.Factories
 {
@@ -79,6 +81,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             responseService.Status.Should().Be(domainService.Status);
         }
 
+        // No need to test the ToResponseServices (Converting List of domain to List of Reponse) because it's a basic Linq query consisting of
+        // 1 Select statement. At that point, it would be a test of Microsoft's 'Select' implementation rather than a test of a method (due to it being a wrapper)
+
         [TestCase(TestName = "Given a service domain object, When Factory ToResponse extension method is called, Then it returns correctly populated GetServiceResponse boundary object.")]
         public void FactoryConvertsServiceDomainToGetServiceResponseBoundary()
         {
@@ -97,22 +102,58 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             responseBoundary.Metadata.PostCodeLongitude.Should().BeNull();
         }
 
-        [TestCase(TestName = "Given a list of service domain objects, When Factory ToResponse extension method is called, Then it returns correctly populated GetServiceResponseList boundary object.")]
-        public void FactoryConvertsAListOfServiceDomainToGetServiceResponseListBoundary()
+        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with those 2 lists concatinated AND metadata fields set to null.")]
+        public void FactoryConverts2NonEmptyListOfServiceResponseToGetServiceResponseListBoundary()
         {
             // arrange
-            var domainServices = EntityHelpers.CreateServices().ToDomain(); // would need domain generator, but domain object is messed up now.
-            var expectedServices = domainServices.Select(ds => ds.ToResponseService()).ToList();
+            var gatewayResponse = Randomm.SSGatewayResult();
+            var fullMatchServices = gatewayResponse.FullMatchServices.ToResponseServices();
+            var splitMatchServices = gatewayResponse.SplitMatchServices.ToResponseServices();
+
+            var expectedServicesList = fullMatchServices.Concat(splitMatchServices);
 
             // act
-            var responseBoundary = domainServices.ToResponse();
+            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, splitMatchServices);
 
             // assert
-            responseBoundary.Services.Should().BeEquivalentTo(expectedServices);
-            responseBoundary.Metadata.Error.Should().BeNull();
-            responseBoundary.Metadata.PostCode.Should().BeNull();
-            responseBoundary.Metadata.PostCodeLatitude.Should().BeNull();
-            responseBoundary.Metadata.PostCodeLongitude.Should().BeNull();
+            factoryResult.Services.Should().BeEquivalentTo(expectedServicesList);
+            factoryResult.Metadata.Error.Should().BeNull();
+            factoryResult.Metadata.PostCode.Should().BeNull();
+            factoryResult.Metadata.PostCodeLatitude.Should().BeNull();
+            factoryResult.Metadata.PostCodeLongitude.Should().BeNull();
+        }
+
+        [TestCase(TestName = "Given 1 empty and 1 non-empty list of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with a list containing all the elements from the non-empty list.")] // essentially a check that it doesn't fall over under these circumstances
+        public void FactoryConverts1EmptyAnd1NonEmptyListOfServiceResponseToGetServiceResponseListBoundary()
+        {
+            // arrange
+            var gatewayResponse = Randomm.SSGatewayResult();
+            var fullMatchServices = gatewayResponse.FullMatchServices.ToResponseServices();
+            var splitMatchServices = gatewayResponse.SplitMatchServices.ToResponseServices();
+            var emptyList = new List<Response.Service>();
+
+            // act
+            var factoryResult1 = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, emptyList);
+            var factoryResult2 = ServiceFactory.SearchServiceUsecaseResponse(emptyList, splitMatchServices);
+
+            // assert
+            factoryResult1.Services.Should().BeEquivalentTo(fullMatchServices);
+            factoryResult2.Services.Should().BeEquivalentTo(splitMatchServices);
+        }
+
+        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with those 2 lists concatinated AND metadata fields set to null.")] // essentially a check that it doesn't fall over under these circumstances
+        public void FactoryConverts2EmptyListOfServiceResponseToGetServiceResponseListBoundary()
+        {
+            // arrange
+            var emptyList1 = new List<Response.Service>();
+            var emptyList2 = new List<Response.Service>();
+            var emptyList3 = new List<Response.Service>();                                  // for the sake of different object refs
+
+            // act
+            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(emptyList1, emptyList2);
+
+            // assert
+            factoryResult.Services.Should().BeEquivalentTo(emptyList3);
         }
     }
 }
