@@ -3,15 +3,17 @@ using System;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20201102121409_AddDeleteConstraintsToServices")]
+    partial class AddDeleteConstraintsToServices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -616,8 +618,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.HasOne("LBHFSSPublicAPI.V1.Infrastructure.Organization", "Organization")
                         .WithMany("Services")
                         .HasForeignKey("OrganizationId")
-                        .HasConstraintName("services_organization_id_fkey")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasConstraintName("services_organization_id_fkey");
                 });
 
             modelBuilder.Entity("LBHFSSPublicAPI.V1.Infrastructure.ServiceLocation", b =>
