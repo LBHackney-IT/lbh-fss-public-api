@@ -140,12 +140,14 @@ namespace LBHFSSPublicAPI.V1.Factories
 
         private static Image ToResponseImage(this ServiceEntity serviceDomain)
         {
+            var images = serviceDomain?.Image?.Url == null ? System.Array.Empty<string>() : serviceDomain.Image.Url.Split(';');
             return
-                new Image
+                serviceDomain?.Image == null
+                ? null
+                : new Image()
                 {
-                    // TODO:  We need to get the resized image uri for this property
-                    Medium = "new_uri_to_be_provided",
-                    Original = serviceDomain.Image?.Url
+                    Medium = images.Length > 1 ? images[1] : null,
+                    Original = images.Length > 0 ? images[0] : null
                 };
         }
 
