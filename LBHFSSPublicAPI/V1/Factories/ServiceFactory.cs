@@ -32,16 +32,8 @@ namespace LBHFSSPublicAPI.V1.Factories
                 return null;
         }
 
-        public static GetServiceResponseList SearchServiceUsecaseResponse(List<Response.Service> fullMatches, List<Response.Service> splitMatches)
+        public static GetServiceResponseList SearchServiceUsecaseResponse(List<Response.Service> fullMatches, List<Response.Service> splitMatches, Metadata metadata)
         {
-            var metadata = new Metadata
-            {
-                PostCode = null,
-                PostCodeLatitude = null,
-                PostCodeLongitude = null,
-                Error = null
-            };
-
             var combinedServicesList = new List<Response.Service>();
 
             if (fullMatches != null)

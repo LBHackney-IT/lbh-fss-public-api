@@ -6,6 +6,8 @@ using LBHFSSPublicAPI.V1.Factories;
 using NUnit.Framework;
 using System.Linq;
 using System.Collections.Generic;
+using LBHFSSPublicAPI.V1.Boundary.Response;
+using System;
 
 namespace LBHFSSPublicAPI.Tests.V1.Factories
 {
@@ -102,7 +104,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             responseBoundary.Metadata.PostCodeLongitude.Should().BeNull();
         }
 
-        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with those 2 lists concatinated AND metadata fields set to null.")]
+        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with those 2 lists concatinated.")]
         public void FactoryConverts2NonEmptyListOfServiceResponseToGetServiceResponseListBoundary()
         {
             // arrange
@@ -113,14 +115,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             var expectedServicesList = fullMatchServices.Concat(splitMatchServices);
 
             // act
-            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, splitMatchServices);
+            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, splitMatchServices, null);
 
             // assert
             factoryResult.Services.Should().BeEquivalentTo(expectedServicesList);
-            factoryResult.Metadata.Error.Should().BeNull();
-            factoryResult.Metadata.PostCode.Should().BeNull();
-            factoryResult.Metadata.PostCodeLatitude.Should().BeNull();
-            factoryResult.Metadata.PostCodeLongitude.Should().BeNull();
         }
 
         [TestCase(TestName = "Given 1 empty and 1 non-empty list of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with a list containing all the elements from the non-empty list.")] // essentially a check that it doesn't fall over under these circumstances
@@ -133,15 +131,15 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             var emptyList = new List<Response.Service>();
 
             // act
-            var factoryResult1 = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, emptyList);
-            var factoryResult2 = ServiceFactory.SearchServiceUsecaseResponse(emptyList, splitMatchServices);
+            var factoryResult1 = ServiceFactory.SearchServiceUsecaseResponse(fullMatchServices, emptyList, null);
+            var factoryResult2 = ServiceFactory.SearchServiceUsecaseResponse(emptyList, splitMatchServices, null);
 
             // assert
             factoryResult1.Services.Should().BeEquivalentTo(fullMatchServices);
             factoryResult2.Services.Should().BeEquivalentTo(splitMatchServices);
         }
 
-        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with those 2 lists concatinated AND metadata fields set to null.")] // essentially a check that it doesn't fall over under these circumstances
+        [TestCase(TestName = "Given 2 non-empty lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with an empty services list.")] // essentially a check that it doesn't fall over under these circumstances
         public void FactoryConverts2EmptyListOfServiceResponseToGetServiceResponseListBoundary()
         {
             // arrange
@@ -150,10 +148,75 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             var emptyList3 = new List<Response.Service>();                                  // for the sake of different object refs
 
             // act
-            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(emptyList1, emptyList2);
+            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(emptyList1, emptyList2, null);
 
             // assert
             factoryResult.Services.Should().BeEquivalentTo(emptyList3);
+        }
+
+        [TestCase(TestName = "Given any combination of null lists of service response objects, When Factory SearchServiceUsecaseResponse method is called, Then it returns a GetServiceResponseList boundary object with an empty services list.")] // essentially a check that it doesn't fall over under these circumstances
+        public void FactoryDoesNotCrashWhenGivenNullListsAndInsteadReturnsExpectedResult()
+        {
+            // arrange
+            var nullList = null as List<Response.Service>;
+
+            var emptyList = new List<Response.Service>();
+            var emptyListC = new List<Response.Service>();                                  // for the sake of different object refs
+
+            var notEmptyList = new List<Response.Service> { new Service() };
+            var notEmptyListC = new List<Response.Service> { new Service() };
+
+            Func<GetServiceResponseList> firstArgNull = () => ServiceFactory.SearchServiceUsecaseResponse(nullList, emptyList, null);
+            Func<GetServiceResponseList> secondArgNull = () => ServiceFactory.SearchServiceUsecaseResponse(emptyList, nullList, null);
+            Func<GetServiceResponseList> bothArgsNull = () => ServiceFactory.SearchServiceUsecaseResponse(nullList, nullList, null);
+
+            Func<GetServiceResponseList> nullNotEmpty = () => ServiceFactory.SearchServiceUsecaseResponse(nullList, notEmptyList, null);
+            Func<GetServiceResponseList> notEmptyNull = () => ServiceFactory.SearchServiceUsecaseResponse(notEmptyList, nullList, null);
+
+            // act
+            var factoryResult1 = firstArgNull.Invoke();
+            var factoryResult2 = secondArgNull.Invoke();
+            var factoryResult3 = bothArgsNull.Invoke();
+
+            var factoryResult4 = nullNotEmpty.Invoke();
+            var factoryResult5 = notEmptyNull.Invoke();
+
+            // assert
+            firstArgNull.Should().NotThrow<ArgumentNullException>();
+            secondArgNull.Should().NotThrow<ArgumentNullException>();
+            bothArgsNull.Should().NotThrow<ArgumentNullException>();
+
+            nullNotEmpty.Should().NotThrow<ArgumentNullException>();
+            notEmptyNull.Should().NotThrow<ArgumentNullException>();
+
+            factoryResult1.Services.Should().BeEquivalentTo(emptyListC);
+            factoryResult2.Services.Should().BeEquivalentTo(emptyListC);
+            factoryResult3.Services.Should().BeEquivalentTo(emptyListC);
+
+            factoryResult4.Services.Should().BeEquivalentTo(notEmptyListC);
+            factoryResult5.Services.Should().BeEquivalentTo(notEmptyListC);
+        }
+
+        [TestCase()]
+        public void FactoryPopulatesTheMetadataFieldWithWhatIsPassedInAsAnArgument()
+        {
+            // arrange
+            var expectedMetadata = new Metadata
+            {
+                Error = Randomm.Text(),
+                PostCode = Randomm.Postcode(),
+                PostCodeLatitude = Randomm.Latitude(),
+                PostCodeLongitude = Randomm.Longitude()
+            };
+
+            // act
+            var factoryResult = ServiceFactory.SearchServiceUsecaseResponse(null, null, expectedMetadata);
+
+            // assert
+            factoryResult.Metadata.Error.Should().Be(expectedMetadata.Error);
+            factoryResult.Metadata.PostCode.Should().Be(expectedMetadata.PostCode);
+            factoryResult.Metadata.PostCodeLatitude.Should().Be(expectedMetadata.PostCodeLatitude);
+            factoryResult.Metadata.PostCodeLongitude.Should().Be(expectedMetadata.PostCodeLongitude);
         }
     }
 }
