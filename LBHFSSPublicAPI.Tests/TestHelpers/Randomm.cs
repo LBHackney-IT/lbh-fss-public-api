@@ -33,7 +33,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         }
         public static string Word()
         {
-            return _faker.Random.Word().Replace(" ", ""); // sometimes it generates multiple words like "face to face";
+            return _faker.Random.Hash().ToString(); // .Word() had too many problems: sometimes less than 3 chars, sometimes more than 1 word.
         }
         public static string Text()
         {

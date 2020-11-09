@@ -129,6 +129,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var synonymGroup2 = EntityHelpers.CreateSynonymGroupWithWords(3);
             synonymGroup2.SynonymWords.ToList()[1].Word = synonymGroup1.SynonymWords.ToList()[1].Word;
             var services = EntityHelpers.CreateServices();
+            services.ForEach(s => s.Name = "irrelenvant");
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
             var searchTerm = synonymGroup1.SynonymWords.ToList()[1].Word;

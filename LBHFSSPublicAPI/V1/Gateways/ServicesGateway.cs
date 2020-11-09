@@ -6,6 +6,7 @@ using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
+using LBHFSSPublicAPI.V1.Helpers;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,7 +44,11 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Where(s => s.Status == "active")
                 .AsEnumerable();
 
-            IEnumerable<Service> fullMatchServicesQuery = baseQuery, splitMatchServicesQuery = baseQuery;
+            IEnumerable<Service> fullMatchServicesQuery = baseQuery,
+                                 splitMatchServicesQuery = baseQuery;
+
+            List<ServiceEntity> fullMatchServices = new List<ServiceEntity>(),
+                                splitMatchServices = new List<ServiceEntity>();
 
             var synonyms = new HashSet<string>();
 
@@ -71,30 +76,37 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 var splitWords = searchInputText
                     .Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-                var moreThan1SearchInputWord = splitWords.Count > 1;      // fuzzy search won't execute if only 1 word entered
+                var moreThan1SearchInputWord = splitWords.Count > 1;        // fuzzy search won't execute if only 1 word entered
 
-                splitWords = splitWords.Where(k => k.Length > 3).ToList();   // filter short words
+                splitWords = splitWords.Where(k => k.Length > 3).ToList();  // filter short words
 
-                var matchedSynonyms = _context.SynonymWords // This variable is not being used! Does it even need to be here for MVP?
+                var matchedSynonyms = _context.SynonymWords                 // This variable is not being used! Does it need to be here?
                     .Include(sw => sw.Group)
                     .ThenInclude(sg => sg.SynonymWords)
-                    .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
-                    .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToLower())) // hard to track side effects?!!!! >_<
+                    .Where(x => x.Word.ToLower().Contains(searchInputText))
+                    .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToLower())) // hard to track side effects >_<
                         .ToList())
                     .ToList();
 
-                fullMatchServicesQuery = fullMatchServicesQuery.Where(s => s.Name.ToLower().Contains(searchInputText));
+                Predicate<Service> containsUserInput  = service => service.Name.ToLower().Contains(searchInputText);
+                Predicate<Service> containsAnySynonym = service => synonyms.Any(sn => service.Name.ToLower().Contains(sn));
+
+                var filters = new List<Predicate<Service>>();
+                filters.Add(containsUserInput);
 
                 if (synonyms.Count > 0)
-                    fullMatchServicesQuery = fullMatchServicesQuery.Where(s => synonyms.Any(sn => s.Name.ToLower().Contains(sn)));
+                    filters.Add(containsAnySynonym);
 
+                fullMatchServicesQuery = fullMatchServicesQuery.Where(s => filters.Any(p => p(s)));
+
+                fullMatchServices = fullMatchServicesQuery.Select(s => s.ToDomain()).ToList();
 
                 if (moreThan1SearchInputWord)
                 {
                     splitMatchServicesQuery = splitMatchServicesQuery.Where(s => splitWords.Any(w => s.Name.ToLower().Contains(w)));
 
                     // Find out whether Splitwordsyn - It needs separate synonyms list - Would need tests for it anyway
-                    //splitMatchServicesQuery = splitMatchServicesQuery.Where(s => synonyms2.Any(sn2 => s.Name.ToLower().Contains(sn2)));
+                    // splitMatchServicesQuery = splitMatchServicesQuery.Where(s => synonyms2.Any(sn2 => s.Name.ToLower().Contains(sn2)));
 
                     if (demographicTaxonomies != null && demographicTaxonomies.Count != 0)
                         splitMatchServicesQuery = splitMatchServicesQuery
@@ -105,14 +117,20 @@ namespace LBHFSSPublicAPI.V1.Gateways
                         splitMatchServicesQuery = splitMatchServicesQuery
                             .Where(s => s.ServiceTaxonomies
                             .Any(st => categoryTaxonomies.Contains(st.TaxonomyId)));
+
+                    splitMatchServices = splitMatchServicesQuery.Select(s => s.ToDomain()).Except(
+                        fullMatchServices,
+                        new AnonEqualityComparer<ServiceEntity>(
+                            (f, s) => f.Name == s.Name,
+                            o => o.Id ^ o.Name.GetHashCode() ^ o.Description.GetHashCode()
+                        ))
+                        .ToList();
                 }
             }
-
-            var fullMatchServices  = fullMatchServicesQuery .Select(s => s.ToDomain()).ToList();
-            var splitMatchServices = splitMatchServicesQuery.Select(s => s.ToDomain()).ToList();
-            //.Except(fullMatchServices, ) //.Where(s => !fullMatchServices.Contains(s.Id))
-
-            // filter unique - need test of not finding full match by using partial input search
+            else
+            {
+                fullMatchServices = fullMatchServicesQuery.Select(s => s.ToDomain()).ToList();
+            }            
 
             return new SearchServiceGatewayResult(fullMatchServices, splitMatchServices);
         }
