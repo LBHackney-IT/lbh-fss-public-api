@@ -34,49 +34,87 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         public SearchServiceGatewayResult SearchServices(SearchServicesRequest requestParams)
         {
-            var synonyms = new HashSet<string>();
-            var demographicTaxonomies = _context.Taxonomies
-                .Where(t => t.Vocabulary == "demographic" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
-                .Select(t => t.Id).ToList();
-            var categoryTaxonomies = _context.Taxonomies
-                .Where(t => t.Vocabulary == "category" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
-                .Select(t => t.Id).ToList();
-            if (!string.IsNullOrWhiteSpace(requestParams.Search))
-            {
-                var searchInputText = requestParams.Search.ToUpper();
-                var keywords = searchInputText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                keywords.Append(searchInputText);           // the concatinated value might be in the synonyms database
-
-                keywords = keywords.Where(k => k.Length > 3).ToArray();
-
-                foreach (var keyword in keywords)
-                    synonyms.Add(keyword);
-
-                var matchedSynonyms = _context.SynonymWords // This variable is not being used! Does it even need to be here?
-                    .Include(sw => sw.Group)
-                    .ThenInclude(sg => sg.SynonymWords)
-                    .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
-                    .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToUpper()))
-                        .ToList())
-                    .ToList();
-            }
-            var services = _context.Services
+            var baseQuery = _context.Services
                 .Include(s => s.Image)
                 .Include(s => s.Organization)
                 .Include(s => s.ServiceLocations)
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
-                .AsEnumerable()
                 .Where(s => s.Status == "active")
-                .Where(s => synonyms.Count == 0 || synonyms.Any(b => s.Name.ToUpper().Contains(b)))
-                .Where(s => demographicTaxonomies == null || demographicTaxonomies.Count == 0
-                                                          || s.ServiceTaxonomies.Any(st => demographicTaxonomies.Contains(st.TaxonomyId)))
-                .Where(s => categoryTaxonomies == null || categoryTaxonomies.Count == 0
-                                                          || s.ServiceTaxonomies.Any(st => categoryTaxonomies.Contains(st.TaxonomyId)))
-                .Select(s => s.ToDomain())
-                .ToList();
+                .AsEnumerable();
 
-            return new SearchServiceGatewayResult(services, new List<ServiceEntity>());
+            IEnumerable<Service> fullMatchServicesQuery = baseQuery, splitMatchServicesQuery = baseQuery;
+
+            var synonyms = new HashSet<string>();
+
+            var demographicTaxonomies = _context.Taxonomies
+                .Where(t => t.Vocabulary == "demographic" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
+                .Select(t => t.Id).ToList();
+
+            var categoryTaxonomies = _context.Taxonomies
+                .Where(t => t.Vocabulary == "category" && requestParams.TaxonomyIds.Any(ti => ti == t.Id))
+                .Select(t => t.Id).ToList();
+
+            if (demographicTaxonomies != null && demographicTaxonomies.Count != 0)
+                fullMatchServicesQuery = fullMatchServicesQuery
+                    .Where(s => s.ServiceTaxonomies
+                    .Any(st => demographicTaxonomies.Contains(st.TaxonomyId)));
+
+            if (categoryTaxonomies != null && categoryTaxonomies.Count != 0)
+                fullMatchServicesQuery = fullMatchServicesQuery
+                    .Where(s => s.ServiceTaxonomies
+                    .Any(st => categoryTaxonomies.Contains(st.TaxonomyId)));
+
+            if (!string.IsNullOrWhiteSpace(requestParams.Search))
+            {
+                var searchInputText = requestParams.Search.ToLower();
+                var splitWords = searchInputText
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                var moreThan1SearchInputWord = splitWords.Count > 1;      // fuzzy search won't execute if only 1 word entered
+
+                splitWords = splitWords.Where(k => k.Length > 3).ToList();   // filter short words
+
+                var matchedSynonyms = _context.SynonymWords // This variable is not being used! Does it even need to be here for MVP?
+                    .Include(sw => sw.Group)
+                    .ThenInclude(sg => sg.SynonymWords)
+                    .Where(x => x.Word.ToUpper().Contains(requestParams.Search.ToUpper()))
+                    .Select(sw => sw.Group.SynonymWords.Select(sw => synonyms.Add(sw.Word.ToLower())) // hard to track side effects?!!!! >_<
+                        .ToList())
+                    .ToList();
+
+                fullMatchServicesQuery = fullMatchServicesQuery.Where(s => s.Name.ToLower().Contains(searchInputText));
+
+                if (synonyms.Count > 0)
+                    fullMatchServicesQuery = fullMatchServicesQuery.Where(s => synonyms.Any(sn => s.Name.ToLower().Contains(sn)));
+
+
+                if (moreThan1SearchInputWord)
+                {
+                    splitMatchServicesQuery = splitMatchServicesQuery.Where(s => splitWords.Any(w => s.Name.ToLower().Contains(w)));
+
+                    // Find out whether Splitwordsyn - It needs separate synonyms list - Would need tests for it anyway
+                    //splitMatchServicesQuery = splitMatchServicesQuery.Where(s => synonyms2.Any(sn2 => s.Name.ToLower().Contains(sn2)));
+
+                    if (demographicTaxonomies != null && demographicTaxonomies.Count != 0)
+                        splitMatchServicesQuery = splitMatchServicesQuery
+                            .Where(s => s.ServiceTaxonomies
+                            .Any(st => demographicTaxonomies.Contains(st.TaxonomyId)));
+
+                    if (categoryTaxonomies != null && categoryTaxonomies.Count != 0)
+                        splitMatchServicesQuery = splitMatchServicesQuery
+                            .Where(s => s.ServiceTaxonomies
+                            .Any(st => categoryTaxonomies.Contains(st.TaxonomyId)));
+                }
+            }
+
+            var fullMatchServices  = fullMatchServicesQuery .Select(s => s.ToDomain()).ToList();
+            var splitMatchServices = splitMatchServicesQuery.Select(s => s.ToDomain()).ToList();
+            //.Except(fullMatchServices, ) //.Where(s => !fullMatchServices.Contains(s.Id))
+
+            // filter unique - need test of not finding full match by using partial input search
+
+            return new SearchServiceGatewayResult(fullMatchServices, splitMatchServices);
         }
     }
 }
