@@ -257,11 +257,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var request = new SearchServicesRequest() { Search = userSearchInput };
 
             var services = EntityHelpers.CreateServices(5).ToList();                // dummy services
+            services.ForEach(s => s.Name = s.Name.Replace(word, "ssj"));            // make sure they don't match the search word
                                                                                     // assuming there's no full match. due to full match containing a shortword, the assertion at the bottom wouldn't be able to test what's needed.
             var serviceToFind = EntityHelpers.CreateService();                      // word 1 match
             serviceToFind.Name = serviceToFind.Name.Replace(shortWord, "test");     // ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
             serviceToFind.Name += word;
+
             var serviceToNotFind = EntityHelpers.CreateService();                   // shortword no match. this ensures that the test can fail if the implementation is wrong or not present.
+            serviceToNotFind.Name = serviceToNotFind.Name.Replace(word, "1234");    // make sure the mismatching service does not contain a desired search term
             serviceToNotFind.Name += shortWord;
 
             services.Add(serviceToFind);

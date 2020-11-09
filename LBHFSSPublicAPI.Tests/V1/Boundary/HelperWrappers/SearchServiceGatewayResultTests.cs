@@ -24,8 +24,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary.HelperWrappers
             // assert
             wrapperType.GetProperties().Length.Should().Be(2);
 
-            Assert.That(entity, Has.Property("TaxonomyIds").InstanceOf(expectedServicesType));
-            Assert.That(entity, Has.Property("PostCode").InstanceOf(expectedServicesType));
+            Assert.That(entity, Has.Property("FullMatchServices").InstanceOf(expectedServicesType));
+            Assert.That(entity, Has.Property("SplitMatchServices").InstanceOf(expectedServicesType));
         }
     }
 }
