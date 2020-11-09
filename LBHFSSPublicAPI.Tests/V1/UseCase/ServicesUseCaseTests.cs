@@ -59,13 +59,15 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         {
             var requestParams = Randomm.Create<SearchServicesRequest>();
             var gatewayResponse = Randomm.SSGatewayResult();
+            var fullMServices = gatewayResponse.FullMatchServices.ToResponseServices();     // because domain doesn't contain distance field
+            var splitMServices = gatewayResponse.SplitMatchServices.ToResponseServices();
             _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
 
 
-            var expectedResponse = gatewayResponse.ToResponse();           // TODO: figure out how to fix this
+            var expectedServices = fullMServices.Concat(splitMServices);
             var response = _classUnderTest.ExecuteGet(requestParams);
             response.Should().NotBeNull();
-            response.Services.Should().BeEquivalentTo(expectedResponse.Services);
+            response.Services.Should().BeEquivalentTo(expectedServices);
         }
 
         // Gateway coordinates:
@@ -435,10 +437,10 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
 
         #region Search Services
         [TestCase(TestName = "Given a url encoded search parameter when the use case is called the gateway will be called with the unencoded parameter")]
-        public void GivenAUrlEncodedSearchTermGatewayIsCalledWithDecodedTerm()
+        public void GivenAUrlEncodedSearchTermGatewayIsCalledWithDecodedTerm() // implementation of this test fixes a front-end bug, where front-end app accidentally encodes the url twice before calling an API - I don't we should be 'fixing' this on back-end API.
         {
-            var expectedService = EntityHelpers.CreateServices().ToDomain();
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedService);
+            var expectedServices = Randomm.SSGatewayResult();
+            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(expectedServices); // dummy setup - irrelevant for the test
             var searchTerm = Randomm.Text();
             var urlencodedSearch = searchTerm.Replace(" ", "%2520");
             var reqParams = new SearchServicesRequest();
