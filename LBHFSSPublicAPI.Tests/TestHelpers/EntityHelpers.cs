@@ -177,6 +177,15 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return synonymGroup;
         }
 
+        public static SynonymWord SynWord(SynonymGroup synGroup, string word) // do I need to set the synonym group, or will id suffice?
+        {
+            return new SynonymWord()
+            {
+                GroupId = synGroup.Id,
+                Word = word
+            };
+        }
+
 
         // public static UserRole CreateUserRole()
         // {
