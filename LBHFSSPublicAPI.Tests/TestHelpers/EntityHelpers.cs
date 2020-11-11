@@ -136,7 +136,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             return taxonomies;
         }
 
-        public static ICollection<Service> CreateServices(int count = 3)
+        public static List<Service> CreateServices(int count = 3)
         {
             var services = new List<Service>();
             for (var a = 0; a < count; a++)
@@ -175,6 +175,15 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
                 synonymGroup.SynonymWords.Add(synomymWord);
             }
             return synonymGroup;
+        }
+
+        public static SynonymWord SynWord(SynonymGroup synGroup, string word) // do I need to set the synonym group, or will id suffice?
+        {
+            return new SynonymWord()
+            {
+                GroupId = synGroup.Id,
+                Word = word
+            };
         }
 
 

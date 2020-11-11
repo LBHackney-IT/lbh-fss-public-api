@@ -31,6 +31,7 @@
     <Folder Include="V1\Exceptions\" />
     <Folder Include="V1\Infrastructure\AddressesContextEntities\" />
     <Folder Include="V1\Domain\AddressesAPIDomain\" />
+    <Folder Include="V1\Boundary\HelperWrappers\" />
   </ItemGroup>
 
 </Project>

@@ -7,6 +7,7 @@ using AutoFixture.Dsl;
 using AutoFixture.Kernel;
 using Bogus;
 using Geolocation;
+using LBHFSSPublicAPI.V1.Boundary.HelperWrappers;
 using LBHFSSPublicAPI.V1.Domain;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using LBHFSSPublicAPI.V1.Infrastructure.AddressesContextEntities;
@@ -32,11 +33,15 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         }
         public static string Word()
         {
-            return _faker.Random.Word();
+            return _faker.Random.Hash().ToString(); // .Word() had too many problems: sometimes less than 3 chars, sometimes more than 1 word.
         }
         public static string Text()
         {
             return string.Join(" ", _faker.Random.Words(5));
+        }
+        public static T RandomItem<T>(this ICollection<T> collection)
+        {
+            return _faker.Random.CollectionItem(collection);
         }
         public static T Create<T>()
         {
@@ -83,6 +88,18 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             return _faker.Address.ZipCode();
         }
+
+        #region ComplexTypes
+
+        public static SearchServiceGatewayResult SSGatewayResult()
+        {
+            return new SearchServiceGatewayResult(
+                    EntityHelpers.CreateServices(_faker.Random.Int(5, 10)).ToDomain(),
+                    EntityHelpers.CreateServices(_faker.Random.Int(5, 10)).ToDomain()
+                );
+        }
+
+        #endregion
 
         #region Addresses API Fake Response
 
