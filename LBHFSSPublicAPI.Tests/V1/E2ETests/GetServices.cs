@@ -38,7 +38,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task Returns404IfNoMatchingService()
         {
             // act
-            var requestUri = new Uri($"api/v1/services/{Randomm.Id(1,10)}", UriKind.Relative);
+            var requestUri = new Uri($"api/v1/services/{Randomm.Id(1, 10)}", UriKind.Relative);
             var response = Client.GetAsync(requestUri).Result;
             var content = response.Content;
             var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
