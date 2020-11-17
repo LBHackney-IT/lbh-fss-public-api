@@ -33,5 +33,18 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             actualService.Service.Id.Should().Be(expectedService.Id);
             actualService.Service.Status.Should().Be(service.Status);
         }
+
+        [Test]
+        public async Task Returns404IfNoMatchingService()
+        {
+            // act
+            var requestUri = new Uri($"api/v1/services/{Randomm.Id(1, 10)}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            var content = response.Content;
+            var stringResponse = await content.ReadAsStringAsync().ConfigureAwait(true);
+            var actualService = JsonConvert.DeserializeObject<GetServiceResponse>(stringResponse);
+            // assert
+            response.StatusCode.Should().Be(404);
+        }
     }
 }
