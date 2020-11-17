@@ -29,7 +29,8 @@ namespace LBHFSSPublicAPI.V1.UseCase
             var servicesGatewayResponse = _servicesGateway.GetService(requestParams.Id);
 
             var usecaseResponse = servicesGatewayResponse.ToResponse();
-
+            if (usecaseResponse == null)
+                return null;
             usecaseResponse.Metadata.PostCode = requestParams.PostCode;
 
             if (!string.IsNullOrEmpty(requestParams.PostCode))
