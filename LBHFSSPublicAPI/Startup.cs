@@ -130,7 +130,10 @@ namespace LBHFSSPublicAPI
             var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY")
             ?? throw new ArgumentNullException("Addresses API key");
 
-            var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey);
+            var apiToken = Environment.GetEnvironmentVariable("ADDRESSES_API_TOKEN")
+                         ?? throw new ArgumentNullException("Addresses API token");
+
+            var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey, apiToken);
 
             services.AddScoped<IAddressesAPIContext>(s =>
             {

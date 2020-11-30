@@ -4,11 +4,13 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
     {
         public string ApiBaseUrl { get; set; }
         public string ApiKey { get; set; }
+        public string ApiToken { get; set; }
 
-        public AddressesAPIConnectionOptions(string apiBaseUrl, string apiKey)
+        public AddressesAPIConnectionOptions(string apiBaseUrl, string apiKey, string apiToken)
         {
             ApiBaseUrl = apiBaseUrl;
             ApiKey = apiKey;
+            ApiToken = apiToken;
         }
     }
 }
