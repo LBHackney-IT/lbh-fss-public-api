@@ -125,9 +125,10 @@ commands:
             DATABASE=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-database --query Parameter.Value)
             ADDRESSES_URL=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-base-url --query Parameter.Value)
             ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value)
+            ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
-            ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
+            ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
 
 jobs:
   check-code-formatting:
@@ -150,7 +151,7 @@ jobs:
           command: docker-compose build fss-public-api-test
       - run:
           name: Run tests
-          command: docker-compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY --rm fss-public-api-test
+          command: docker-compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN --rm fss-public-api-test
   assume-role-development:
     executor: docker-python
     steps:
