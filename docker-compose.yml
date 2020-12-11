@@ -12,6 +12,8 @@ services:
       - CONNECTION_STRING=Host=dev-database;Port=5432;Database=testdb;Username=postgres;Password=mypassword
       - ADDRESSES_API_BASE_URL=Test
       - ADDRESSES_API_KEY=Test
+      - ADDRESSES_API_TOKEN=Test
+      - PLACEHOLDER_IMAGE=Test
       - ASPNETCORE_ENVIRONMENT=Development
     links:
       - dev-database
@@ -37,6 +39,7 @@ services:
       - ADDRESSES_API_BASE_URL=Test
       - ADDRESSES_API_KEY=Test
       - ADDRESSES_API_TOKEN=Test
+      - PLACEHOLDER_IMAGE=Test
     links:
       - test-database
   test-database:
