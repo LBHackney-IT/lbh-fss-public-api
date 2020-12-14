@@ -16,6 +16,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
     {
         // TODO: Add more granural tests.
 
+        private string _imagePlaceholder;
+
+        [SetUp]
+        public void Setup()
+        {
+            _imagePlaceholder = Environment.GetEnvironmentVariable("PLACEHOLDER_IMAGE");
+        }
+
         [TestCase(TestName =
             "Given a service domain object, When ToResponseService factory extension method is called, Then it returns a correctly populated service response boundary object")]
         public void FactoryConvertsServiceDomainIntoServiceResponse()
@@ -217,6 +225,22 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
             factoryResult.Metadata.PostCode.Should().Be(expectedMetadata.PostCode);
             factoryResult.Metadata.PostCodeLatitude.Should().Be(expectedMetadata.PostCodeLatitude);
             factoryResult.Metadata.PostCodeLongitude.Should().Be(expectedMetadata.PostCodeLongitude);
+        }
+
+        [TestCase(TestName = "Given a null image from the gateway, the default placeholder image should be returned")]
+        public void FactoryShouldProvidePlaceholderImageIfImagePropertyIsNull()
+        {
+            // arrange
+            var domainService = EntityHelpers.CreateService().ToDomain();
+            domainService.Image = null;
+
+            // act
+            var expectedService = domainService.ToResponseService();
+
+            // assert
+            expectedService.Images.Should().NotBeNull();
+            expectedService.Images.Medium.Should().Be(_imagePlaceholder);
+            expectedService.Images.Original.Should().Be(_imagePlaceholder);
         }
     }
 }
