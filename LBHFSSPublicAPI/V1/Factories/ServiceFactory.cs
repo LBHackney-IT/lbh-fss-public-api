@@ -12,6 +12,7 @@ namespace LBHFSSPublicAPI.V1.Factories
 {
     public static class ServiceFactory
     {
+        private static string _placeholderImage = Environment.GetEnvironmentVariable("PLACEHOLDER_IMAGE");
         #region Domain to Response - Main objects
 
         public static GetServiceResponse ToResponse(this ServiceEntity serviceDomain)
@@ -141,11 +142,15 @@ namespace LBHFSSPublicAPI.V1.Factories
             var images = serviceDomain?.Image?.Url == null ? System.Array.Empty<string>() : serviceDomain.Image.Url.Split(';');
             return
                 serviceDomain?.Image == null
-                ? null
+                ? new Image()
+                {
+                    Medium = _placeholderImage,
+                    Original = _placeholderImage
+                }
                 : new Image()
                 {
-                    Medium = images.Length > 1 ? images[1] : null,
-                    Original = images.Length > 0 ? images[0] : null
+                    Medium = images.Length > 1 ? images[1] : _placeholderImage,
+                    Original = images.Length > 0 ? images[0] : _placeholderImage
                 };
         }
 
@@ -157,7 +162,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                     Latitude = (double?) x.Latitude,
                     Longitude = (double?) x.Longitude,
                     //check if this is a string or integer (does it have preceding 0 or alpa characters)
-                    Uprn = x.Uprn.ToString(),
+                    Uprn = x.Uprn,
                     Address1 = x.Address1,
                     Address2 = x.Address2,
                     City = x.City,
