@@ -19,7 +19,8 @@ functions:
       CONNECTION_STRING: Host=${ssm:/fss-public-api/${self:provider.stage}/postgres-hostname};Port=${ssm:/fss-public-api/${self:provider.stage}/postgres-port};Database=${ssm:/fss-public-api/${self:provider.stage}/postgres-database};Username=${ssm:/fss-public-api/${self:provider.stage}/postgres-username};Password=${ssm:/fss-public-api/${self:provider.stage}/postgres-password}
       ADDRESSES_API_BASE_URL: ${ssm:/fss-public-api/${self:provider.stage}/addresses-api-base-url}
       ADDRESSES_API_KEY: ${ssm:/fss-public-api/${self:provider.stage}/addresses-api-key}
-      ADDRESS_API_TOKEN: ${ssm:/fss-common-api/${self:provider.stage}/addresses-api-token}
+      ADDRESSES_API_TOKEN: ${ssm:/fss-common-api/${self:provider.stage}/addresses-api-token}
+      PLACEHOLDER_IMAGE: ${ssm:/fss-common-api/${self:provider.stage}/placeholder-image}
     events:
       - http:
           path: /{proxy+}
