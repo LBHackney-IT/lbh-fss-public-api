@@ -162,7 +162,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                     Latitude = (double?) x.Latitude,
                     Longitude = (double?) x.Longitude,
                     //check if this is a string or integer (does it have preceding 0 or alpa characters)
-                    Uprn = x.Uprn.ToString(),
+                    Uprn = x.Uprn,
                     Address1 = x.Address1,
                     Address2 = x.Address2,
                     City = x.City,
