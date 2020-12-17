@@ -475,6 +475,60 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             fullMatches.Should().NotBeNull();
             fullMatches.Count.Should().Be(0);
         }
+
+        [TestCase(TestName = "Given search parameters when the SearchService method is called it returns records matching service name or description")]
+        public void GivenSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsResultsMatchingNameAndDescription()
+        {
+            // arrange
+            var services = EntityHelpers.CreateServices(10);
+            var searchTerm = Randomm.Text();
+            services.First().Name += searchTerm;
+            services[1].Description += searchTerm;
+            var expectedData = new List<Service>();
+            expectedData.Add(services.First());
+            expectedData.Add(services[1]);
+            var requestParams = new SearchServicesRequest();
+            requestParams.Search = searchTerm;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(2);
+        }
+
+        [TestCase(TestName = "Given search parameters when the SearchService method is called it returns matching records with organisation name ranked higher than service name")]
+        public void GivenSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsMatchingRecordsWithOrgNameHigherThanServiceName()
+        {
+            // arrange
+            var services = EntityHelpers.CreateServices(10);
+            var searchTerm = Randomm.Text();
+            services.First().Name += searchTerm;
+            services[1].Organization.Name += searchTerm;
+            var expectedData = new List<Service>();
+            expectedData.Add(services.First());
+            expectedData.Add(services[1]);
+            var requestParams = new SearchServicesRequest();
+            requestParams.Search = searchTerm;
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(requestParams);
+            var fullMatches = gatewayResult.FullMatchServices;
+
+            // assert
+            gatewayResult.Should().NotBeNull();
+            fullMatches.Should().NotBeNull();
+            fullMatches.Count.Should().Be(2);
+             fullMatches[0].Name.Should().Be(services[1].Name);
+             fullMatches[1].Name.Should().Be(services[0].Name);
+        }
         #endregion
     }
 }
