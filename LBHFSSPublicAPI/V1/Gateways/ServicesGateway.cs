@@ -106,7 +106,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 fullMatchServicesQuery = fullMatchServicesQuery.Where(s => filters.Any(p => p(s)));
                 fullMatchServices = AddToCollection(fullMatchServices, fullMatchServicesQuery.Select(s => s.ToDomain()).ToList());
 
-                // Filter on service name
+                // Filter on service description
                 containsUserInput = service => service.Description.ToLower().Contains(searchInputText);
                 containsAnySynonym = service => synonyms.Any(sn => service.Description.ToLower().Contains(sn));
                 filters = new List<Predicate<Service>>() { containsUserInput };
