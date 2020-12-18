@@ -224,12 +224,13 @@ namespace LBHFSSPublicAPI.V1.Gateways
 
         private void AddToCollection(List<ServiceEntity> collection, List<ServiceEntity> set)
         {
-            var collectionSet = new HashSet<ServiceEntity>();
             foreach (var item in set)
             {
-                collectionSet.Add(item);
+                if (!collection.Any(c => c.Id == item.Id))
+                {
+                    collection.Add(item);
+                }
             }
-            collection.AddRange(collectionSet.ToList());
         }
     }
 }
