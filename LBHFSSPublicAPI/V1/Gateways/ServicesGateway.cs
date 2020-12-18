@@ -41,7 +41,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Include(s => s.ServiceLocations)
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
-                .Where(s => s.Organization.Status.ToLower() == "active")
+                .Where(s => s.Organization.Status.ToLower() == "published")
                 .AsEnumerable();
 
             IEnumerable<Service> fullMatchServicesQuery = baseQuery,
