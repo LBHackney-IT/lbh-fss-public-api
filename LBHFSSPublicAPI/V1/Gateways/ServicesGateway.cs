@@ -41,7 +41,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Include(s => s.ServiceLocations)
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
-                .Where(s => s.Status == "active")
+                .Where(s => s.Organization.Status.ToLower() == "active")
                 .AsEnumerable();
 
             IEnumerable<Service> fullMatchServicesQuery = baseQuery,
@@ -88,18 +88,34 @@ namespace LBHFSSPublicAPI.V1.Gateways
                         .ToList())
                     .ToList();
 
-                Predicate<Service> containsUserInput = service => service.Name.ToLower().Contains(searchInputText);
-                Predicate<Service> containsAnySynonym = service => synonyms.Any(sn => service.Name.ToLower().Contains(sn));
+                // Filter on service organisation name
+                Predicate<Service> containsUserInput = service => service.Organization.Name.ToLower().Contains(searchInputText);
+                Predicate<Service> containsAnySynonym = service => synonyms.Any(sn => service.Organization.Name.ToLower().Contains(sn));
+                ApplyFullTextFilter(containsUserInput,
+                    containsAnySynonym,
+                    synonyms,
+                    fullMatchServicesQuery,
+                    fullMatchServices);
 
-                var filters = new List<Predicate<Service>>() { containsUserInput };
+                // Filter on service name
+                containsUserInput = service => service.Name.ToLower().Contains(searchInputText);
+                containsAnySynonym = service => synonyms.Any(sn => service.Name.ToLower().Contains(sn));
+                ApplyFullTextFilter(containsUserInput,
+                    containsAnySynonym,
+                    synonyms,
+                    fullMatchServicesQuery,
+                    fullMatchServices);
 
-                if (synonyms.Count > 0)
-                    filters.Add(containsAnySynonym);
+                // Filter on service description
+                containsUserInput = service => service.Description.ToLower().Contains(searchInputText);
+                containsAnySynonym = service => synonyms.Any(sn => service.Description.ToLower().Contains(sn));
+                ApplyFullTextFilter(containsUserInput,
+                    containsAnySynonym,
+                    synonyms,
+                    fullMatchServicesQuery,
+                    fullMatchServices);
 
-                fullMatchServicesQuery = fullMatchServicesQuery.Where(s => filters.Any(p => p(s)));
-
-                fullMatchServices = fullMatchServicesQuery.Select(s => s.ToDomain()).ToList();
-
+                // More than one word in search input
                 if (moreThan1SearchInputWord)
                 {
                     var splitWordSynonyms = _context.SynonymWords
@@ -111,41 +127,109 @@ namespace LBHFSSPublicAPI.V1.Gateways
                         .Select(sw => sw.Word.ToLower())
                         .ToHashSet();
 
-                    Predicate<Service> containsSplitUserInput = service => splitWords.Any(spw => service.Name.ToLower().Contains(spw));
-                    Predicate<Service> containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Name.ToLower().Contains(spwsn));
+                    // Filter on service organisation name
+                    Predicate<Service> containsSplitUserInput = service => splitWords.Any(spw => service.Organization.Name.ToLower().Contains(spw));
+                    Predicate<Service> containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Organization.Name.ToLower().Contains(spwsn));
 
-                    var splitFilters = new List<Predicate<Service>>() { containsSplitUserInput };
+                    ApplySplitMatchFilter(containsSplitUserInput,
+                        containsAnySplitInputSynonym,
+                        splitMatchServicesQuery,
+                        splitWordSynonyms,
+                        demographicTaxonomies,
+                        categoryTaxonomies,
+                        splitMatchServices,
+                        fullMatchServices);
 
-                    if (splitWordSynonyms.Count > 0)
-                        splitFilters.Add(containsAnySplitInputSynonym);
+                    // Filter on service name
+                    containsSplitUserInput = service => splitWords.Any(spw => service.Name.ToLower().Contains(spw));
+                    containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Name.ToLower().Contains(spwsn));
 
-                    splitMatchServicesQuery = splitMatchServicesQuery.Where(s => splitFilters.Any(p => p(s))); //.Distinct(; is Id unique, or not?
+                    ApplySplitMatchFilter(containsSplitUserInput,
+                        containsAnySplitInputSynonym,
+                        splitMatchServicesQuery,
+                        splitWordSynonyms,
+                        demographicTaxonomies,
+                        categoryTaxonomies,
+                        splitMatchServices,
+                        fullMatchServices);
 
-                    if (demographicTaxonomies != null && demographicTaxonomies.Count != 0)
-                        splitMatchServicesQuery = splitMatchServicesQuery
-                            .Where(s => s.ServiceTaxonomies
-                            .Any(st => demographicTaxonomies.Contains(st.TaxonomyId)));
-
-                    if (categoryTaxonomies != null && categoryTaxonomies.Count != 0)
-                        splitMatchServicesQuery = splitMatchServicesQuery
-                            .Where(s => s.ServiceTaxonomies
-                            .Any(st => categoryTaxonomies.Contains(st.TaxonomyId)));
-
-                    splitMatchServices = splitMatchServicesQuery.Select(s => s.ToDomain()).Except(
-                        fullMatchServices,
-                        new AnonEqualityComparer<ServiceEntity>(
-                            (f, s) => f.Name == s.Name,
-                            o => o.Id ^ o.Name.GetHashCode() ^ o.Description.GetHashCode()
-                        ))
-                        .ToList();
+                    // Filter on service description
+                    containsSplitUserInput = service => splitWords.Any(spw => service.Description.ToLower().Contains(spw));
+                    containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Description.ToLower().Contains(spwsn));
+                    ApplySplitMatchFilter(containsSplitUserInput,
+                        containsAnySplitInputSynonym,
+                        splitMatchServicesQuery,
+                        splitWordSynonyms,
+                        demographicTaxonomies,
+                        categoryTaxonomies,
+                        splitMatchServices,
+                        fullMatchServices);
                 }
             }
             else
             {
-                fullMatchServices = fullMatchServicesQuery.Select(s => s.ToDomain()).ToList();
+                AddToCollection(fullMatchServices, fullMatchServicesQuery.Select(s => s.ToDomain()).ToList());
             }
 
             return new SearchServiceGatewayResult(fullMatchServices, splitMatchServices);
+        }
+
+        private void ApplyFullTextFilter(Predicate<Service> containsUserInput,
+            Predicate<Service> containsAnySynonym,
+            HashSet<string> synonyms,
+            IEnumerable<Service> fullMatchServicesQuery,
+            List<ServiceEntity> fullMatchServices)
+        {
+            var filters = new List<Predicate<Service>>() { containsUserInput };
+            if (synonyms.Count > 0)
+                filters.Add(containsAnySynonym);
+            fullMatchServicesQuery = fullMatchServicesQuery.Where(s => filters.Any(p => p(s)));
+            AddToCollection(fullMatchServices, fullMatchServicesQuery.Select(s => s.ToDomain()).ToList());
+        }
+
+        private void ApplySplitMatchFilter(Predicate<Service> containsSplitUserInput,
+            Predicate<Service> containsAnySplitInputSynonym,
+            IEnumerable<Service> splitMatchServicesQuery,
+            HashSet<string> splitWordSynonyms,
+            List<int> demographicTaxonomies,
+            List<int> categoryTaxonomies,
+            List<ServiceEntity> splitMatchServices,
+            List<ServiceEntity> fullMatchServices)
+        {
+            var splitFilters = new List<Predicate<Service>>() { containsSplitUserInput };
+
+            if (splitWordSynonyms.Count > 0)
+                splitFilters.Add(containsAnySplitInputSynonym);
+
+            splitMatchServicesQuery = splitMatchServicesQuery.Where(s => splitFilters.Any(p => p(s))); //.Distinct(; is Id unique, or not?
+
+            if (demographicTaxonomies != null && demographicTaxonomies.Count != 0)
+                splitMatchServicesQuery = splitMatchServicesQuery
+                    .Where(s => s.ServiceTaxonomies
+                        .Any(st => demographicTaxonomies.Contains(st.TaxonomyId)));
+
+            if (categoryTaxonomies != null && categoryTaxonomies.Count != 0)
+                splitMatchServicesQuery = splitMatchServicesQuery
+                    .Where(s => s.ServiceTaxonomies
+                        .Any(st => categoryTaxonomies.Contains(st.TaxonomyId)));
+
+            AddToCollection(splitMatchServices, splitMatchServicesQuery.Select(s => s.ToDomain()).Except(
+                    fullMatchServices,
+                    new AnonEqualityComparer<ServiceEntity>(
+                        (f, s) => f.Name == s.Name,
+                        o => o.Id ^ o.Name.GetHashCode() ^ o.Description.GetHashCode()
+                    ))
+                .ToList());
+        }
+
+        private void AddToCollection(List<ServiceEntity> collection, List<ServiceEntity> set)
+        {
+            var collectionSet = new HashSet<ServiceEntity>();
+            foreach (var item in set)
+            {
+                collectionSet.Add(item);
+            }
+            collection.AddRange(collectionSet.ToList());
         }
     }
 }
