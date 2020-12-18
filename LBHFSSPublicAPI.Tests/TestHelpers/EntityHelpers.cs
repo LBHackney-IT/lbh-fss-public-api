@@ -58,7 +58,7 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         {
             var organization = Randomm.Build<Organization>()
                 .Without(o => o.Id)
-                .With(o => o.Status, "active")
+                .With(o => o.Status, "published")
                 .With(o => o.ReviewerU, CreateUser())
                 .Create();
             return organization;
