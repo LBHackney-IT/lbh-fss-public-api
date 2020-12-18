@@ -526,8 +526,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             gatewayResult.Should().NotBeNull();
             fullMatches.Should().NotBeNull();
             fullMatches.Count.Should().Be(2);
-             fullMatches[0].Name.Should().Be(services[1].Name);
-             fullMatches[1].Name.Should().Be(services[0].Name);
+            fullMatches[0].Name.Should().Be(services[1].Name);
+            fullMatches[1].Name.Should().Be(services[0].Name);
         }
 
         [TestCase(TestName = "Given user search input that include split part's synonym matches, When SearchService gateway method is called, the split part synonym matches are returned in the appropriate rank.")]
