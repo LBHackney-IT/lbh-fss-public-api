@@ -205,7 +205,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var synonymGroup2 = EntityHelpers.CreateSynonymGroupWithWords(3);
             synonymGroup2.SynonymWords.ToList()[1].Word = synonymGroup1.SynonymWords.ToList()[1].Word;
             var services = EntityHelpers.CreateServices();
-            services.ForEach(s => s.Name = "irrelenvant");
+            services.ForEach(s => s.Name = "irrelevant");
             var serviceToFind1 = EntityHelpers.CreateService();
             var serviceToFind2 = EntityHelpers.CreateService();
             var searchTerm = synonymGroup1.SynonymWords.ToList()[1].Word;
@@ -528,6 +528,85 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             fullMatches.Count.Should().Be(2);
              fullMatches[0].Name.Should().Be(services[1].Name);
              fullMatches[1].Name.Should().Be(services[0].Name);
+        }
+
+        [TestCase(TestName = "Given user search input that include split part's synonym matches, When SearchService gateway method is called, the split part synonym matches are returned in the appropriate rank.")]
+        public void WholeAndSplitUserInputMatchesAreReturnedInCorrectRank()
+        {
+            // arrange
+            var searchWord1 = Randomm.Word();                            // word that won't match any results, however 1 of its synonyms from synonym group will
+            var searchWord2 = Randomm.Word();                            // same as above, but the matching synonym will be in another synonym group
+            var irrelevantWord = Randomm.Word();                         // a control word, that won't match anything, nor its synonyms will.
+
+            var userInput = $"{searchWord1} "
+                          + $"{irrelevantWord} "
+                          + $"{searchWord2}";
+
+            var request = new SearchServicesRequest();
+            request.Search = userInput;
+
+            var bridgeSyn1Word = Utility.SuperSetOfString(searchWord1);     // A superset word of search word 1 that will relate to a synonym word inside synonym group 1 - this word has no match in the DB
+            var bridgeSyn2Word = Utility.SuperSetOfString(searchWord2);     // A superset word of search word 2 that will relate to a synonym word inside synonym group 2 - this word has no match in the DB
+
+
+            var synWord1 = Randomm.Word();                            // synonym within the same synonym group (1) as a word related to search word 1 - this word has a match in the DB
+            var synWord2 = Randomm.Word();                            // synonym within the same synonym group (1) as a word related to search word 1 - this word has a match in the DB
+            var synWord3 = Randomm.Word();                            // synonym within the same synonym group (2) as a word related to search word 2 - this word has a match in the DB
+
+
+            var synonymGroup1 = EntityHelpers.CreateSynonymGroupWithWords();            // relevant group with dummy synonym words
+            var synonymGroup2 = EntityHelpers.CreateSynonymGroupWithWords();            // relevant group with dummy synonym words
+            var dummySynGroup = EntityHelpers.CreateSynonymGroupWithWords();            // dummy synonym group that should not be picked up
+
+            var bridgeSynonym1 = EntityHelpers.SynWord(synonymGroup1, bridgeSyn1Word);  // synonym that has no match in DB, however it bridges user input search word with the synonym group 1
+            var bridgeSynonym2 = EntityHelpers.SynWord(synonymGroup2, bridgeSyn2Word);
+
+            var matchSynonym1 = EntityHelpers.SynWord(synonymGroup1, synWord1);         // creating a synonym word object to insert that will have a match, creating a link with synonym group 1
+            var matchSynonym2 = EntityHelpers.SynWord(synonymGroup1, synWord2);
+            var matchSynonym3 = EntityHelpers.SynWord(synonymGroup2, synWord3);
+
+
+            synonymGroup1.SynonymWords.Add(bridgeSynonym1);                  // added bridge synonym to the synonym group
+            synonymGroup2.SynonymWords.Add(bridgeSynonym2);
+
+            synonymGroup1.SynonymWords.Add(matchSynonym1);                   // added match synonym into a synonym group
+            synonymGroup1.SynonymWords.Add(matchSynonym2);
+            synonymGroup2.SynonymWords.Add(matchSynonym3);
+
+
+            var services = EntityHelpers.CreateServices(5);                  // creating list of dummy services that should not be found
+
+            var matchService1 = EntityHelpers.CreateService();               // service that is intended to be found through the synonym of synonym group 1
+            var matchService2 = EntityHelpers.CreateService();               // service that is intended to be found through the synonym of synonym group 1
+            var matchService3 = EntityHelpers.CreateService();               // service that is intended to be found through the synonym of synonym group 2
+            var matchService4 = EntityHelpers.CreateService();               // service that is intended to be found through the main search term
+
+            matchService1.Name += synWord1;                                  // creating a link between a service and a match synonym 1
+            matchService2.Description += synWord2;                           // creating a link between a service and a match synonym 2
+            matchService3.Organization.Name += synWord3;                     // creating a link between a service and a match synonym 3
+            matchService4.Organization.Name += searchWord1;                  // creating a link between a service and a main search word
+
+            services.AddMany(matchService1, matchService2, matchService3, matchService4);   // include match services into a to be inserted services collection
+
+            DatabaseContext.SynonymGroups.AddRange(synonymGroup1);           // adding synonym groups containing synonym words into a database
+            DatabaseContext.SynonymGroups.AddRange(synonymGroup2);
+            DatabaseContext.SynonymGroups.AddRange(dummySynGroup);
+            DatabaseContext.Services.AddRange(services);                     // adding services into a database
+
+            DatabaseContext.SaveChanges();
+
+            // act
+            var gatewayResult = _classUnderTest.SearchServices(request);
+            var splitMatches = gatewayResult.SplitMatchServices;
+            var fullMatches = gatewayResult.FullMatchServices;
+
+            // assert
+            splitMatches.Should().HaveCount(4);
+            fullMatches.Should().HaveCount(0);
+            splitMatches[1].Name.Should().Be(matchService4.Name);
+            // splitMatches[1].Name.Should().Be(matchService3.Name);
+            // splitMatches[2].Name.Should().Be(matchService1.Name);
+            // splitMatches[3].Name.Should().Be(matchService2.Name);
         }
         #endregion
     }
