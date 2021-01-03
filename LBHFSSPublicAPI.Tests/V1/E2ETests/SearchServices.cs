@@ -218,5 +218,59 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
             deserializedBody.Services.Count.Should().Be(1);
         }
+
+        [TestCase(TestName =
+            "Given that there are services in the database, if a taxonomy only params are provided, the matches are returned in the appropriate rank.")]
+        public async Task SearchServicesReturnServicesAccordingToRankIfMatched()
+        {
+            var searchWord1 = Randomm.Word();
+            var searchWord2 = Randomm.Word();
+            var irrelevantWord = Randomm.Word();
+            var bridgeSyn1Word = Utility.SuperSetOfString(searchWord1);
+            var bridgeSyn2Word = Utility.SuperSetOfString(searchWord2);
+            var synWord1 = Randomm.Word();
+            var synWord2 = Randomm.Word();
+            var synWord3 = Randomm.Word();
+            var synonymGroup1 = EntityHelpers.CreateSynonymGroupWithWords();
+            var synonymGroup2 = EntityHelpers.CreateSynonymGroupWithWords();
+            var dummySynGroup = EntityHelpers.CreateSynonymGroupWithWords();
+            var bridgeSynonym1 = EntityHelpers.SynWord(synonymGroup1, bridgeSyn1Word);
+            var bridgeSynonym2 = EntityHelpers.SynWord(synonymGroup2, bridgeSyn2Word);
+            var matchSynonym1 = EntityHelpers.SynWord(synonymGroup1, synWord1);
+            var matchSynonym2 = EntityHelpers.SynWord(synonymGroup1, synWord2);
+            var matchSynonym3 = EntityHelpers.SynWord(synonymGroup2, synWord3);
+            synonymGroup1.SynonymWords.Add(bridgeSynonym1);
+            synonymGroup2.SynonymWords.Add(bridgeSynonym2);
+            synonymGroup1.SynonymWords.Add(matchSynonym1);
+            synonymGroup1.SynonymWords.Add(matchSynonym2);
+            synonymGroup2.SynonymWords.Add(matchSynonym3);
+            var services = EntityHelpers.CreateServices(5);
+            var matchService1 = EntityHelpers.CreateService();
+            var matchService2 = EntityHelpers.CreateService();
+            var matchService3 = EntityHelpers.CreateService();
+            var matchService4 = EntityHelpers.CreateService();
+            matchService1.Name += searchWord2;
+            matchService2.Description += synWord2;
+            matchService3.Organization.Name += synWord3;
+            matchService4.Organization.Name += searchWord1;
+            services.AddMany(matchService1, matchService2, matchService3, matchService4);
+            DatabaseContext.SynonymGroups.AddRange(synonymGroup1);
+            DatabaseContext.SynonymGroups.AddRange(synonymGroup2);
+            DatabaseContext.SynonymGroups.AddRange(dummySynGroup);
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            var requestUri = new Uri($"api/v1/services?search={searchWord1} {searchWord2} {irrelevantWord}", UriKind.Relative);
+            var response = Client.GetAsync(requestUri).Result;
+            response.StatusCode.Should().Be(200);
+            var content = response.Content;
+            var stringContent = await content.ReadAsStringAsync().ConfigureAwait(false);
+            var deserializedBody = JsonConvert.DeserializeObject<GetServiceResponseList>(stringContent);
+            deserializedBody.Services.Count.Should().Be(4);
+            deserializedBody.Services[0].Name.Should().Be(matchService4.Name);
+            deserializedBody.Services[1].Name.Should().Be(matchService1.Name);
+            deserializedBody.Services[2].Name.Should().Be(matchService3.Name);
+            deserializedBody.Services[3].Name.Should().Be(matchService2.Name);
+        }
     }
 }

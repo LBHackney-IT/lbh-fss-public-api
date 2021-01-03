@@ -109,13 +109,13 @@ namespace LBHFSSPublicAPI.V1.UseCase
                 fullMServices.Sort();       // Sort by minimum service location's distance
                 splitMServices.Sort();      // IComparator<Service> is defined on the object iteself
             }
-            else
-            {
-                Comparison<Response.Service> byName = (s1, s2) => string.Compare(s1.Name, s2.Name);
-
-                fullMServices.Sort(byName);
-                splitMServices.Sort(byName);
-            }
+            // else
+            // {
+            //     Comparison<Response.Service> byName = (s1, s2) => string.Compare(s1.Name, s2.Name);
+            //
+            //     fullMServices.Sort(byName);
+            //     splitMServices.Sort(byName);
+            // }
 
             var usecaseResponse = ServiceFactory.SearchServiceUsecaseResponse(fullMServices, splitMServices, metadata);
             return usecaseResponse;
