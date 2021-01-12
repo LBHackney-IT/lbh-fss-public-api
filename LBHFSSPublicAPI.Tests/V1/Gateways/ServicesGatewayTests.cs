@@ -581,7 +581,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var matchService3 = EntityHelpers.CreateService();               // service that is intended to be found through the synonym of synonym group 2
             var matchService4 = EntityHelpers.CreateService();               // service that is intended to be found through the main search term
 
-            matchService1.Name += synWord1;                                  // creating a link between a service and a match synonym 1
+            matchService1.Name += searchWord2;                                  // creating a link between a service and a match synonym 1
             matchService2.Description += synWord2;                           // creating a link between a service and a match synonym 2
             matchService3.Organization.Name += synWord3;                     // creating a link between a service and a match synonym 3
             matchService4.Organization.Name += searchWord1;                  // creating a link between a service and a main search word
@@ -603,10 +603,10 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // assert
             splitMatches.Should().HaveCount(4);
             fullMatches.Should().HaveCount(0);
-            splitMatches[1].Name.Should().Be(matchService4.Name);
-            // splitMatches[1].Name.Should().Be(matchService3.Name);
-            // splitMatches[2].Name.Should().Be(matchService1.Name);
-            // splitMatches[3].Name.Should().Be(matchService2.Name);
+            splitMatches[0].Name.Should().Be(matchService4.Name);
+            splitMatches[1].Name.Should().Be(matchService1.Name);
+            splitMatches[2].Name.Should().Be(matchService3.Name);
+            splitMatches[3].Name.Should().Be(matchService2.Name);
         }
         #endregion
     }
