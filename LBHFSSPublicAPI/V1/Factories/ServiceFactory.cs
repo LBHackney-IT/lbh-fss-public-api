@@ -98,7 +98,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                         {
                             Id = st.Taxonomy.Id,
                             Name = st.Taxonomy.Name,
-                            Description = st.Taxonomy.Description,
+                            Description = st.Description,
                             Vocabulary = st.Taxonomy.Vocabulary,
                             Weight = st.Taxonomy.Weight
                         })
