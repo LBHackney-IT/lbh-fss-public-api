@@ -43,7 +43,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Factories
                     st.Taxonomy != null &&
                     st.Taxonomy.Id == c.Id &&
                     st.Taxonomy.Name == c.Name &&
-                    st.Taxonomy.Description == c.Description &&
+                    st.Description == c.Description &&
                     st.Taxonomy.Weight == c.Weight
                     ));
 
