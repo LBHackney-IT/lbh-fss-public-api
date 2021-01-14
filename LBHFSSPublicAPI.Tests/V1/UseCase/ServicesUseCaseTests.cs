@@ -37,7 +37,7 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
         #region Get Multiple Services
 
         [TestCase(TestName = "Given a valid request parameter when the use case is called the gateway will be called with the unwrapped id")]
-        public void GetServicesUseCaseCallsGatewayGetServices() // ???? Duplicate test. I think the intention was to test the other endpoint. TODO: change upon refactoring. 
+        public void GetServicesUseCaseCallsGatewayGetServices() // ???? Duplicate test. I think the intention was to test the other endpoint. TODO: change upon refactoring.
         {
             // dummy setup
             var expectedService = EntityHelpers.CreateService().ToDomain();
@@ -143,29 +143,28 @@ namespace LBHFSSPublicAPI.Tests.V1.UseCase
             usecaseResponse.Services.Should().OnlyContain(s => s.Locations.All(l => l.Distance == null));
         }
 
-        // TODO: Sorting!
-
-        [TestCase(TestName = "Given no postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the service name.")]
-        public void GivenNoPostcodeReturnedServicesAreOrderedAscByName()
-        {
-            // arrange
-            var request = Randomm.Create<SearchServicesRequest>();
-            request.PostCode = null;
-
-            var gatewayResponse = Randomm.SSGatewayResult();
-            var fullMLength = gatewayResponse.FullMatchServices.Count;
-            var splitMLength = gatewayResponse.SplitMatchServices.Count;
-
-            _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
-
-            // act
-            var usecaseResponse = _classUnderTest.ExecuteGet(request);
-
-            // assert
-            usecaseResponse.Services.Take(fullMLength).Should().BeInAscendingOrder(s => s.Name);
-            usecaseResponse.Services.Skip(fullMLength).Should().BeInAscendingOrder(s => s.Name);
-            usecaseResponse.Services.Should().HaveCount(fullMLength + splitMLength);
-        }
+        // Sorting requirement has changed.  Would we still need this or will it have to change?
+        // [TestCase(TestName = "Given no postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the service name.")]
+        // public void GivenNoPostcodeReturnedServicesAreOrderedAscByName()
+        // {
+        //     // arrange
+        //     var request = Randomm.Create<SearchServicesRequest>();
+        //     request.PostCode = null;
+        //
+        //     var gatewayResponse = Randomm.SSGatewayResult();
+        //     var fullMLength = gatewayResponse.FullMatchServices.Count;
+        //     var splitMLength = gatewayResponse.SplitMatchServices.Count;
+        //
+        //     _mockServicesGateway.Setup(g => g.SearchServices(It.IsAny<SearchServicesRequest>())).Returns(gatewayResponse);
+        //
+        //     // act
+        //     var usecaseResponse = _classUnderTest.ExecuteGet(request);
+        //
+        //     // assert
+        //     usecaseResponse.Services.Take(fullMLength).Should().BeInAscendingOrder(s => s.Name);
+        //     usecaseResponse.Services.Skip(fullMLength).Should().BeInAscendingOrder(s => s.Name);
+        //     usecaseResponse.Services.Should().HaveCount(fullMLength + splitMLength);
+        // }
 
         [TestCase(TestName = "Given a postcode, When usecase's ExecuteGet method is called, Then it returns a collection of services ordered asc by the closest service location distance AND if service has no locations THEN that service will be at the end of the list.")]
         public void GivenAPostcodeReturnedServicesAreOrderedInAWayWhereIfTheyHaveNoChildLocationsTheyAreConsideredTheMostDistant()
