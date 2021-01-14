@@ -44,6 +44,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public string AdultSafeguardingLeadTrainingYear { get; set; }
         public bool? HasEnhancedSupport { get; set; }
         public bool? IsLocalOfferListed { get; set; }
+        public DateTime? LastRevalidation { get; set; }
+        public bool InRevalidationProcess { get; set; }
 
         public virtual User ReviewerU { get; set; }
         public virtual ICollection<Service> Services { get; set; }
