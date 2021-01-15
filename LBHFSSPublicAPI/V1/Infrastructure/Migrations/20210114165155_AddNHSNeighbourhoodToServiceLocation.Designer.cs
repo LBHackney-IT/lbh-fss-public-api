@@ -3,15 +3,17 @@ using System;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20210114165155_AddNHSNeighbourhoodToServiceLocation")]
+    partial class AddNHSNeighbourhoodToServiceLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,10 +122,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnName("has_hcvs_or_hg_or_ael_grant")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("InRevalidationProcess")
-                        .HasColumnName("in_revalidation_process")
-                        .HasColumnType("boolean");
-
                     b.Property<bool?>("IsHackneyBased")
                         .HasColumnName("is_hackney_based")
                         .HasColumnType("boolean");
@@ -143,10 +141,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.Property<bool?>("IsTraRegistered")
                         .HasColumnName("is_tra_registered")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastRevalidation")
-                        .HasColumnName("last_revalidation")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LotteryFundedProject")
                         .HasColumnName("lottery_funded_project")

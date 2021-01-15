@@ -117,7 +117,7 @@ namespace LBHFSSPublicAPI
 
         private static void ConfigureDbContext(IServiceCollection services)
         {
-            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Host=;Database=;";
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Host=127.0.0.1;Database=testdb;port=6543;username=postgres;password=mypassword;";
             services.AddDbContext<DatabaseContext>(
                 opt => opt.UseNpgsql(connectionString));
         }
