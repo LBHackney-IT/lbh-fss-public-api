@@ -41,7 +41,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
 
             // assert
             gatewayResult.Should().NotBeNull();
-            gatewayResult.Should().BeEquivalentTo(expectedResult);
+            gatewayResult.Should().BeEquivalentTo(expectedResult, options =>
+            {
+                options.Excluding(ex => ex.ServiceAnalytics);
+                return options;
+            });
         }
 
         [TestCase(TestName = "Given an id that does not exist in the database when the GetService method is called it returns null")]
@@ -60,6 +64,24 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // assert
             gatewayResult.Should().BeNull();
         }
+
+        [TestCase(TestName = "Given a valid id that has a match when the gateway is called the gateway will add a record to service analytics")]
+        public void GivenIdThatHasAMatchWhenGatewayMethodIsCalledThenTheServiceAnalyticsRecordGetsUpdated()
+        {
+            // arrange
+            var services = EntityHelpers.CreateServices();
+            DatabaseContext.Services.AddRange(services);
+            DatabaseContext.SaveChanges();
+
+            var expectedResult = DatabaseContext.Services.First();
+            var expectedId = expectedResult.Id;
+
+            // act
+            var gatewayResult = _classUnderTest.GetService(expectedId);
+
+            // assert
+            expectedResult.ServiceAnalytics.Count.Should().Be(1);
+        }
         #endregion
 
         #region Search Services
@@ -76,7 +98,6 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             requestParams.Search = searchTerm;
             DatabaseContext.Services.AddRange(services);
             DatabaseContext.SaveChanges();
-
             // act
             var gatewayResult = _classUnderTest.SearchServices(requestParams);
             var fullMatches = gatewayResult.FullMatchServices;

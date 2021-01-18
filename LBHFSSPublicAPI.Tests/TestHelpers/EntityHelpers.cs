@@ -187,15 +187,12 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
             };
         }
 
-
-        // public static UserRole CreateUserRole()
-        // {
-        //     var userRole = Randomm.Build<UserRole>()
-        //         .Without(ur => ur.Id)
-        //         .With(ur => ur.IdNavigation, CreateUser())
-        //         .With(ur => ur.Role, CreateRole())
-        //         .Create();
-        //     return userRole;
-        // }
+        public static AnalyticsEvent CreateAnalyticsEvent()
+        {
+            return Randomm.Build<AnalyticsEvent>()
+                .Without(s => s.Id)
+                .With(s => s.Service, CreateService())
+                .Create();
+        }
     }
 }

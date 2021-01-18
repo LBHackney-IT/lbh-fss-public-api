@@ -120,5 +120,16 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             var result = DatabaseContext.ServiceLocations.ToList().FirstOrDefault();
             result.Should().BeEquivalentTo(serviceLocation);
         }
+
+        [Test]
+        public void CanCreateAnAnalyticsEventEntity()
+        {
+            var analyticsEvent = EntityHelpers.CreateAnalyticsEvent();
+            DatabaseContext.Add(analyticsEvent);
+            DatabaseContext.SaveChanges();
+            var result = DatabaseContext.ServiceAnalytics.ToList().FirstOrDefault();
+            result.Should().BeEquivalentTo(analyticsEvent);
+        }
+
     }
 }
