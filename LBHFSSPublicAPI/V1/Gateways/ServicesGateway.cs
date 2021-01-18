@@ -26,11 +26,16 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 .Include(s => s.Image)
                 .Include(s => s.Organization)
                 .Include(s => s.ServiceLocations)
+                .Include(s => s.ServiceAnalytics)
                 .Include(s => s.ServiceTaxonomies)
                 .ThenInclude(st => st.Taxonomy)
-                .FirstOrDefault(x => x.Id == id)
-                .ToDomain();
-            return service;
+                .FirstOrDefault(x => x.Id == id);
+            service?.ServiceAnalytics.Add(new AnalyticsEvent
+            {
+                TimeStamp = DateTime.Now
+            });
+            _context.SaveChanges();
+            return service.ToDomain();
         }
 
         public SearchServiceGatewayResult SearchServices(SearchServicesRequest requestParams)
