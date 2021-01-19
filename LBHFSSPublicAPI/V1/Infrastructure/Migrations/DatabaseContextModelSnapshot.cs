@@ -32,7 +32,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("TimeStamp")
-                        .HasColumnName("description")
+                        .HasColumnName("timestamp")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");

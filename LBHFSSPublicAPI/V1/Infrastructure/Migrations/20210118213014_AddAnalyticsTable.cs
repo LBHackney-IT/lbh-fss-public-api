@@ -15,7 +15,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     service_id = table.Column<int>(nullable: false),
-                    description = table.Column<DateTime>(nullable: false)
+                    timestamp = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {

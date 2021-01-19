@@ -268,7 +268,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                     .HasColumnName("id")
                     .UseIdentityAlwaysColumn(); ;
 
-                entity.Property(e => e.TimeStamp).HasColumnName("description");
+                entity.Property(e => e.TimeStamp).HasColumnName("timestamp");
 
                 entity.Property(e => e.ServiceId).HasColumnName("service_id");
 
