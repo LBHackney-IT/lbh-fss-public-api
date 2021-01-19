@@ -40,6 +40,7 @@ namespace LBHFSSPublicAPI.Tests
             Client = _factory.CreateClient();
             DatabaseContext = new DatabaseContext(_builder.Options);
             DatabaseContext.Database.EnsureCreated();
+            DbCleardown.ClearAll(DatabaseContext);
             _transaction = DatabaseContext.Database.BeginTransaction();
         }
 
@@ -56,8 +57,8 @@ namespace LBHFSSPublicAPI.Tests
             {
                 Console.WriteLine(e.Message);
             }
-
             _transaction.Dispose();
         }
+
     }
 }

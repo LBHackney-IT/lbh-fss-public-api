@@ -19,6 +19,7 @@ namespace LBHFSSPublicAPI.Tests
             builder.UseNpgsql(ConnectionString.TestDatabase());
             DatabaseContext = new DatabaseContext(builder.Options);
             DatabaseContext.Database.EnsureCreated();
+            DbCleardown.ClearAll(DatabaseContext);
             _transaction = DatabaseContext.Database.BeginTransaction();
             CustomizeAssertions.ApproximationDateTime();
         }
@@ -28,6 +29,7 @@ namespace LBHFSSPublicAPI.Tests
         {
             _transaction.Rollback();
             _transaction.Dispose();
+            DbCleardown.ClearAll(DatabaseContext);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<ServiceLocation> ServiceLocations { get; set; }
         public virtual DbSet<ServiceTaxonomy> ServiceTaxonomies { get; set; }
+        public virtual DbSet<AnalyticsEvent> ServiceAnalytics { get; set; }
         public virtual DbSet<Service> Services { get; set; }
         public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<SynonymGroup> SynonymGroups { get; set; }
@@ -257,6 +258,25 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
                     .WithMany(p => p.ServiceTaxonomies)
                     .HasForeignKey(d => d.TaxonomyId)
                     .HasConstraintName("service_taxonomies_taxonomy_id_fkey");
+            });
+
+            modelBuilder.Entity<AnalyticsEvent>(entity =>
+            {
+                entity.ToTable("service_analytics");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .UseIdentityAlwaysColumn(); ;
+
+                entity.Property(e => e.TimeStamp).HasColumnName("timestamp");
+
+                entity.Property(e => e.ServiceId).HasColumnName("service_id");
+
+                entity.HasOne(d => d.Service)
+                    .WithMany(p => p.ServiceAnalytics)
+                    .HasForeignKey(d => d.ServiceId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("service_analytics_service_id_fkey");
             });
 
             modelBuilder.Entity<Service>(entity =>
