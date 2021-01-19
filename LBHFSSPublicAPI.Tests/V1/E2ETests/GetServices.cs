@@ -17,6 +17,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         public async Task ReturnsThatMatchingService()
         {
             // arrange
+            DatabaseContext.Database.RollbackTransaction();
             var service = EntityHelpers.CreateService();
             DatabaseContext.Services.Add(service);
             DatabaseContext.SaveChanges();
