@@ -17,7 +17,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
     public class SearchServices : IntegrationTests<Startup>
     {
         [TestCase(TestName =
-            "Given that there are services in the database, if a search parameter is provided, services that match are returned")]
+        "Given that there are services in the database, if a search parameter is provided, services that match are returned")]
         public async Task GetServicesBySearchParamsReturnServicesIfMatched()
         {
             var services = EntityHelpers.CreateServices().ToList();
@@ -44,7 +44,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if a search parameter is provided, services that match all synoynyms in synonym group are returned")]
+        "Given that there are services in the database, if a search parameter is provided, services that match all synoynyms in synonym group are returned")]
         public async Task GetServicesBySearchParamsReturnServicesIfMatchedToSynonymGroup()
         {
             var synonymGroup1 = EntityHelpers.CreateSynonymGroupWithWords(5);
@@ -72,7 +72,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided, services with matching category and demographics are returned")]
+        "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided, services with matching category and demographics are returned")]
         public async Task GetServicesByTaxonomyIdServicesIfMatchedToCategoryAndDemographic()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
@@ -111,7 +111,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided and no services match both, nothing is returned")]
+        "Given that there are services in the database, if category and demographic taxonomy id search parameters are provided and no services match both, nothing is returned")]
         public async Task GetServicesByTaxonomyIdServicesIfMatchedToTaxonomyId()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
@@ -153,7 +153,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if a url encoded search parameter is provided, services that match unencoded search term are returned")]
+        "Given that there are services in the database, if a url encoded search parameter is provided, services that match unencoded search term are returned")]
         public async Task GetServicesByUrlencodedSearchParamsReturnServicesIfMatched()
         {
             var services = EntityHelpers.CreateServices().ToList();
@@ -181,7 +181,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if a taxonomy only params are provided, services that match are returned")]
+        "Given that there are services in the database, if a taxonomy only params are provided, services that match are returned")]
         public async Task GetServicesByTaxonomyParamsReturnServicesIfMatched()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
@@ -220,7 +220,7 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
         }
 
         [TestCase(TestName =
-            "Given that there are services in the database, if a taxonomy only params are provided, the matches are returned in the appropriate rank.")]
+        "Given that there are services in the database, if a taxonomy only params are provided, the matches are returned in the appropriate rank.")]
         public async Task SearchServicesReturnServicesAccordingToRankIfMatched()
         {
             var searchWord1 = Randomm.Word();

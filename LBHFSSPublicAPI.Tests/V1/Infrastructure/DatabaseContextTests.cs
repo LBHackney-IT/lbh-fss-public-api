@@ -54,11 +54,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
         // [Test]
         // public void CanGetAUserRoleEntity()
         // {
-        //     var userRole = EntityHelpers.CreateUserRole();
-        //     DatabaseContext.Add(userRole);
-        //     DatabaseContext.SaveChanges();
-        //     var result = DatabaseContext.UserRoles.ToList().FirstOrDefault();
-        //     result.Should().BeEquivalentTo(userRole);
+        // var userRole = EntityHelpers.CreateUserRole();
+        // DatabaseContext.Add(userRole);
+        // DatabaseContext.SaveChanges();
+        // var result = DatabaseContext.UserRoles.ToList().FirstOrDefault();
+        // result.Should().BeEquivalentTo(userRole);
         // }
 
         [Test]

@@ -39,59 +39,59 @@ namespace LBHFSSPublicAPI
         public static void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc(setupAction =>
-                {
-                    setupAction.EnableEndpointRouting = false;
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            .AddMvc(setupAction =>
+            {
+                setupAction.EnableEndpointRouting = false;
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddApiVersioning(o =>
             {
                 o.DefaultApiVersion = new ApiVersion(1, 0);
                 o.AssumeDefaultVersionWhenUnspecified = true; // assume that the caller wants the default version if they don't specify
-                o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
-            });
+    o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
+});
             services.AddCors();
             services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
 
             services.AddSwaggerGen(c =>
             {
                 c.AddSecurityDefinition("Token",
-                    new OpenApiSecurityScheme
-                    {
-                        In = ParameterLocation.Header,
-                        Description = "Your Hackney API Key",
-                        Name = "X-Api-Key",
-                        Type = SecuritySchemeType.ApiKey
-                    });
+    new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Your Hackney API Key",
+                Name = "X-Api-Key",
+                Type = SecuritySchemeType.ApiKey
+            });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Token" }
-                        },
-                        new List<string>()
-                    }
-                });
+            {
+{
+new OpenApiSecurityScheme
+{
+Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Token" }
+},
+new List<string>()
+}
+            });
 
-                //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
-                //to include it in that version of the swagger document
-                //Controllers must have this [ApiVersion("x")] to be included in swagger documentation!!
-                c.DocInclusionPredicate((docName, apiDesc) =>
-                {
-                    apiDesc.TryGetMethodInfo(out var methodInfo);
+    //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
+    //to include it in that version of the swagger document
+    //Controllers must have this [ApiVersion("x")] to be included in swagger documentation!!
+    c.DocInclusionPredicate((docName, apiDesc) =>
+    {
+                apiDesc.TryGetMethodInfo(out var methodInfo);
 
-                    var versions = methodInfo?
-                        .DeclaringType?.GetCustomAttributes()
-                        .OfType<ApiVersionAttribute>()
-                        .SelectMany(attr => attr.Versions).ToList();
+                var versions = methodInfo?
+    .DeclaringType?.GetCustomAttributes()
+    .OfType<ApiVersionAttribute>()
+    .SelectMany(attr => attr.Versions).ToList();
 
-                    return versions?.Any(v => $"{v.GetFormattedApiVersion()}" == docName) ?? false;
-                });
+                return versions?.Any(v => $"{v.GetFormattedApiVersion()}" == docName) ?? false;
+            });
 
-                //Get every ApiVersion attribute specified and create swagger docs for them
-                foreach (var apiVersion in _apiVersions)
+    //Get every ApiVersion attribute specified and create swagger docs for them
+    foreach (var apiVersion in _apiVersions)
                 {
                     var version = $"v{apiVersion.ApiVersion.ToString()}";
                     c.SwaggerDoc(version, new OpenApiInfo
@@ -103,8 +103,8 @@ namespace LBHFSSPublicAPI
                 }
 
                 c.CustomSchemaIds(x => x.FullName);
-                // Set the comments path for the Swagger JSON and UI.
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    // Set the comments path for the Swagger JSON and UI.
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (System.IO.File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
@@ -119,7 +119,7 @@ namespace LBHFSSPublicAPI
         {
             var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Host=127.0.0.1;Database=testdb;port=6543;username=postgres;password=mypassword;";
             services.AddDbContext<DatabaseContext>(
-                opt => opt.UseNpgsql(connectionString));
+            opt => opt.UseNpgsql(connectionString));
         }
 
         private static void ConfigureAddressesAPIContext(IServiceCollection services)
@@ -131,7 +131,7 @@ namespace LBHFSSPublicAPI
             ?? throw new ArgumentNullException("Addresses API key");
 
             var apiToken = Environment.GetEnvironmentVariable("ADDRESSES_API_TOKEN")
-                         ?? throw new ArgumentNullException("Addresses API token");
+            ?? throw new ArgumentNullException("Addresses API token");
 
             var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey, apiToken);
 
@@ -180,22 +180,22 @@ namespace LBHFSSPublicAPI
             {
                 foreach (var apiVersionDescription in _apiVersions)
                 {
-                    //Create a swagger endpoint for each swagger version
-                    c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
-                        $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
+        //Create a swagger endpoint for each swagger version
+        c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
+        $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
                 }
             });
             app.UseSwagger();
             app.UseRouting();
             app.UseCors(x => x
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .SetIsOriginAllowed(origin => true)
-                .AllowCredentials());
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetIsOriginAllowed(origin => true)
+            .AllowCredentials());
             app.UseEndpoints(endpoints =>
             {
-                // SwaggerGen won't find controllers that are routed via this technique.
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+    // SwaggerGen won't find controllers that are routed via this technique.
+    endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

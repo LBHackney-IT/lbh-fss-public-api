@@ -32,7 +32,7 @@ namespace LBHFSSPublicAPI.V1.Helpers
         public static bool ContainsWord(this string words, string searchForWord)
         {
 #if DEBUG
-            //NS - To Delete ***************  Temp code only
+            //NS - To Delete *************** Temp code only
             bool hasRent;
             if (words.Contains("rent") && words.StartsWith("Provide") && words.Contains("dementia"))
                 hasRent = true;
