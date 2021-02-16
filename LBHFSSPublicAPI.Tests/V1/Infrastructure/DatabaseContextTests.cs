@@ -26,7 +26,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             var role = EntityHelpers.CreateRole();
             DatabaseContext.Add(role);
             DatabaseContext.SaveChanges();
-            var result = DatabaseContext.Roles.ToList().FirstOrDefault();
+            var result = DatabaseContext.Roles.FirstOrDefault(x => x.Id == role.Id);
             result.Should().BeEquivalentTo(role);
         }
 
@@ -54,11 +54,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
         // [Test]
         // public void CanGetAUserRoleEntity()
         // {
-        //     var userRole = EntityHelpers.CreateUserRole();
-        //     DatabaseContext.Add(userRole);
-        //     DatabaseContext.SaveChanges();
-        //     var result = DatabaseContext.UserRoles.ToList().FirstOrDefault();
-        //     result.Should().BeEquivalentTo(userRole);
+        // var userRole = EntityHelpers.CreateUserRole();
+        // DatabaseContext.Add(userRole);
+        // DatabaseContext.SaveChanges();
+        // var result = DatabaseContext.UserRoles.ToList().FirstOrDefault();
+        // result.Should().BeEquivalentTo(userRole);
         // }
 
         [Test]
@@ -77,7 +77,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             var synonymGroup = EntityHelpers.CreateSynonymGroup();
             DatabaseContext.Add(synonymGroup);
             DatabaseContext.SaveChanges();
-            var result = DatabaseContext.SynonymGroups.ToList().FirstOrDefault();
+            var result = DatabaseContext.SynonymGroups.FirstOrDefault(x => x.Id == synonymGroup.Id);
             result.Should().BeEquivalentTo(synonymGroup);
         }
 
@@ -87,7 +87,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Infrastructure
             var synonymWord = EntityHelpers.CreateSynonymWord();
             DatabaseContext.Add(synonymWord);
             DatabaseContext.SaveChanges();
-            var result = DatabaseContext.SynonymWords.ToList().FirstOrDefault();
+            //var result = DatabaseContext.SynonymWords.ToList().FirstOrDefault();
+            var result = DatabaseContext.SynonymWords.FirstOrDefault(x => x.Id == synonymWord.Id);
             result.Should().BeEquivalentTo(synonymWord);
         }
 

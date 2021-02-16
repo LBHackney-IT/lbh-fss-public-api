@@ -349,16 +349,16 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var shortWordList = new List<string> { "and", "a", "an", "the", "bfg", "42" };
             var shortWord = shortWordList.RandomItem();
 
-            var word = Randomm.Word().Replace(shortWord, "test"); // have to ensure the shortword is not contained in the actual word for the sake of test
+            var word = Randomm.Word().Replace(shortWord, "test");// have to ensure the shortword is not contained in the actual word for the sake of test
             var userSearchInput = $"{shortWord} {word}";
 
             var request = new SearchServicesRequest() { Search = userSearchInput };
 
-            var services = EntityHelpers.CreateServices(5).ToList();                // dummy services
-            services.ForEach(s => s.Name = s.Name.Replace(word, "ssj"));            // make sure they don't match the search word
-                                                                                    // assuming there's no full match. due to full match containing a shortword, the assertion at the bottom wouldn't be able to test what's needed.
-            var serviceToFind = EntityHelpers.CreateService();                      // word 1 match
-            serviceToFind.Name = serviceToFind.Name.Replace(shortWord, "test");     // ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
+            var services = EntityHelpers.CreateServices(5).ToList();//dummy services
+            services.ForEach(s => s.Name = s.Name.Replace(word, "ssj"));//make sure they don't match the search word
+            //assuming there's no full match. due to full match containing a shortword, the assertion at the bottom wouldn't be able to test what's needed.
+            var serviceToFind = EntityHelpers.CreateService();// word 1 match
+            serviceToFind.Name = serviceToFind.Name.Replace(shortWord, "test");//ensuring random hash does not contain shortword. for the assertion bellow to work as intended, the service name's hash part should not contain shortword.
             serviceToFind.Name += word;
 
             var serviceToNotFind = EntityHelpers.CreateService();                   // shortword no match. this ensures that the test can fail if the implementation is wrong or not present.
@@ -424,8 +424,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             fullMatches.Count.Should().Be(expectedData.Count);
         }
 
-        [TestCase(TestName =
-    "Given that there are services in the database, if either category or demographic taxonomy id search parameters is provided services with matching taxonomy are returned")]
+        [TestCase(TestName = "Given that there are services in the database, if either category or demographic taxonomy id search parameters is provided services with matching taxonomy are returned")]
         public void GivenSingleTaxonomyIdSearchParametersWhenSearchServicesGatewayMethodIsCalledThenItReturnsResults()
         {
             var taxonomy1 = EntityHelpers.CreateTaxonomy();
@@ -503,6 +502,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             // arrange
             var services = EntityHelpers.CreateServices(10);
             var searchTerm = Randomm.Text();
+
+            searchTerm = " " + searchTerm;//15 Feb 2021 - Change made so we only search for whole words in the service description! - So we add a space.
+
             services.First().Name += searchTerm;
             services[1].Description += searchTerm;
             var expectedData = new List<Service>();
@@ -603,7 +605,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Gateways
             var matchService4 = EntityHelpers.CreateService();               // service that is intended to be found through the main search term
 
             matchService1.Name += searchWord2;                                  // creating a link between a service and a match synonym 1
-            matchService2.Description += synWord2;                           // creating a link between a service and a match synonym 2
+                                                                                // creating a link between a service and a match synonym 2
+            matchService2.Description += " " + synWord2;//15 Feb 2021 - Change made so we only search for whole words in the service description! - So we add a space.
+
             matchService3.Organization.Name += synWord3;                     // creating a link between a service and a match synonym 3
             matchService4.Organization.Name += searchWord1;                  // creating a link between a service and a main search word
 
