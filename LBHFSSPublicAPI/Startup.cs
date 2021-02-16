@@ -47,9 +47,9 @@ namespace LBHFSSPublicAPI
             services.AddApiVersioning(o =>
             {
                 o.DefaultApiVersion = new ApiVersion(1, 0);
-                o.AssumeDefaultVersionWhenUnspecified = true; // assume that the caller wants the default version if they don't specify
-    o.ApiVersionReader = new UrlSegmentApiVersionReader(); // read the version number from the url segment header)
-});
+                o.AssumeDefaultVersionWhenUnspecified = true;// assume that the caller wants the default version if they don't specify
+                o.ApiVersionReader = new UrlSegmentApiVersionReader();// read the version number from the url segment header)
+            });
             services.AddCors();
             services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
 
@@ -57,12 +57,12 @@ namespace LBHFSSPublicAPI
             {
                 c.AddSecurityDefinition("Token",
     new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Description = "Your Hackney API Key",
-                Name = "X-Api-Key",
-                Type = SecuritySchemeType.ApiKey
-            });
+    {
+        In = ParameterLocation.Header,
+        Description = "Your Hackney API Key",
+        Name = "X-Api-Key",
+        Type = SecuritySchemeType.ApiKey
+    });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
@@ -75,23 +75,23 @@ new List<string>()
 }
             });
 
-    //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
-    //to include it in that version of the swagger document
-    //Controllers must have this [ApiVersion("x")] to be included in swagger documentation!!
-    c.DocInclusionPredicate((docName, apiDesc) =>
-    {
-                apiDesc.TryGetMethodInfo(out var methodInfo);
+                //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
+                //to include it in that version of the swagger document
+                //Controllers must have this [ApiVersion("x")] to be included in swagger documentation!!
+                c.DocInclusionPredicate((docName, apiDesc) =>
+                {
+                    apiDesc.TryGetMethodInfo(out var methodInfo);
 
-                var versions = methodInfo?
-    .DeclaringType?.GetCustomAttributes()
-    .OfType<ApiVersionAttribute>()
-    .SelectMany(attr => attr.Versions).ToList();
+                    var versions = methodInfo?
+.DeclaringType?.GetCustomAttributes()
+.OfType<ApiVersionAttribute>()
+.SelectMany(attr => attr.Versions).ToList();
 
-                return versions?.Any(v => $"{v.GetFormattedApiVersion()}" == docName) ?? false;
-            });
+                    return versions?.Any(v => $"{v.GetFormattedApiVersion()}" == docName) ?? false;
+                });
 
-    //Get every ApiVersion attribute specified and create swagger docs for them
-    foreach (var apiVersion in _apiVersions)
+                //Get every ApiVersion attribute specified and create swagger docs for them
+                foreach (var apiVersion in _apiVersions)
                 {
                     var version = $"v{apiVersion.ApiVersion.ToString()}";
                     c.SwaggerDoc(version, new OpenApiInfo
@@ -103,8 +103,8 @@ new List<string>()
                 }
 
                 c.CustomSchemaIds(x => x.FullName);
-    // Set the comments path for the Swagger JSON and UI.
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                //Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (System.IO.File.Exists(xmlPath))
                     c.IncludeXmlComments(xmlPath);
@@ -180,9 +180,9 @@ new List<string>()
             {
                 foreach (var apiVersionDescription in _apiVersions)
                 {
-        //Create a swagger endpoint for each swagger version
-        c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
-        $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
+                    //Create a swagger endpoint for each swagger version
+                    c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
+                    $"{ApiName}-api {apiVersionDescription.GetFormattedApiVersion()}");
                 }
             });
             app.UseSwagger();
@@ -194,8 +194,8 @@ new List<string>()
             .AllowCredentials());
             app.UseEndpoints(endpoints =>
             {
-    // SwaggerGen won't find controllers that are routed via this technique.
-    endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                //SwaggerGen won't find controllers that are routed via this technique.
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

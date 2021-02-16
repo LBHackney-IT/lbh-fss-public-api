@@ -97,7 +97,6 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 // Filter on service organisation name
                 Predicate<Service> containsUserInput = service => service.Organization.Name.ToLower().Contains(searchInputText);
                 Predicate<Service> containsAnySynonym = service => synonyms.Any(sn => service.Organization.Name.ToLower().Contains(sn));
-                //Predicate<Service> containsAnySynonym = service => synonyms.AnyWord(service.Organization.Name);
                 ApplyFullTextFilter(containsUserInput,
                 containsAnySynonym,
                 synonyms,
@@ -107,42 +106,21 @@ namespace LBHFSSPublicAPI.V1.Gateways
                 // Filter on service name
                 containsUserInput = service => service.Name.ToLower().Contains(searchInputText);
                 containsAnySynonym = service => synonyms.Any(sn => service.Name.ToLower().Contains(sn));
-                //containsAnySynonym = service => synonyms.AnyWord(service.Name);
                 ApplyFullTextFilter(containsUserInput,
                 containsAnySynonym,
                 synonyms,
                 fullMatchServicesQuery,
                 fullMatchServices);
-                //ns start temp test - ****** TO DELETE *******
-#if DEBUG
-                //Does not contain "Alzheimer..".
-                var testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                var testRestults3 = fullMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
-                //ns end
 
                 // Filter on service description
-                //commented 12Feb2021 -
-                //containsUserInput = service => service.Description.ToLower().Contains(searchInputText);
-                //replaced above with below
                 containsUserInput = service => service.Description.ContainsWord(searchInputText);
-
-                //ns changed to Any word on description!
-                //containsAnySynonym = service => synonyms.Any(sn => service.Description.ToLower().Contains(sn));
-                //replaced above with below
                 containsAnySynonym = service => synonyms.AnyWord(service.Description);
                 ApplyFullTextFilter(containsUserInput,
                 containsAnySynonym,
                 synonyms,
                 fullMatchServicesQuery,
                 fullMatchServices);
-                //ns start temp test - ****** TO DELETE *******
-#if DEBUG
-                //Was incorrectly containing Alzheimer...
-                testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                testRestults3 = fullMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
-                //ns end
+
                 // More than one word in search input
                 if (moreThan1SearchInputWord)
                 {
@@ -175,15 +153,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
                     splitMatchServices,
                     fullMatchServices);
 
-#if DEBUG
-                    //Does not contain "Alzheimer..".
-                    testRestults2 = splitMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults3 = splitMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
-
                     // Filter words on service description
-                    //containsSplitUserInput = service => splitWords.Any(spw => service.Description.ToLower().Contains(spw));
                     containsSplitUserInput = service => splitWords.AnyWord(service.Description);
                     ApplySplitMatchFilter(containsSplitUserInput,
                     splitMatchServicesQuery,
@@ -191,13 +161,6 @@ namespace LBHFSSPublicAPI.V1.Gateways
                     categoryTaxonomies,
                     splitMatchServices,
                     fullMatchServices);
-
-#if DEBUG
-                    //Does not contain "Alzheimer..".
-                    testRestults2 = splitMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults3 = splitMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
 
                     // Filter synonyms on organisation name
                     Predicate<Service> containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Organization.Name.ToLower().Contains(spwsn));
@@ -218,18 +181,8 @@ namespace LBHFSSPublicAPI.V1.Gateways
                     categoryTaxonomies,
                     splitMatchServices,
                     fullMatchServices);
-                    //ns start temp test - ****** TO DELETE *******
-#if DEBUG
-                    //Bug - Does not contain "Alzheimer..".
-                    testRestults2 = splitMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults3 = splitMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
-                    //ns end
+
                     // Filter synonyms on service description
-                    //12Feb2021 - commented out -
-                    //containsAnySplitInputSynonym = service => splitWordSynonyms.Any(spwsn => service.Description.ToLower().Contains(spwsn));
-                    //replaced above with below...
                     containsAnySplitInputSynonym = service => splitWordSynonyms.AnyWord(service.Description);
                     ApplySplitSynonymsMatchFilter(containsAnySplitInputSynonym,
                     splitMatchServicesQuery,
@@ -238,15 +191,6 @@ namespace LBHFSSPublicAPI.V1.Gateways
                     categoryTaxonomies,
                     splitMatchServices,
                     fullMatchServices);
-
-                    //ns start temp test - ****** TO DELETE *******
-#if DEBUG
-                    //Bug - Does not contain "Alzheimer..".
-                    testRestults2 = splitMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults2 = fullMatchServices.Where(s => s.Name.StartsWith("Alz"));
-                    testRestults3 = splitMatchServicesQuery.Where(s => s.Name.StartsWith("Alz"));
-#endif
-                    //ns end
                 }
             }
             else
