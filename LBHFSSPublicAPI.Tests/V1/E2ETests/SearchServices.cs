@@ -250,7 +250,9 @@ namespace LBHFSSPublicAPI.Tests.V1.E2ETests
             var matchService3 = EntityHelpers.CreateService();
             var matchService4 = EntityHelpers.CreateService();
             matchService1.Name += searchWord2;
-            matchService2.Description += synWord2;
+            //matchService2.Description += synWord2;
+            matchService2.Description += " " + synWord2; //15 Feb 2021 - Change made so we only search for whole words in the service description! - So we add a space.
+
             matchService3.Organization.Name += synWord3;
             matchService4.Organization.Name += searchWord1;
             services.AddMany(matchService1, matchService2, matchService3, matchService4);

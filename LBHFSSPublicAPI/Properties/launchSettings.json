@@ -1,5 +1,4 @@
-﻿{
-  "$schema": "http://json.schemastore.org/launchsettings.json",
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -8,24 +7,27 @@
       "sslPort": 44394
     }
   },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
     "LBHFSSPublicAPI": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/v1/healthcheck/ping",
+      "environmentVariables": {
+        "CONNECTION_STRING": "Host=127.0.0.1;Database=testdb;port=6544;username=postgres;password=mypassword;",
+        "DB_USERNAME": "postgres",
+        "DB_DATABASE": "testdb",
+        "DB_PORT": "6544",
+        "DB_PASSWORD": "mypassword",
+        "ADDRESSES_API_KEY": "Test",
+        "DB_HOST": "localhost",
+        "ADDRESSES_API_BASE_URL": "Test",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ADDRESSES_API_TOKEN": "ToDo"
+      },
       "applicationUrl": "http://localhost:5000",
       "ConnectionStrings": {
-        "DefaultConnection": "host=localhost;port=5432;username=postgres;password=mypassword;database=test-database"
-      },
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DB_HOST": "localhost",
-        "DB_PORT": "5432",
-        "DB_USERNAME": "postgres",
-        "DB_PASSWORD": "mypassword",
-        "DB_DATABASE": "test-database",
-        "ADDRESSES_API_BASE_URL": "Test",
-        "ADDRESSES_API_KEY": "Test"
+        "DefaultConnection": "host=localhost;port=5432;username=postgres;password=mypassword;database=testdb"
       }
     }
   }
