@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
@@ -6,28 +6,28 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "is_registered_charity",
+            migrationBuilder.AddColumn<bool>(
+                name: "is_registered_community_interest_company",
                 table: "organizations",
-                newName: "is_registered_community_interest_company");
+                nullable: true,
+                defaultValue: false);
 
-            migrationBuilder.RenameColumn(
-                name: "charity_number",
+            migrationBuilder.AddColumn<string>(
+                name: "community_interest_company_number",
                 table: "organizations",
-                newName: "community_interest_company_number");
+                type: "character varying",
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
+            migrationBuilder.DropColumn(
                 name: "is_registered_community_interest_company",
-                table: "organizations",
-                newName: "is_registered_charity");
+                table: "organizations");
 
-            migrationBuilder.RenameColumn(
+            migrationBuilder.DropColumn(
                 name: "community_interest_company_number",
-                table: "organizations",
-                newName: "charity_number");
+                table: "organizations");
         }
     }
 }
