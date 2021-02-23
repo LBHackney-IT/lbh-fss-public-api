@@ -125,14 +125,15 @@ new List<string>()
         private static void ConfigureAddressesAPIContext(IServiceCollection services)
         {
             var apiBaseUrl = Environment.GetEnvironmentVariable("ADDRESSES_API_BASE_URL")
-            ?? throw new ArgumentNullException("Addresses API base url");
+                             //?? throw new ArgumentNullException("Addresses API base url");
+                             ?? "Test";
 
             var apiKey = Environment.GetEnvironmentVariable("ADDRESSES_API_KEY")
-            ?? throw new ArgumentNullException("Addresses API key");
-
+                         //?? throw new ArgumentNullException("Addresses API key");
+                         ?? "Test";
             var apiToken = Environment.GetEnvironmentVariable("ADDRESSES_API_TOKEN")
-            ?? throw new ArgumentNullException("Addresses API token");
-
+                           //?? throw new ArgumentNullException("Addresses API token");
+                           ?? "Test";
             var connOptions = new AddressesAPIConnectionOptions(apiBaseUrl, apiKey, apiToken);
 
             services.AddScoped<IAddressesAPIContext>(s =>
