@@ -30,7 +30,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
             .Include(s => s.ServiceAnalytics)
             .Include(s => s.ServiceTaxonomies)
             .ThenInclude(st => st.Taxonomy)
-            .FirstOrDefault(x => x.Id == id);
+            .FirstOrDefault(x => x.Id == id && x.Status.ToLower() == "active");
             service?.ServiceAnalytics.Add(new AnalyticsEvent
             {
                 TimeStamp = DateTime.Now
@@ -48,6 +48,7 @@ namespace LBHFSSPublicAPI.V1.Gateways
             .Include(s => s.ServiceTaxonomies)
             .ThenInclude(st => st.Taxonomy)
             .Where(s => s.Organization.Status.ToLower() == "published")
+            .Where(s => s.Status.ToLower() == "active")
             .AsEnumerable();
 
             IEnumerable<Service> fullMatchServicesQuery = baseQuery,
