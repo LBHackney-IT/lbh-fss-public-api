@@ -64,7 +64,7 @@ module "postgres_db_development" {
   db_engine = "postgres"
   db_engine_version = "11.8"
   db_identifier = "fss-public-dev-db"
-  db_instance_class = "db.t2.micro"
+  db_instance_class = "db.t3.micro"
   db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
   db_port  = data.aws_ssm_parameter.fss_public_postgres_port.value
   db_username = data.aws_ssm_parameter.fss_public_postgres_username.value
