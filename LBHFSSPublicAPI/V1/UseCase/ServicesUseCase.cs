@@ -134,9 +134,7 @@ namespace LBHFSSPublicAPI.V1.UseCase
                                 DistanceUnit.Miles
                             ) + " miles";
                 }
-                    
             }
-                
         }
     }
 }
