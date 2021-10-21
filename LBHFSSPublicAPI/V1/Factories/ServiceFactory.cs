@@ -180,7 +180,8 @@ namespace LBHFSSPublicAPI.V1.Factories
                 {
                     Id = organization.Id,
                     Name = organization.Name,
-                    Status = organization.Status
+                    Status = organization.Status,
+                    IsRemoteType = organization.IsRemoteType
                 };
         }
 
