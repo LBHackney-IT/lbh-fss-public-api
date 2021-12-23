@@ -47,6 +47,8 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
         public DateTime? LastRevalidation { get; set; }
         public bool InRevalidationProcess { get; set; }
         public bool? IsRemoteType { get; set; }
+        public string ServiceAreaMain { get; set; }
+        public string ServiceAreaOther { get; set; }
 
         public virtual User ReviewerU { get; set; }
         public virtual ICollection<Service> Services { get; set; }
