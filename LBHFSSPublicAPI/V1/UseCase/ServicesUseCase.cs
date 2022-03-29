@@ -120,8 +120,12 @@ namespace LBHFSSPublicAPI.V1.UseCase
         public static void CalculateServiceLocationDistances(this List<Response.Service> serviceCollection, Coordinate originPoint)
         {
             foreach (var service in serviceCollection)
+            {
                 foreach (var location in service.Locations)
-                    if (location.Latitude.HasValue && location.Longitude.HasValue)
+                {
+                    if (service.Organization.IsRemoteType.HasValue && service.Organization.IsRemoteType.Value)
+                        location.Distance = "this service is remote";
+                    else if (location.Latitude.HasValue && location.Longitude.HasValue)
                         location.Distance =
                             GeoCalculator.GetDistance(
                                 originPoint,
@@ -129,6 +133,8 @@ namespace LBHFSSPublicAPI.V1.UseCase
                                 decimalPlaces: 1,
                                 DistanceUnit.Miles
                             ) + " miles";
+                }
+            }
         }
     }
 }
