@@ -30,7 +30,7 @@ terraform {
 /*    POSTGRES SET UP    */
 data "aws_vpc" "production_vpc" {
   tags = {
-    Name = "vpc-production-apis-production"
+    Name = "apis-prod"
     }
 }
 data "aws_subnet_ids" "production_private_subnets" {
@@ -61,7 +61,7 @@ module "postgres_db_production" {
   environment_name = "production"
   vpc_id = data.aws_vpc.production_vpc.id
   db_engine = "postgres"
-  db_engine_version = "11.9"
+  db_engine_version = "16.1"
   db_identifier = "fss-public-production"
   db_instance_class = "db.t3.micro"
   db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
@@ -75,4 +75,6 @@ module "postgres_db_production" {
   multi_az = true //only true if production deployment
   publicly_accessible = false
   project_name = "fss public api"
+  db_allow_major_version_upgrade = "true"
+  db_parameter_group_name = "postgres-16"
 }
