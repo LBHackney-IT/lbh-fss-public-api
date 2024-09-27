@@ -252,6 +252,8 @@ workflows:
               only: develop
       - build-and-test:
           context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
           filters:
             branches:
               only: develop
