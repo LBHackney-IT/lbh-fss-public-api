@@ -227,6 +227,21 @@ jobs:
     steps:
       - deploy-terraform:
           environment: "production"
+  preview-development-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "development"
+  preview-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "staging"
+  preview-production-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "production"
 
 workflows:
   check-and-deploy-development:
