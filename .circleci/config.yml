@@ -428,3 +428,21 @@ workflows:
           filters:
             branches:
               only: master
+      - permit-terraform-production-release:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - assume-role-production:
+          context: api-assume-role-production-context
+          requires:
+            - permit-terraform-production-release
+          filters:
+            branches:
+              only: master
+      - deploy-production-terraform:
+          requires:
+            - assume-role-production
+          filters:
+            branches:
+              only: master
