@@ -11,7 +11,7 @@ executors:
       - image: circleci/python:3.7
   docker-terraform:
     docker:
-      - image: "hashicorp/terraform:light"
+      - image: hashicorp/terraform:latest
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1
@@ -110,6 +110,40 @@ commands:
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
+  deploy-terraform:
+    description: "Initializes and applies terraform configuration"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+          name: get and init
+      - run:
+          name: apply
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform apply -auto-approve
+  preview-terraform:
+    description: "Previews terraform configuration changes"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+            terraform plan
+          name: preview terraform
 
 jobs:
   check-code-formatting:
@@ -178,6 +212,36 @@ jobs:
     steps:
       - migrate-database:
           stage: "production"
+  deploy-development-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "development"
+  deploy-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "staging"
+  deploy-production-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "production"
+  preview-development-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "development"
+  preview-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "staging"
+  preview-production-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "production"
 
 workflows:
   check-and-deploy-development:
