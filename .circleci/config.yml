@@ -197,6 +197,21 @@ jobs:
     steps:
       - migrate-database:
           stage: "production"
+  deploy-development-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "development"
+  deploy-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "staging"
+  deploy-production-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "production"
 
 workflows:
   check-and-deploy-development:
