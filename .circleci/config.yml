@@ -244,11 +244,81 @@ jobs:
           environment: "production"
 
 workflows:
-  check-and-deploy-development:
+  feature:
     jobs:
-      - check-code-formatting
+      - check-code-formatting:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
       - build-and-test:
           context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-development:
+          context: api-assume-role-development-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-development-terraform:
+          requires:
+            - assume-role-development
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-staging:
+          context: api-assume-role-staging-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-staging-terraform:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-production:
+          context: api-assume-role-production-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-production-terraform:
+          requires:
+            - assume-role-production
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+  check-and-deploy-development:
+    jobs:
+      - check-code-formatting:
+          filters:
+            branches:
+              only: develop
+      - build-and-test:
+          context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
+          filters:
+            branches:
+              only: develop
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
