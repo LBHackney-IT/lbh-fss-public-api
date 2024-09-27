@@ -244,6 +244,28 @@ jobs:
           environment: "production"
 
 workflows:
+  feature:
+    jobs:
+      - check-code-formatting
+      - build-and-test:
+          context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
+      - assume-role-development:
+          context: api-assume-role-development-context
+      - preview-development-terraform:
+          requires:
+            - assume-role-development
+      - assume-role-staging:
+          context: api-assume-role-staging-context
+      - preview-staging-terraform:
+          requires:
+            - assume-role-staging
+      - assume-role-production:
+          context: api-assume-role-production-context
+      - preview-production-terraform:
+          requires:
+            - assume-role-production
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
