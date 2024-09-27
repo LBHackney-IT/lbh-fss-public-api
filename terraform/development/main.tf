@@ -15,7 +15,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 locals {
   application_name = "fss public api"
-   parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
+  parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
 }
 
 terraform {
@@ -31,31 +31,31 @@ terraform {
 data "aws_vpc" "development_vpc" {
   tags = {
     Name = "apis-dev"
-    }
+  }
 }
 data "aws_subnet_ids" "development_private_subnets" {
   vpc_id = data.aws_vpc.development_vpc.id
   filter {
     name   = "tag:environment"
     values = ["development"]
-    }
+  }
 }
 
- data "aws_ssm_parameter" "fss_public_postgres_db_password" {
-   name = "/fss-public-api/development/postgres-password"
- }
+data "aws_ssm_parameter" "fss_public_postgres_db_password" {
+  name = "/fss-public-api/development/postgres-password"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_username" {
-   name = "/fss-public-api/development/postgres-username"
- }
+data "aws_ssm_parameter" "fss_public_postgres_username" {
+  name = "/fss-public-api/development/postgres-username"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_port" {
-   name = "/fss-public-api/development/postgres-port"
- }
+data "aws_ssm_parameter" "fss_public_postgres_port" {
+  name = "/fss-public-api/development/postgres-port"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_database" {
-   name = "/fss-public-api/development/postgres-database"
- }
+data "aws_ssm_parameter" "fss_public_postgres_database" {
+  name = "/fss-public-api/development/postgres-database"
+}
 
 module "postgres_db_development" {
   source = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"

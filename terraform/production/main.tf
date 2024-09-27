@@ -15,7 +15,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 locals {
   application_name = "fss public api"
-   parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
+  parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
 }
 
 terraform {
@@ -31,31 +31,32 @@ terraform {
 data "aws_vpc" "production_vpc" {
   tags = {
     Name = "vpc-production-apis-production"
-    }
+  }
 }
 data "aws_subnet_ids" "production_private_subnets" {
   vpc_id = data.aws_vpc.production_vpc.id
   filter {
     name   = "tag:Type"
     values = ["private"]
-    }
+  }
 }
 
- data "aws_ssm_parameter" "fss_public_postgres_db_password" {
-   name = "/fss-public-api/production/postgres-password"
- }
+data "aws_ssm_parameter" "fss_public_postgres_db_password" {
+  name = "/fss-public-api/production/postgres-password"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_username" {
-   name = "/fss-public-api/production/postgres-username"
- }
+data "aws_ssm_parameter" "fss_public_postgres_username" {
+  name = "/fss-public-api/production/postgres-username"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_port" {
-   name = "/fss-public-api/production/postgres-port"
- }
+data "aws_ssm_parameter" "fss_public_postgres_port" {
+  name = "/fss-public-api/production/postgres-port"
+}
 
- data "aws_ssm_parameter" "fss_public_postgres_database" {
-   name = "/fss-public-api/production/postgres-database"
- }
+data "aws_ssm_parameter" "fss_public_postgres_database" {
+  name = "/fss-public-api/production/postgres-database"
+}
+
 module "postgres_db_production" {
   source = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
   environment_name = "production"
