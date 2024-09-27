@@ -410,3 +410,21 @@ workflows:
           filters:
             branches:
               only: develop
+      - permit-terraform-staging-release:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - assume-role-staging:
+          context: api-assume-role-staging-context
+          requires:
+            - permit-terraform-staging-release
+          filters:
+            branches:
+              only: master
+      - deploy-staging-terraform:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only: master
