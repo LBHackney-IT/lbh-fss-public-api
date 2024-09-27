@@ -390,3 +390,23 @@ workflows:
           filters:
             branches:
               only: master
+  terraform-release:
+    jobs:
+      - permit-terraform-development-release:
+          type: approval
+          filters:
+            branches:
+              only: develop
+      - assume-role-development:
+          context: api-assume-role-development-context
+          requires:
+            - permit-terraform-development-release
+          filters:
+            branches:
+              only: develop
+      - deploy-development-terraform:
+          requires:
+            - assume-role-development
+          filters:
+            branches:
+              only: develop
