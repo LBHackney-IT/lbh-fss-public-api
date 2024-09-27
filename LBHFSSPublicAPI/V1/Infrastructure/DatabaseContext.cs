@@ -133,6 +133,12 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
                 entity.Property(e => e.IsTraRegistered).HasColumnName("is_tra_registered");
 
+                entity.Property(e => e.IsRemoteType).HasColumnName("is_remote_type");
+
+                entity.Property(e => e.ServiceAreaMain).HasColumnName("service_area_main").HasColumnType("character varying");
+
+                entity.Property(e => e.ServiceAreaOther).HasColumnName("service_area_other").HasColumnType("character varying");
+
                 entity.Property(e => e.LotteryFundedProject)
                     .HasColumnName("lottery_funded_project")
                     .HasColumnType("character varying");

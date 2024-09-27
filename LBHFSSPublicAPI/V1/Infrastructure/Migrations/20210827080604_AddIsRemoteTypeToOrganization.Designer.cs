@@ -3,15 +3,17 @@ using System;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20210827080604_AddIsRemoteTypeToOrganization")]
+    partial class AddIsRemoteTypeToOrganization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,14 +200,6 @@ namespace LBHFSSPublicAPI.V1.Infrastructure.Migrations
                     b.Property<string>("RslOrHaAssociation")
                         .HasColumnType("character varying")
                         .HasColumnName("rsl_or_ha_association");
-
-                    b.Property<string>("ServiceAreaMain")
-                        .HasColumnType("character varying")
-                        .HasColumnName("service_area_main");
-
-                    b.Property<string>("ServiceAreaOther")
-                        .HasColumnType("character varying")
-                        .HasColumnName("service_area_other");
 
                     b.Property<string>("Status")
                         .HasColumnType("character varying")
