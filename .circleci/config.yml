@@ -246,9 +246,15 @@ jobs:
 workflows:
   check-and-deploy-development:
     jobs:
-      - check-code-formatting
+      - check-code-formatting:
+          filters:
+            branches:
+              only: develop
       - build-and-test:
           context: find-support-services-public-api-context
+          filters:
+            branches:
+              only: develop
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
