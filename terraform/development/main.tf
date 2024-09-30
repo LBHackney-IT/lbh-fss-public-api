@@ -49,11 +49,6 @@ data "aws_subnets" "development_private_subnets" {
     name   = "tag:environment"
     values = ["development"]
   }
-
-  filter {
-    name   = "name"
-    values = ["*-private-*"]
-  }
 }
 
 data "aws_ssm_parameter" "fss_public_postgres_db_password" {
