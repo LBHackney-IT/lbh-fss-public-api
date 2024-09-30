@@ -35,11 +35,17 @@ data "aws_vpc" "development_vpc" {
     Name = "apis-dev"
   }
 }
-data "aws_subnet_ids" "development_private_subnets" {
+data "aws_subnets" "development_private_subnets" {
   vpc_id = data.aws_vpc.development_vpc.id
+  
   filter {
     name   = "tag:environment"
     values = ["development"]
+  }
+
+  filter {
+    name   = "name"
+    values = ["*-private-*"]
   }
 }
 
@@ -71,7 +77,7 @@ module "postgres_db_development" {
   db_port  = data.aws_ssm_parameter.fss_public_postgres_port.value
   db_username = data.aws_ssm_parameter.fss_public_postgres_username.value
   db_password = data.aws_ssm_parameter.fss_public_postgres_db_password.value
-  subnet_ids = data.aws_subnet_ids.development_private_subnets.ids
+  subnet_ids = data.aws_subnets.development_private_subnets.ids
   db_allocated_storage = 20
   maintenance_window ="sun:10:00-sun:10:30"
   storage_encrypted = false
