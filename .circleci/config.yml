@@ -142,11 +142,11 @@ commands:
             cd ./terraform/<<parameters.environment>>/
             terraform get -update=true
             terraform init
-            if [ "<<parameters.environment>>" = "development" ]
-            then
-              echo "replace provider"
-              terraform state replace-provider registry.terraform.io/-/aws hashicorp/aws
-            fi
+            # if [ "<<parameters.environment>>" = "development" ]
+            # then
+            #   echo "replace provider"
+            #   terraform state replace-provider registry.terraform.io/-/aws hashicorp/aws
+            # fi
             terraform plan
           name: preview terraform
 
