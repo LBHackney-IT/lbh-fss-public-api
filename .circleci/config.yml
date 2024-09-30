@@ -11,7 +11,7 @@ executors:
       - image: circleci/python:3.7
   docker-terraform:
     docker:
-      - image: "hashicorp/terraform:light"
+      - image: hashicorp/terraform:latest
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1
@@ -110,6 +110,40 @@ commands:
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
+  deploy-terraform:
+    description: "Initializes and applies terraform configuration"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+          name: get and init
+      - run:
+          name: apply
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform apply -auto-approve
+  preview-terraform:
+    description: "Previews terraform configuration changes"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+            terraform plan
+          name: preview terraform
 
 jobs:
   check-code-formatting:
@@ -178,17 +212,124 @@ jobs:
     steps:
       - migrate-database:
           stage: "production"
+  deploy-development-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "development"
+  deploy-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "staging"
+  deploy-production-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "production"
+  preview-development-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "development"
+  preview-staging-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "staging"
+  preview-production-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "production"
 
 workflows:
-  check-and-deploy-development:
+  feature:
     jobs:
-      - check-code-formatting
+      - check-code-formatting:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
       - build-and-test:
           context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-development:
+          context: api-assume-role-development-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-development-terraform:
+          requires:
+            - assume-role-development
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-staging:
+          context: api-assume-role-staging-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-staging-terraform:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-production:
+          context: api-assume-role-production-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-production-terraform:
+          requires:
+            - assume-role-production
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+  check-and-deploy-development:
+    jobs:
+      - check-code-formatting:
+          filters:
+            branches:
+              only: develop
+      - build-and-test:
+          context: find-support-services-public-api-context
+          requires:
+            - check-code-formatting
+          filters:
+            branches:
+              only: develop
+      - permit-development-release:
+          type: approval
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: develop
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
-            - build-and-test
+            - permit-development-release
           filters:
             branches:
               only: develop
@@ -211,10 +352,17 @@ workflows:
           filters:
             branches:
               only: master
+      - permit-staging-release:
+          type: approval
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: master
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
-            - build-and-test
+            - permit-staging-release
           filters:
             branches:
               only: master
@@ -251,6 +399,62 @@ workflows:
             branches:
               only: master
       - migrate-database-production:
+          requires:
+            - assume-role-production
+          filters:
+            branches:
+              only: master
+  terraform-release:
+    jobs:
+      - permit-terraform-development-release:
+          type: approval
+          filters:
+            branches:
+              only: develop
+      - assume-role-development:
+          context: api-assume-role-development-context
+          requires:
+            - permit-terraform-development-release
+          filters:
+            branches:
+              only: develop
+      - deploy-development-terraform:
+          requires:
+            - assume-role-development
+          filters:
+            branches:
+              only: develop
+      - permit-terraform-staging-release:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - assume-role-staging:
+          context: api-assume-role-staging-context
+          requires:
+            - permit-terraform-staging-release
+          filters:
+            branches:
+              only: master
+      - deploy-staging-terraform:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only: master
+      - permit-terraform-production-release:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - assume-role-production:
+          context: api-assume-role-production-context
+          requires:
+            - permit-terraform-production-release
+          filters:
+            branches:
+              only: master
+      - deploy-production-terraform:
           requires:
             - assume-role-production
           filters:
