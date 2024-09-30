@@ -36,8 +36,11 @@ data "aws_vpc" "development_vpc" {
   }
 }
 data "aws_subnets" "development_private_subnets" {
-  vpc_id = data.aws_vpc.development_vpc.id
-  
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.development_vpc.id]
+  }
+
   filter {
     name   = "tag:environment"
     values = ["development"]
