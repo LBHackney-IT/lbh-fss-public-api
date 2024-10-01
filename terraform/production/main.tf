@@ -7,18 +7,13 @@
 # 6) IF ADDITIONAL RESOURCES ARE REQUIRED BY YOUR API, ADD THEM TO THIS FILE
 # 7) ENSURE THIS FILE IS PLACED WITHIN A 'terraform' FOLDER LOCATED AT THE ROOT PROJECT DIRECTORY
 
-provider "aws" {
-  region  = "eu-west-2"
-  version = "~> 2.0"
-}
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-locals {
-  application_name = "fss public api"
-  parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
-}
-
 terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+  }
   backend "s3" {
     bucket  = "terraform-state-production-apis"
     encrypt = true
@@ -27,10 +22,21 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = "eu-west-2"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+locals {
+  application_name = "fss public api"
+  parameter_store = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter"
+}
+
 /*    POSTGRES SET UP    */
 data "aws_vpc" "production_vpc" {
   tags = {
-    Name = "vpc-production-apis-production"
+    Name = "apis-prod"
   }
 }
 data "aws_subnet_ids" "production_private_subnets" {
@@ -62,7 +68,9 @@ module "postgres_db_production" {
   environment_name = "production"
   vpc_id = data.aws_vpc.production_vpc.id
   db_engine = "postgres"
-  db_engine_version = "11.9"
+  db_engine_version = "16.3"
+  db_parameter_group_name = "postgres-16"
+  db_allow_major_version_upgrade = true
   db_identifier = "fss-public-production"
   db_instance_class = "db.t3.micro"
   db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
@@ -76,4 +84,7 @@ module "postgres_db_production" {
   multi_az = true //only true if production deployment
   publicly_accessible = false
   project_name = "fss public api"
+  additional_tags = {
+    BackupPolicy = "Prod"
+  }
 }
