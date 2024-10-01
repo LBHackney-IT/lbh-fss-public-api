@@ -62,7 +62,7 @@ module "postgres_db_production" {
   environment_name = "production"
   vpc_id = data.aws_vpc.production_vpc.id
   db_engine = "postgres"
-  db_engine_version = "11.9"
+  db_engine_version = "16.3"
   db_identifier = "fss-public-production"
   db_instance_class = "db.t3.micro"
   db_name = data.aws_ssm_parameter.fss_public_postgres_database.value
