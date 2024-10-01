@@ -30,7 +30,7 @@ terraform {
 /*    POSTGRES SET UP    */
 data "aws_vpc" "production_vpc" {
   tags = {
-    Name = "vpc-production-apis-production"
+    Name = "apis-prod"
   }
 }
 data "aws_subnet_ids" "production_private_subnets" {
