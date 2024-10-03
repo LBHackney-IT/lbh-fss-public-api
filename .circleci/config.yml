@@ -181,6 +181,8 @@ workflows:
             branches:
               only: dummy-branch
       - test-job:
+          requires:
+            - assume-role-staging
           filters:
             branches:
               only: dummy-branch
