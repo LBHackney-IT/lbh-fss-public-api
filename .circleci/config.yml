@@ -159,6 +159,9 @@ commands:
           command: |
             default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]")
             echo "$default_kms_id" | grep -o '0bbe'
+            ads=$(aws rds describe-db-snapshots --query "DBSnapshots[?DBSnapshotIdentifier == 'fss-public-staging-db-staging-manual-snapshot
+'].DBSnapshotArn | [0]")
+            echo $ads
 
 jobs:
   assume-role-staging:
