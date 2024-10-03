@@ -158,8 +158,16 @@ commands:
           name: copy a database snapshot w encryption
           command: |
             default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]")
+
             snapshot_to_copy_arn=$(aws rds describe-db-snapshots --query "DBSnapshots[?DBSnapshotIdentifier == 'fss-public-staging-db-staging-manual-snapshot'].DBSnapshotArn | [0]")
-            echo $snapshot_to_copy_arn
+
+            aws rds copy-db-snapshot \
+              --source-db-snapshot-identifier $snapshot_to_copy_arn \
+              --target-db-snapshot-identifier 'fss-public-staging-db-staging-manual-snapshot-w-encryption' \
+              --source-region 'eu-west-2' \
+              --copy-tags \
+              --no-copy-option-group \
+              --kms-key-id $default_kms_id
 
 jobs:
   check-code-formatting:
