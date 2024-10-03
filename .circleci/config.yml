@@ -157,6 +157,7 @@ commands:
       - run:
           name: copy a database snapshot w encryption
           command: |
+            default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]")
             exit 0
 
 jobs:
