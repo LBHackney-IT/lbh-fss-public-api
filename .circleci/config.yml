@@ -158,7 +158,8 @@ commands:
           name: copy a database snapshot w encryption
           command: |
             default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]")
-            exit 0
+            snapshot_to_copy_arn=$(aws rds describe-db-snapshots --query "DBSnapshots[?DBSnapshotIdentifier == 'fss-public-staging-db-staging-manual-snapshot'].DBSnapshotArn | [0]")
+            echo $snapshot_to_copy_arn
 
 jobs:
   check-code-formatting:
