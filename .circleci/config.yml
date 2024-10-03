@@ -149,6 +149,15 @@ commands:
             # fi
             terraform plan
           name: preview terraform
+  reviewable-console-changes:
+    description: "Copy an existing db snapshot & add encryption to it."
+    steps:
+      - *attach_workspace
+      - aws-cli/install
+      - run:
+          name: copy a database snapshot w encryption
+          command: |
+            exit 0
 
 jobs:
   check-code-formatting:
@@ -247,6 +256,10 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
+  reviewable-cli-job:
+    executor: aws-cli/default
+    steps:
+      - reviewable-console-changes
 
 workflows:
   feature:
@@ -288,6 +301,13 @@ workflows:
               ignore:
                 - develop
                 - master
+      - reviewable-cli-job:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only:
+                - create-encrypted-staging-snapshot
       - preview-staging-terraform:
           requires:
             - assume-role-staging
