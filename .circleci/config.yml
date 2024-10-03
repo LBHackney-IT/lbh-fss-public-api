@@ -149,6 +149,16 @@ commands:
             # fi
             terraform plan
           name: preview terraform
+  reviewable-console-changes:
+    description: "Copy an existing db snapshot & add encryption to it."
+    steps:
+      - *attach_workspace
+      - aws-cli/install
+      - run:
+          name: do a test
+          command: |
+            default_kms_id=$(aws rds list-aliases --query 'Aliases[?contains(AliasName, aws/rds)].TargetKeyId | [0]')
+            echo "$default_kms_id" | grep -o '0bbe'
 
 jobs:
   check-code-formatting:
