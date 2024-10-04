@@ -296,14 +296,6 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
-  reviewable-cli-job:
-    executor: aws-cli/default
-    steps:
-      - reviewable-console-changes
-  reviewable-snapshot:
-    executor: aws-cli/default
-    steps:
-      - reviewable-snapshot-restore
 
 workflows:
   feature:
@@ -345,20 +337,6 @@ workflows:
               ignore:
                 - develop
                 - master
-      - reviewable-snapshot:
-          requires:
-            - assume-role-staging
-          filters:
-            branches:
-              only:
-                - fix-staging-drift
-      - reviewable-cli-job:
-          requires:
-            - assume-role-staging
-          filters:
-            branches:
-              only:
-                - create-encrypted-staging-snapshot
       - preview-staging-terraform:
           requires:
             - assume-role-staging
