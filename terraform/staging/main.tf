@@ -77,3 +77,24 @@ module "postgres_db_staging" {
   publicly_accessible = false
   project_name = "fss public api"
 }
+
+module "postgres_db_staging_encrypted" {
+  source                  = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
+  environment_name        = "staging"
+  vpc_id                  = data.aws_vpc.staging_vpc.id
+  db_engine               = "postgres"
+  db_engine_version       = "16.3"
+  db_parameter_group_name = "postgres-16"
+  db_identifier           = "fss-public-staging-db-staging-encrypted"
+  db_instance_class       = "db.t3.micro"
+  db_name                 = data.aws_ssm_parameter.fss_public_postgres_database.value
+  db_port                 = data.aws_ssm_parameter.fss_public_postgres_port.value
+  db_username             = data.aws_ssm_parameter.fss_public_postgres_username.value
+  db_password             = data.aws_ssm_parameter.fss_public_postgres_db_password.value
+  subnet_ids              = data.aws_subnet_ids.staging_private_subnets.ids
+  db_allocated_storage    = 20
+  maintenance_window      = "sun:10:00-sun:10:30"
+  multi_az                = false
+  publicly_accessible     = false
+  project_name            = "fss public api"
+}
