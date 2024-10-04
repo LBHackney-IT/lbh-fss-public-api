@@ -106,5 +106,6 @@ module "postgres_db_staging_encrypted" {
   maintenance_window      = "sun:10:00-sun:10:30"
   multi_az                = false
   publicly_accessible     = false
+  storage_encrypted       = true
   project_name            = "fss public api"
 }
