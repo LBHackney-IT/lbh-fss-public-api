@@ -78,6 +78,16 @@ module "postgres_db_staging" {
   project_name = "fss public api"
 }
 
+import {
+  to = module.postgres_db_staging_encrypted.module.db_security_group.aws_security_group.lbh_db_traffic
+  id = "sg-04c73000bf97eae7e"
+}
+
+import {
+  to = module.postgres_db_staging_encrypted.aws_db_subnet_group.db_subnets
+  id = "fsspublicstaging-db-subnet-staging"
+}
+
 module "postgres_db_staging_encrypted" {
   source                  = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
   environment_name        = "staging"
