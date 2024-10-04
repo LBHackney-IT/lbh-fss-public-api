@@ -197,7 +197,6 @@ commands:
               --storage-type "gp2" \
               --no-multi-az \
               --region "eu-west-2" \
-              --db-name "fsspublicstaging" \
               --vpc-security-group-ids "$SECURITY_GROUP_ID"
 
 jobs:
