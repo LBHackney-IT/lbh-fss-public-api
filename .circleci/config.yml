@@ -331,7 +331,7 @@ workflows:
           filters:
             branches:
               only:
-                - restore-encrypted-snapshot
+                - fix-staging-drift
       - reviewable-cli-job:
           requires:
             - assume-role-staging
