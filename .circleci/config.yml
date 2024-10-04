@@ -149,55 +149,6 @@ commands:
             # fi
             terraform plan
           name: preview terraform
-  reviewable-console-changes:
-    description: "Copy an existing db snapshot & add encryption to it."
-    steps:
-      - *attach_workspace
-      - aws-cli/install
-      - run:
-          name: copy a database snapshot w encryption
-          command: |
-            default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]" | sed 's/"//g')
-
-            snapshot_to_copy_arn=$(aws rds describe-db-snapshots --query "DBSnapshots[?DBSnapshotIdentifier == 'fss-public-staging-db-staging-manual-snapshot'].DBSnapshotArn | [0]" | sed 's/"//g')
-
-            aws rds copy-db-snapshot \
-              --source-db-snapshot-identifier $snapshot_to_copy_arn \
-              --target-db-snapshot-identifier 'fss-public-staging-db-staging-manual-snapshot-w-encryption' \
-              --source-region 'eu-west-2' \
-              --copy-tags \
-              --no-copy-option-group \
-              --kms-key-id $default_kms_id
-  reviewable-snapshot-restore:
-    description: "Restore an FSS database from snapshot with encryption."
-    steps:
-      - *attach_workspace
-      - aws-cli/install
-      - run:
-          name: restore database from snapshot
-          command: |
-            SECURITY_GROUP_ID=$(aws ec2 describe-security-groups --query "SecurityGroups[?contains(GroupName,'allow_fsspublicstaging_db')].GroupId | [0]" | sed -e 's/"//g')
-
-            aws rds restore-db-instance-from-db-snapshot \
-              --db-instance-identifier "fss-public-staging-db-staging-encrypted" \
-              --db-instance-class "db.t3.micro" \
-              --db-snapshot-identifier fss-public-staging-db-staging-manual-snapshot-w-encryption \
-              --db-subnet-group-name "fsspublicstaging-db-subnet-staging" \
-              --auto-minor-version-upgrade \
-              --ca-certificate-identifier "rds-ca-rsa2048-g1" \
-              --copy-tags-to-snapshot \
-              --db-parameter-group-name "postgres-16" \
-              --option-group-name "default:postgres-16" \
-              --deletion-protection \
-              --no-enable-iam-database-authentication \
-              --engine "postgres" \
-              --engine-lifecycle-support "open-source-rds-extended-support-disabled" \
-              --port 5432 \
-              --no-publicly-accessible \
-              --storage-type "gp2" \
-              --no-multi-az \
-              --region "eu-west-2" \
-              --vpc-security-group-ids "$SECURITY_GROUP_ID"
 
 jobs:
   check-code-formatting:
