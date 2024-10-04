@@ -79,6 +79,11 @@ module "postgres_db_staging" {
 }
 
 import {
+  to = module.postgres_db_staging_encrypted.aws_db_instance.lbh-db
+  id = "fss-public-staging-db-staging-encrypted"
+}
+
+import {
   to = module.postgres_db_staging_encrypted.module.db_security_group.aws_security_group.lbh_db_traffic
   id = "sg-04c73000bf97eae7e"
 }
