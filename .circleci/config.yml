@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
+  aws-cli: circleci/aws-cli@5.1.0
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
 
 executors:
@@ -149,6 +149,25 @@ commands:
             # fi
             terraform plan
           name: preview terraform
+  reviewable-console-changes:
+    description: "Copy an existing db snapshot & add encryption to it."
+    steps:
+      - *attach_workspace
+      - aws-cli/install
+      - run:
+          name: copy a database snapshot w encryption
+          command: |
+            default_kms_id=$(aws kms list-aliases --query "Aliases[?contains(AliasName, 'aws/rds')].TargetKeyId | [0]" | sed 's/"//g')
+
+            snapshot_to_copy_arn=$(aws rds describe-db-snapshots --query "DBSnapshots[?DBSnapshotIdentifier == 'fss-public-staging-db-staging-manual-snapshot'].DBSnapshotArn | [0]" | sed 's/"//g')
+
+            aws rds copy-db-snapshot \
+              --source-db-snapshot-identifier $snapshot_to_copy_arn \
+              --target-db-snapshot-identifier 'fss-public-staging-db-staging-manual-snapshot-w-encryption' \
+              --source-region 'eu-west-2' \
+              --copy-tags \
+              --no-copy-option-group \
+              --kms-key-id $default_kms_id
 
 jobs:
   check-code-formatting:
@@ -247,6 +266,10 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
+  reviewable-cli-job:
+    executor: aws-cli/default
+    steps:
+      - reviewable-console-changes
 
 workflows:
   feature:
@@ -288,6 +311,13 @@ workflows:
               ignore:
                 - develop
                 - master
+      - reviewable-cli-job:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only:
+                - create-encrypted-staging-snapshot
       - preview-staging-terraform:
           requires:
             - assume-role-staging
