@@ -149,6 +149,24 @@ commands:
             # fi
             terraform plan
           name: preview terraform
+  decouple-from-module:
+    description: "Decouple the old module pointers to the security and subnet groups used by FSS."
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+            terraform state rm \
+              'module.postgres_db_staging_encrypted.aws_db_subnet_group.db_subnets' \
+              'module.postgres_db_staging_encrypted.module.db_security_group.aws_security_group.lbh_db_traffic'
+            terraform plan
+          name: Decouple security and subnet group resource from the old module
 
 jobs:
   check-code-formatting:
