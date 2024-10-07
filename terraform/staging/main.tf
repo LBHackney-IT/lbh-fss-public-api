@@ -80,7 +80,7 @@ module "postgres_db_staging" {
 
 import {
   to = module.postgres_db_staging_encrypted.aws_db_instance.lbh-db
-  id = "fss-public-staging-db-staging-encrypted"
+  id = "fss-public-encrypted-db-staging"
 }
 
 import {
