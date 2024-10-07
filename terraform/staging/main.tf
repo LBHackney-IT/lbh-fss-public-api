@@ -9,7 +9,7 @@
 
 provider "aws" {
   region  = "eu-west-2"
-  version = "~> 2.0"
+  version = "~> 3.0"
 }
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
@@ -76,4 +76,41 @@ module "postgres_db_staging" {
   multi_az = false //only true if production deployment
   publicly_accessible = false
   project_name = "fss public api"
+}
+
+import {
+  to = module.postgres_db_staging_encrypted.aws_db_instance.lbh-db
+  id = "fss-public-encrypted-db-staging"
+}
+
+import {
+  to = module.postgres_db_staging_encrypted.module.db_security_group.aws_security_group.lbh_db_traffic
+  id = "sg-04c73000bf97eae7e"
+}
+
+import {
+  to = module.postgres_db_staging_encrypted.aws_db_subnet_group.db_subnets
+  id = "fsspublicstaging-db-subnet-staging"
+}
+
+module "postgres_db_staging_encrypted" {
+  source                  = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/database/postgres"
+  environment_name        = "staging"
+  vpc_id                  = data.aws_vpc.staging_vpc.id
+  db_engine               = "postgres"
+  db_engine_version       = "16.3"
+  db_parameter_group_name = "postgres-16"
+  db_identifier           = "fss-public-encrypted"
+  db_instance_class       = "db.t3.micro"
+  db_name                 = data.aws_ssm_parameter.fss_public_postgres_database.value
+  db_port                 = data.aws_ssm_parameter.fss_public_postgres_port.value
+  db_username             = data.aws_ssm_parameter.fss_public_postgres_username.value
+  db_password             = data.aws_ssm_parameter.fss_public_postgres_db_password.value
+  subnet_ids              = data.aws_subnet_ids.staging_private_subnets.ids
+  db_allocated_storage    = 20
+  maintenance_window      = "sun:10:00-sun:10:30"
+  multi_az                = false
+  publicly_accessible     = false
+  storage_encrypted       = true
+  project_name            = "fss public api"
 }
