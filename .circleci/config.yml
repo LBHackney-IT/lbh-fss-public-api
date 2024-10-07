@@ -316,8 +316,11 @@ workflows:
             - assume-role-staging
           filters:
             branches:
+              # had to run this on feature because when the target
+              # module gets removed, this command won't be able to
+              # target it.
               only:
-                - delete-and-decouple-old-module
+                - already-ran-no-need-to-trigger
       - preview-staging-terraform:
           requires:
             - assume-role-staging
