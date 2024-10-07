@@ -265,6 +265,11 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
+  decouple-from-old-module:
+    executor: docker-terraform
+    steps:
+      - decouple-from-module:
+          environment: "staging"
 
 workflows:
   feature:
@@ -306,6 +311,13 @@ workflows:
               ignore:
                 - develop
                 - master
+      - decouple-from-old-module:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only:
+                - delete-and-decouple-old-module
       - preview-staging-terraform:
           requires:
             - assume-role-staging
