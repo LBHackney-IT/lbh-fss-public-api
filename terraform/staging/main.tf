@@ -100,7 +100,7 @@ module "postgres_db_staging_encrypted" {
   db_engine               = "postgres"
   db_engine_version       = "16.3"
   db_parameter_group_name = "postgres-16"
-  db_identifier           = "fss-public-staging-db-staging-encrypted"
+  db_identifier           = "fss-public-encrypted"
   db_instance_class       = "db.t3.micro"
   db_name                 = data.aws_ssm_parameter.fss_public_postgres_database.value
   db_port                 = data.aws_ssm_parameter.fss_public_postgres_port.value
