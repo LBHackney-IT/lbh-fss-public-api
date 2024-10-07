@@ -163,8 +163,8 @@ commands:
             terraform get -update=true
             terraform init
             terraform state rm \
-              'module.postgres_db_staging_encrypted.aws_db_subnet_group.db_subnets' \
-              'module.postgres_db_staging_encrypted.module.db_security_group.aws_security_group.lbh_db_traffic'
+              'module.postgres_db_staging.aws_db_subnet_group.db_subnets' \
+              'module.postgres_db_staging.module.db_security_group.aws_security_group.lbh_db_traffic'
             terraform plan
           name: Decouple security and subnet group resource from the old module
 
