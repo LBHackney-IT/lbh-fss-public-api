@@ -156,7 +156,7 @@ commands:
         type: string
     steps:
       - *attach_workspace
-      - checkout
+      - aws-cli/install
       - run:
           command: |
             if [ <<parameters.environment>> = "staging" ]
@@ -266,7 +266,7 @@ jobs:
       - preview-terraform:
           environment: "production"
   remove-duplicate-unused-db:
-    executor: docker-terraform
+    executor: aws-cli/default
     steps:
       - remove-duplicate-encrypted-db:
           environment: "staging"
