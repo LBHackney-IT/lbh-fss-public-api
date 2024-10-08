@@ -265,7 +265,7 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
-  decouple-from-old-module:
+  remove-duplicate-unused-db:
     executor: docker-terraform
     steps:
       - remove-duplicate-encrypted-db:
@@ -311,14 +311,11 @@ workflows:
               ignore:
                 - develop
                 - master
-      - decouple-from-old-module:
+      - remove-duplicate-unused-db:
           requires:
             - assume-role-staging
           filters:
             branches:
-              # had to run this on feature because when the target
-              # module gets removed, this command won't be able to
-              # target it.
               only:
                 - already-ran-no-need-to-trigger
       - preview-staging-terraform:
