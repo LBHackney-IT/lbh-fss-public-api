@@ -149,24 +149,6 @@ commands:
             # fi
             terraform plan
           name: preview terraform
-  remove-duplicate-encrypted-db:
-    description: "Removes the encrypted db with the wrong name. Keeps only the one with the correct name."
-    parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - aws-cli/install
-      - run:
-          command: |
-            if [ <<parameters.environment>> = "staging" ]
-            then
-              aws rds delete-db-instance \
-                --db-instance-identifier 'fss-public-staging-db-staging-encrypted' \
-                --skip-final-snapshot \
-                --delete-automated-backups
-            fi
-          name: Remove the duplicate 1st of the 1 encrypted FSS databases
 
 jobs:
   check-code-formatting:
@@ -265,11 +247,6 @@ jobs:
     steps:
       - preview-terraform:
           environment: "production"
-  remove-duplicate-unused-db:
-    executor: aws-cli/default
-    steps:
-      - remove-duplicate-encrypted-db:
-          environment: "staging"
 
 workflows:
   feature:
@@ -311,15 +288,6 @@ workflows:
               ignore:
                 - develop
                 - master
-      - remove-duplicate-unused-db:
-          requires:
-            - assume-role-staging
-          filters:
-            # Trigger duplicate database's deletion on this feature branch to reduce the PR count.
-            # This is a one-off operation, so this could will be removed before the PR merge to develop branch.
-            branches:
-              only:
-                - fix-staging-drift
       - preview-staging-terraform:
           requires:
             - assume-role-staging
