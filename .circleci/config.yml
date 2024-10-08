@@ -315,9 +315,11 @@ workflows:
           requires:
             - assume-role-staging
           filters:
+            # Trigger duplicate database's deletion on this feature branch to reduce the PR count.
+            # This is a one-off operation, so this could will be removed before the PR merge to develop branch.
             branches:
               only:
-                - already-ran-no-need-to-trigger
+                - fix-staging-drift
       - preview-staging-terraform:
           requires:
             - assume-role-staging
