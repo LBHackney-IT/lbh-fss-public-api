@@ -161,7 +161,7 @@ commands:
           command: |
             if [ <<parameters.environment>> = "staging" ]
             then
-              delete-db-instance \
+              aws rds delete-db-instance \
                 --db-instance-identifier 'fss-public-staging-db-staging-encrypted'
                 --skip-final-snapshot
                 --delete-automated-backups
