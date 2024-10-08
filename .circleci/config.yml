@@ -149,8 +149,8 @@ commands:
             # fi
             terraform plan
           name: preview terraform
-  decouple-from-module:
-    description: "Decouple the old module pointers to the security and subnet groups used by FSS."
+  remove-duplicate-encrypted-db:
+    description: "Removes the encrypted db with the wrong name. Keeps only the one with the correct name."
     parameters:
       environment:
         type: string
@@ -159,14 +159,14 @@ commands:
       - checkout
       - run:
           command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-            terraform state rm \
-              'module.postgres_db_staging.aws_db_subnet_group.db_subnets' \
-              'module.postgres_db_staging.module.db_security_group.aws_security_group.lbh_db_traffic'
-            terraform plan
-          name: Decouple security and subnet group resource from the old module
+            if [ <<parameters.environment>> = "staging" ]
+            then
+              delete-db-instance \
+                --db-instance-identifier 'fss-public-staging-db-staging-encrypted'
+                --skip-final-snapshot
+                --delete-automated-backups
+            fi
+          name: Remove the duplicate 1st of the 1 encrypted FSS databases
 
 jobs:
   check-code-formatting:
@@ -268,7 +268,7 @@ jobs:
   decouple-from-old-module:
     executor: docker-terraform
     steps:
-      - decouple-from-module:
+      - remove-duplicate-encrypted-db:
           environment: "staging"
 
 workflows:
