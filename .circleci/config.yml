@@ -162,8 +162,8 @@ commands:
             if [ <<parameters.environment>> = "staging" ]
             then
               aws rds delete-db-instance \
-                --db-instance-identifier 'fss-public-staging-db-staging-encrypted'
-                --skip-final-snapshot
+                --db-instance-identifier 'fss-public-staging-db-staging-encrypted' \
+                --skip-final-snapshot \
                 --delete-automated-backups
             fi
           name: Remove the duplicate 1st of the 1 encrypted FSS databases
