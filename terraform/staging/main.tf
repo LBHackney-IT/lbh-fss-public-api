@@ -93,6 +93,7 @@ module "postgres_db_staging_encrypted" {
   storage_encrypted       = true
   project_name            = "fss public api"
 
-  # Delete related.
+  # Delete / restore related.
   deletion_protection     = true
+  copy_tags_to_snapshot   = true
 }
