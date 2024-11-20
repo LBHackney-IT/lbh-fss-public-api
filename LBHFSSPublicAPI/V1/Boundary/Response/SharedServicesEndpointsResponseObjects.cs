@@ -86,6 +86,7 @@ namespace LBHFSSPublicAPI.V1.Boundary.Response
         public int Id { get; set; }
         public string Name { get; set; }
         public string Status { get; set; }
+        public bool? IsRemoteType { get; set; }
     }
 
     public class Referral

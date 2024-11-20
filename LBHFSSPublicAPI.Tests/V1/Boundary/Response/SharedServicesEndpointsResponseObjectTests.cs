@@ -132,7 +132,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Boundary.Response
             var entity = Randomm.Create<Organization>();
 
             // assert
-            entityType.GetProperties().Length.Should().Be(3);
+            entityType.GetProperties().Length.Should().Be(4);
             Assert.That(entity, Has.Property("Id").InstanceOf(typeof(int)));
             Assert.That(entity, Has.Property("Name").InstanceOf(typeof(string)));
             Assert.That(entity, Has.Property("Status").InstanceOf(typeof(string)));
