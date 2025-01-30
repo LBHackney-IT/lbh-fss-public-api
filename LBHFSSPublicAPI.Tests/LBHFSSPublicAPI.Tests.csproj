@@ -12,7 +12,10 @@
     <ItemGroup>
         <PackageReference Include="AutoFixture" Version="4.11.0" />
         <PackageReference Include="FluentAssertions" Version="5.10.3" />
-        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.3" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
