@@ -1,14 +1,14 @@
 service: fss-public-api
 provider:
   name: aws
-  runtime: dotnetcore3.1
+  runtime: dotnet8
   timeout: 15
   vpc: ${self:custom.vpc.${opt:stage}}
   stage: ${opt:stage}
   region: eu-west-2
 
 package:
-  artifact: ./bin/release/netcoreapp3.1/fss-public-api.zip
+  artifact: ./bin/release/net8.0/fss-public-api.zip
 
 functions:
   fssPublicApi:
