@@ -1,3 +1,4 @@
+using System;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,8 @@ namespace LBHFSSPublicAPI.Tests
         [SetUp]
         public void RunBeforeAnyTests()
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             var builder = new DbContextOptionsBuilder();
             builder.UseNpgsql(ConnectionString.TestDatabase());
             DatabaseContext = new DatabaseContext(builder.Options);

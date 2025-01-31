@@ -1,3 +1,4 @@
+using System;
 using System.Data.Common;
 using LBHFSSPublicAPI;
 using LBHFSSPublicAPI.V1.Infrastructure;
@@ -25,6 +26,8 @@ namespace LBHFSSPublicAPI.Tests
                 .UseStartup<Startup>();
             builder.ConfigureServices(services =>
             {
+                AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
                 var dbBuilder = new DbContextOptionsBuilder();
                 dbBuilder.UseNpgsql(_connection);
                 var context = new DatabaseContext(dbBuilder.Options);
