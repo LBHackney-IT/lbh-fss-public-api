@@ -1,9 +1,8 @@
 version: 2.1
 
 orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@5.1.0
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
+  node: circleci/node@6.3.0
 
 executors:
   docker-python:
@@ -14,7 +13,7 @@ executors:
       - image: hashicorp/terraform:latest
   docker-dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
 
 references:
   workspace_root: &workspace_root "~"
@@ -47,11 +46,8 @@ commands:
       - *attach_workspace
       - checkout
       - setup_remote_docker
-      - run:
-          name: Install Node.js
-          command: |
-            curl -sL https://deb.nodesource.com/setup_13.x | bash -
-            apt-get update && apt-get install -y nodejs
+      - node/install
+
       - run:
           name: Install serverless CLI
           command: npm i -g serverless
@@ -65,7 +61,7 @@ commands:
           name: Deploy lambda
           command: |
             cd ./LBHFSSPublicAPI/
-            sls deploy --stage <<parameters.stage>> --conceal
+            npx --yes serverless@4 deploy --stage <<parameters.stage>> --conceal
   migrate-database:
     description: "Migrate database"
     parameters:
@@ -75,6 +71,9 @@ commands:
       - *attach_workspace
       - checkout
       - setup_remote_docker
+      - run:
+          name: Install SSH client
+          command: apt-get update && apt-get install -y openssh-client
       - run:
           name: Install Unzip
           command: apt-get update && apt-get install unzip
@@ -345,6 +344,8 @@ workflows:
             branches:
               only: develop
       - deploy-to-development:
+          context:
+            - "Serverless Framework"
           requires:
             - assume-role-development
           filters:
@@ -378,6 +379,8 @@ workflows:
             branches:
               only: master
       - deploy-to-staging:
+          context:
+            - "Serverless Framework"
           requires:
             - assume-role-staging
           filters:
@@ -398,6 +401,8 @@ workflows:
             branches:
               only: master
       - deploy-to-production:
+          context:
+            - "Serverless Framework"
           requires:
             - assume-role-production
           filters:
