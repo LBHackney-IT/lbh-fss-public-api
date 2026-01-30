@@ -175,7 +175,8 @@ jobs:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-account: $AWS_ACCOUNT_DISASTER_RECOVERY
+
   assume-role-staging:
     executor: docker-python
     steps:
@@ -256,6 +257,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - build-and-test:
           context: find-support-services-public-api-context
           requires:
@@ -265,6 +267,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - assume-role-development:
           context: api-assume-role-development-context
           filters:
@@ -272,6 +275,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - preview-development-terraform:
           requires:
             - assume-role-development
@@ -280,6 +284,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
@@ -287,6 +292,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - preview-staging-terraform:
           requires:
             - assume-role-staging
@@ -295,6 +301,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
@@ -302,6 +309,7 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr                
       - preview-production-terraform:
           requires:
             - assume-role-production
@@ -310,39 +318,41 @@ workflows:
               ignore:
                 - develop
                 - master
+                - dr
+
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: develop
+              only: dr
       - build-and-test:
           context: find-support-services-public-api-context
           requires:
             - check-code-formatting
           filters:
             branches:
-              only: develop
+              only: dr
       - permit-development-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: develop
+              only: dr
       - assume-role-development:
-          context: api-assume-role-development-context
+          context: api-assume-role-disaster-recovery-context
           requires:
             - permit-development-release
           filters:
             branches:
-              only: develop
+              only: dr
       - migrate-database-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: dr
       - deploy-to-development:
           context:
             - "Serverless Framework"
@@ -350,7 +360,8 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: dr
+
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
