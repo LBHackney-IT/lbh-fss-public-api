@@ -425,7 +425,7 @@ workflows:
           filters:
             branches:
               only: master
-              
+
   terraform-release:
     jobs:
       - permit-terraform-development-release:
@@ -434,7 +434,7 @@ workflows:
             branches:
               only: dr
       - assume-role-development:
-          context: api-assume-role-development-context
+          context: api-assume-role-disaster-recovery-context
           requires:
             - permit-terraform-development-release
           filters:
