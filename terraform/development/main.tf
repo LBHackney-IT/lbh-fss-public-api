@@ -36,7 +36,7 @@ locals {
 /*    POSTGRES SET UP    */
 data "aws_vpc" "development_vpc" {
   tags = {
-    Name = "apis-dev"
+    Name = "disaster-recovery-prod"
   }
 }
 data "aws_subnets" "development_private_subnets" {
