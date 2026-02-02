@@ -72,7 +72,7 @@ module "postgres_db_development" {
   environment_name = "development"
   vpc_id = data.aws_vpc.development_vpc.id
   db_engine = "postgres"
-  db_engine_version = "16.3"
+  db_engine_version = "16"
   db_parameter_group_name = "postgres-16"
   db_identifier = "fss-public-dev-db"
   db_instance_class = "db.t3.micro"
