@@ -47,7 +47,7 @@ data "aws_subnets" "development_private_subnets" {
 
   filter {
     name   = "tag:Environment"
-    values = ["Dev"]
+    values = ["Prod"]
   }
 }
 
