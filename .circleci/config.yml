@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
   node: circleci/node@6.3.0
+  sonarcloud: sonarsource/sonarcloud@2.0.0  
 
 executors:
   docker-python:
@@ -160,6 +161,11 @@ jobs:
       - run:
           name: Run formatter check
           command: ./dotnet-format-local/dotnet-format --check
+  sonar-scan:
+    executor: docker-python
+    steps:
+      - checkout
+      - sonarcloud/scan          
   build-and-test:
     executor: docker-python
     steps:
@@ -256,10 +262,16 @@ workflows:
               ignore:
                 - develop
                 - master
+      - sonar-scan:
+          context: SonarCloud
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master                         
       - build-and-test:
           context: find-support-services-public-api-context
-          requires:
-            - check-code-formatting
+          requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
               ignore:
@@ -316,16 +328,20 @@ workflows:
           filters:
             branches:
               only: develop
+      - sonar-scan:
+          context: SonarCloud
+          filters:
+            branches:
+              only: develop              
       - build-and-test:
           context: find-support-services-public-api-context
-          requires:
-            - check-code-formatting
+          requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
               only: develop
       - permit-development-release:
           type: approval
-          requires:
+          requires: 
             - build-and-test
           filters:
             branches:
@@ -357,10 +373,10 @@ workflows:
           context: find-support-services-public-api-context
           filters:
             branches:
-              only: master
+              only: master              
       - permit-staging-release:
           type: approval
-          requires:
+          requires: 
             - build-and-test
           filters:
             branches:

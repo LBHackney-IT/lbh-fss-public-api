@@ -1,0 +1,28 @@
+@startuml name
+title LBH FSS Public API — System Scope
+
+actor "Client" as client
+
+rectangle "AWS (eu-west-2)" {
+  rectangle "VPC" as vpc {
+    rectangle "Private Subnets" as subnets {
+      node "Lambda\nfss-public-api" as lambda
+      database "RDS PostgreSQL" as rds
+    }
+    rectangle "Public Subnet" as publicsubnet
+  }
+
+  node "API Gateway" as apigw
+}
+
+client --> apigw : HTTPS
+apigw --> lambda : Invoke
+lambda --> rds : SQL (VPC)
+
+note right of lambda
+Uses SSM Parameter Store for:
+- DB creds
+- External API config
+end note
+
+@enduml

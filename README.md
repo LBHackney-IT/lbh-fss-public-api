@@ -1,15 +1,29 @@
-# LBH Base API
+# LBH Find Support Services Public API
 
-Base API is a boilerplate code for being reused for new APIs for LBH
+Find Support Services Public API is a service that exposes endpoints to allow consumers to search for support services available to Hackney residents.
+
+![Architecture Diagram](docs/architecture.png)
+
+### Runtime (AWS)
+- **API Gateway** → **Lambda (.NET 8)** → **RDS PostgreSQL** (in VPC private subnets).
+- Lambda runs in a **VPC** with **security groups** and **private subnets** configured per environment.
+- Configuration and secrets are stored in **SSM Parameter Store**.
+
+### Infrastructure as Code
+- **Terraform** defines environment infrastructure in:
+  - `terraform/development`
+  - `terraform/staging`
+  - `terraform/production`
+- **RDS PostgreSQL** is provisioned via a shared Terraform module.
+- Terraform state is stored in **S3**.
 
 ## Stack
 
-- .NET Core as a web framework.
-- nUnit as a test framework.
-
-## Dependencies
-
-- Universal Housing Simulator
+- .NET 8 (AWS Lambda)
+- nUnit
+- Serverless Framework
+- Terraform
+- CircleCI
 
 ## Contributing
 
@@ -21,26 +35,33 @@ Base API is a boilerplate code for being reused for new APIs for LBH
 4. Rename the initial template.
 5. Open it in your IDE.
 
-### Renaming
+### Deployment (Serverless)
 
-The renaming of `base-api` into `SomethingElseApi` can be done by running a Renamer powershell script. To do so:
-1. Open the powershell and navigate to this directory's root.
-2. Run the script using the following command:
-```
-.\Renamer.ps1 -apiName My_Api
-```
+The Lambda is deployed with Serverless. The function is defined in `LBHFSSPublicAPI/serverless.yml` and uses SSM parameters for configuration:
 
-If your ***script execution policy*** prevents you from running the script, you can temporarily ***bypass*** that with:
-```
-powershell -noprofile -ExecutionPolicy Bypass -file .\Renamer.ps1 -apiName My_Api
-```
+- `/fss-public-api/{stage}/postgres-*`
+- `/fss-public-api/{stage}/addresses-api-*`
+- `/fss-common-api/{stage}/addresses-api-token`
+- `/fss-common-api/{stage}/placeholder-image`
 
-Or you can change your execution policy, prior to running the script, permanently with _(this disables security so, be cautious)_:
-```
-Set-ExecutionPolicy Unrestricted
-```
+### Infrastructure (Terraform)
 
-After the renaming is done, the ***script will ask you if you want to delete it as well***, as it's useless now - It's your choice.
+Terraform is environment-scoped:
+- `terraform/development`
+- `terraform/staging`
+- `terraform/production`
+
+Use CircleCI workflows to **plan/apply** Terraform (see below).
+
+### CI/CD (CircleCI)
+
+CircleCI workflows:
+- **feature**: format, tests, and **Terraform plan** for all envs.
+- **check-and-deploy-development**: auto deploy to **development** on `develop`.
+- **check-and-deploy-staging-and-production**: gated deploys to **staging** and **production** on `master`.
+- **terraform-release**: gated **Terraform apply** per environment.
+
+Database migrations run in CircleCI via an SSM jump box before deployments.
 
 ### Development
 
@@ -142,16 +163,11 @@ Note: The Host name needs to be the name of the stub database docker-compose ser
 
 ### Active Maintainers
 
-- **Selwyn Preston**, Lead Developer at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
-- **Mirela Georgieva**, Lead Developer at London Borough of Hackney (mirela.georgieva@hackney.gov.uk)
-- **Matt Keyworth**, Lead Developer at London Borough of Hackney (matthew.keyworth@hackney.gov.uk)
+- **Selwyn Preston**, Head of Engineering at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
 
 ### Other Contacts
 
-- **Rashmi Shetty**, Product Owner at London Borough of Hackney (rashmi.shetty@hackney.gov.uk)
-
 [docker-download]: https://www.docker.com/products/docker-desktop
-[universal-housing-simulator]: https://github.com/LBHackney-IT/lbh-universal-housing-simulator
 [made-tech]: https://madetech.com/
 [AWS-CLI]: https://aws.amazon.com/cli/
 
