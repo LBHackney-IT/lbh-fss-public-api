@@ -3,8 +3,10 @@ locals {
 
   config = {
     development = {
-      vpc_name                               = "apis-dev"
-      vpc_env_tag                            = "Dev"
+      # vpc_name                               = "apis-dev"
+      vpc_name = "disaster-recovery-prod"
+      # vpc_env_tag                            = "Dev"
+      vpc_env_tag                            = "Prod"
       db_identifier                          = "fss-public-dev-db"
       db_instance_class                      = "db.t3.micro"
       db_allocated_storage                   = 20
