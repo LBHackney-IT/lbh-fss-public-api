@@ -2,8 +2,6 @@
 
 Find Support Services Public API is a service that exposes endpoints to allow consumers to search for support services available to Hackney residents.
 
-![Architecture Diagram](docs/architecture.png)
-
 ### Runtime (AWS)
 - **API Gateway** → **Lambda (.NET 8)** → **RDS PostgreSQL** (in VPC private subnets).
 - Lambda runs in a **VPC** with **security groups** and **private subnets** configured per environment.
@@ -17,6 +15,8 @@ Find Support Services Public API is a service that exposes endpoints to allow co
 - **RDS PostgreSQL** is provisioned via a shared Terraform module.
 - Terraform state is stored in **S3**.
 
+![Architecture Diagram](docs/architecture.png)
+
 ## Stack
 
 - .NET 8 (AWS Lambda)
@@ -27,13 +27,18 @@ Find Support Services Public API is a service that exposes endpoints to allow co
 
 ## Contributing
 
-### Setup
+### Local Development
 
-1. Install [Docker][docker-download].
-2. Install [AWS CLI][AWS-CLI].
-3. Clone this repository.
-4. Rename the initial template.
-5. Open it in your IDE.
+1. **Prerequisites**: Docker Desktop installed
+2. **Run the API**:
+   ```sh
+   make build && make serve
+   ```
+3. **Run tests**:
+   ```sh
+   make test
+   ```
+4. **Access**: API available at `http://localhost:3000`
 
 ### Deployment (Serverless)
 
@@ -63,24 +68,6 @@ CircleCI workflows:
 
 Database migrations run in CircleCI via an SSM jump box before deployments.
 
-### Development
-
-To serve the application, run it using your IDE of choice, we use Visual Studio CE and JetBrains Rider on Mac.
-
-The application can also be served locally using docker:
-1.  Add you security credentials to AWS CLI.
-```sh
-$ aws configure
-```
-2. Log into AWS ECR.
-```sh
-$ aws ecr get-login --no-include-email
-```
-3. Build and serve the application. It will be available in the port 3000.
-```sh
-$ make build && make serve
-```
-
 ### Release process
 
 We use a pull request workflow, where changes are made on a branch and approved by one or more other maintainers before the developer can merge into `master` branch.
@@ -89,14 +76,14 @@ We use a pull request workflow, where changes are made on a branch and approved 
 
 Then we have an automated six step deployment process, which runs in CircleCI.
 
-1. Automated tests (nUnit) are run to ensure the release is of good quality.
+1. Automated tests (nUnit) and code checks (Sonar) are run to ensure the release is of good quality.
 2. The application is deployed to development automatically, where we check our latest changes work well.
 3. We manually confirm a staging deployment in the CircleCI workflow once we're happy with our changes in development.
 4. The application is deployed to staging.
 5. We manually confirm a production deployment in the CircleCI workflow once we're happy with our changes in staging.
 6. The application is deployed to production.
 
-Our staging and production environments are hosted by AWS. We would deploy to production per each feature/config merged into  `master`  branch.
+Our environments are hosted by AWS. We would deploy to production per each feature/config merged into  `master`  branch.
 
 ## Static Code Analysis
 
@@ -167,7 +154,10 @@ Note: The Host name needs to be the name of the stub database docker-compose ser
 
 ### Other Contacts
 
-[docker-download]: https://www.docker.com/products/docker-desktop
+[docker-download]: https://www.docker.com/products/docker-desktop/
 [made-tech]: https://madetech.com/
 [AWS-CLI]: https://aws.amazon.com/cli/
 
+# License
+
+[MIT](./LICENSE)

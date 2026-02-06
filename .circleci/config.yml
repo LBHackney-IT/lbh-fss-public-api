@@ -48,25 +48,20 @@ commands:
       - checkout
       - setup_remote_docker
       - node/install
-
       - run:
-          name: Install serverless CLI
-          command: npm i -g serverless
-      - run:
-          name: Build lambda
+          name: Build and deploy lambda
+          working_directory: ./LBHFSSPublicAPI/
           command: |
-            cd ./LBHFSSPublicAPI/
+            set -e
             chmod +x ./build.sh
             ./build.sh
-      - run:
-          name: Deploy lambda
-          command: |
-            cd ./LBHFSSPublicAPI/
             npx --yes serverless@4 deploy --stage <<parameters.stage>> --conceal
   migrate-database:
     description: "Migrate database"
     parameters:
       stage:
+        type: string
+      aws-central-parameter-account:  
         type: string
     steps:
       - *attach_workspace
@@ -94,22 +89,26 @@ commands:
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
       - run:
           name: SSH into RDS and migrate database
-          command: |
+          command: |            
             aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
-            HOST=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-hostname --query Parameter.Value)
-            PORT=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-port --query Parameter.Value)
-            INSTANCE_NAME=$(aws ssm get-parameter --name /platform-apis-jump-box-instance-name --query Parameter.Value)
-            ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST//\"}:${PORT//\"} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME//\"}
-            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value)
-            USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value)
-            DATABASE=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-database --query Parameter.Value)
-            ADDRESSES_URL=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-base-url --query Parameter.Value)
-            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value)
-            ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value)
+            HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
+            PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
+            INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
+            ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST}:${PORT} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME}
+            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value --output text)
+            USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value --output text)
+            DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
+            ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/addresses-api-base-url --query Parameter.Value --output text)
+            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
+            ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
+            CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
+            cd ./LBHFSSPublicAPI/
+            ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
+  
   deploy-terraform:
     description: "Initializes and applies terraform configuration"
     parameters:
@@ -119,16 +118,20 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
           name: get and init
-      - run:
-          name: apply
           command: |
-            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
+            terraform init -backend-config="bucket=terraform-state-disaster-recovery"
+      - run:
+          name: validate terraform
+          command: terraform validate             
+      - run:
+          name: select workspace and apply
+          command: |
+            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
             terraform apply -auto-approve
+
   preview-terraform:
     description: "Previews terraform configuration changes"
     parameters:
@@ -138,17 +141,14 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-            # if [ "<<parameters.environment>>" = "development" ]
-            # then
-            #   echo "replace provider"
-            #   terraform state replace-provider registry.terraform.io/-/aws hashicorp/aws
-            # fi
-            terraform plan
           name: preview terraform
+          command: |
+            terraform get -update=true
+            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
+            terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
+            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
+            terraform validate            
+            terraform plan
 
 jobs:
   check-code-formatting:
@@ -173,10 +173,15 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker-compose build fss-public-api-test
+          command: docker compose build fss-public-api-test
       - run:
           name: Run tests
-          command: docker-compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN --rm fss-public-api-test
+          command: docker compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN --rm fss-public-api-test
+  assume-role-dr:
+    executor: docker-python
+    steps:
+      - assume-role-and-persist-workspace:
+          aws-account: $AWS_ACCOUNT_DISASTER_RECOVERY
   assume-role-development:
     executor: docker-python
     steps:
@@ -192,6 +197,11 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
+  deploy-to-dr:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: "development"
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -207,21 +217,35 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "production"
+  migrate-database-dr:
+    executor: docker-dotnet
+    steps:
+      - migrate-database:
+          stage: "development"
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-development:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "development"
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-staging:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "staging"
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-production:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "production"
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+  deploy-dr-terraform:
+    executor: docker-terraform
+    steps:
+      - deploy-terraform:
+          environment: "development"
   deploy-development-terraform:
     executor: docker-terraform
     steps:
@@ -237,6 +261,11 @@ jobs:
     steps:
       - deploy-terraform:
           environment: "production"
+  preview-dr-terraform:
+    executor: docker-terraform
+    steps:
+      - preview-terraform:
+          environment: "development"
   preview-development-terraform:
     executor: docker-terraform
     steps:
@@ -272,6 +301,21 @@ workflows:
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - assume-role-dr:
+          context: api-assume-role-disaster-recovery-context
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - preview-dr-terraform:
+          requires:
+            - assume-role-dr
           filters:
             branches:
               ignore:
@@ -322,6 +366,51 @@ workflows:
               ignore:
                 - develop
                 - master
+  check-and-deploy-dr:
+    jobs:
+      - check-code-formatting:
+          filters:
+            branches:
+              only: SSI-778-Remediation
+      - sonar-scan:
+          context: SonarCloud
+          filters:
+            branches:
+              only: SSI-778-Remediation              
+      - build-and-test:
+          context: find-support-services-public-api-context
+          requires: [check-code-formatting, sonar-scan]
+          filters:
+            branches:
+              only: SSI-778-Remediation
+      - permit-dr-release:
+          type: approval
+          requires: 
+            - build-and-test
+          filters:
+            branches:
+              only: SSI-778-Remediation
+      - assume-role-dr:
+          context: api-assume-role-disaster-recovery-context
+          requires:
+            - permit-dr-release
+          filters:
+            branches:
+              only: SSI-778-Remediation
+      - migrate-database-dr:
+          requires:
+            - assume-role-dr
+          filters:
+            branches:
+              only: SSI-778-Remediation
+      - deploy-to-dr:
+          context:
+            - "Serverless Framework"
+          requires:
+            - assume-role-dr
+          filters:
+            branches:
+              only: SSI-778-Remediation
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
@@ -432,6 +521,25 @@ workflows:
               only: master
   terraform-release:
     jobs:
+      - permit-terraform-dr-release:
+          type: approval
+          filters:
+            branches:
+              only:  SSI-778-Remediation              
+      - assume-role-dr:
+          context: api-assume-role-disaster-recovery-context
+          requires:
+            - permit-terraform-dr-release
+          filters:
+            branches:
+              only:  SSI-778-Remediation
+      - deploy-dr-terraform:
+          requires:
+            - assume-role-dr
+          filters:
+            branches:
+              only:  SSI-778-Remediation
+
       - permit-terraform-development-release:
           type: approval
           filters:
@@ -450,6 +558,7 @@ workflows:
           filters:
             branches:
               only: develop
+
       - permit-terraform-staging-release:
           type: approval
           filters:
