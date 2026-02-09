@@ -32,9 +32,11 @@ data "aws_ssm_parameter" "postgres_username" {
 # Low value parameters are stored in a centralised parameter store to reduce risk of error when updating values and ensure swift disaster recovery. These parameters are accessed using the centralised_parameter_store variable in locals.tf which uses the account ID from the current environment's config to determine which parameter store to pull from.
 
 data "aws_ssm_parameter" "postgres_port" {
-  name = "${local.centralised_parameter_store}/${local.environment}apis/fss-public-api-${local.environment}/fss-public-api/postgres-port"
+  # name = "${local.centralised_parameter_store}/${local.environment}apis/fss-public-api-${local.environment}/fss-public-api/postgres-port"
+  name = "/fss-public-api/${local.environment}/postgres-port"
 }
 
 data "aws_ssm_parameter" "postgres_database" {
-  name = "${local.centralised_parameter_store}/${local.environment}apis/fss-public-api-${local.environment}/fss-public-api/postgres-database"
+  # name = "${local.centralised_parameter_store}/${local.environment}apis/fss-public-api-${local.environment}/fss-public-api/postgres-database"
+  name = "/fss-public-api/${local.environment}/postgres-database"
 }

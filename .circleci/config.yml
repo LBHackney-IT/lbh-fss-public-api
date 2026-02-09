@@ -116,8 +116,8 @@ commands:
           name: preview terraform
           command: |
             terraform get -update=true
-            terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
-            # terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
+            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
+            terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
             terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
             terraform validate            
             terraform plan
