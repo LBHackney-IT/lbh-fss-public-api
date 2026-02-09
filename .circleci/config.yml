@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
+  aws-cli: circleci/aws-cli@5.1.1
   node: circleci/node@6.3.0
   sonarcloud: sonarsource/sonarcloud@2.0.0  
 
@@ -74,12 +75,6 @@ commands:
           name: Install Unzip
           command: apt-get update && apt-get install unzip
       - run:
-          name: Install AWS CLI
-          command: |
-            curl -L -o awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-            unzip awscliv2.zip
-            ./aws/install
-      - run:
           name: Install Session Manager plugin
           command: |
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
@@ -109,6 +104,24 @@ commands:
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
   
+  preview-terraform:
+    description: "Previews terraform configuration changes"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          name: preview terraform
+          command: |
+            terraform get -update=true
+            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
+            terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
+            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
+            terraform validate            
+            terraform plan
+
   deploy-terraform:
     description: "Initializes and applies terraform configuration"
     parameters:
@@ -132,23 +145,6 @@ commands:
             terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
             terraform apply -auto-approve
 
-  preview-terraform:
-    description: "Previews terraform configuration changes"
-    parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-      - run:
-          name: preview terraform
-          command: |
-            terraform get -update=true
-            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
-            terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
-            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
-            terraform validate            
-            terraform plan
 
 jobs:
   check-code-formatting:
@@ -172,11 +168,21 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: build
+            name: Start database
+            command: |
+              docker compose up -d test-database
+              echo "Waiting for database to be ready..."
+              timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'      
+      - run:
+          name: Build test image
           command: docker compose build fss-public-api-test
       - run:
           name: Run tests
           command: docker compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN --rm fss-public-api-test
+      - run:
+          name: Cleanup
+          when: always
+          command: docker compose down -v          
   assume-role-dr:
     executor: docker-python
     steps:

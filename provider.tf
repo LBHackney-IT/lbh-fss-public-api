@@ -14,4 +14,11 @@ terraform {
 
 provider "aws" {
   region = "eu-west-2"
+  default_tags {
+    tags = {
+      Application = local.application_name
+      TeamEmail   = "developmentteam@hackney.gov.uk"
+      Environment = local.current_config.env_tag
+    }
+  }
 }

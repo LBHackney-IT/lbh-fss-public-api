@@ -19,7 +19,7 @@ data "aws_subnets" "private_subnets" {
   }
 }
 
-# Sensative parameters such as database credentials are stored in the parameter store of each environment's account. In future this will be moved to a centralised secret manager to further reduce risk of error and duplication when updating values.
+# Sensitive parameters such as database credentials are stored in the parameter store of each environment's account. In future this will be moved to a centralised secret manager to further reduce risk of error and duplication when updating values.
 
 data "aws_ssm_parameter" "postgres_password" {
   name = "/fss-public-api/${local.environment}/postgres-password"

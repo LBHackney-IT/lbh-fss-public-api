@@ -3,10 +3,11 @@ locals {
 
   config = {
     development = {
-      # vpc_name                               = "apis-dev"
-      vpc_name = "disaster-recovery-prod"
-      # vpc_env_tag                            = "Dev"
-      vpc_env_tag                            = "Prod"
+      # vpc_env_tag = "Prod"
+      # vpc_name = "disaster-recovery-prod"
+      env_tag                                = "dev"
+      vpc_name                               = "apis-dev"
+      vpc_env_tag                            = "Dev"
       db_identifier                          = "fss-public-dev-db"
       db_instance_class                      = "db.t3.micro"
       db_allocated_storage                   = 20
@@ -17,6 +18,7 @@ locals {
       centralised_parameter_store_account_id = "115283375626"
     }
     staging = {
+      env_tag                                = "stg"
       vpc_name                               = "apis-stg"
       vpc_env_tag                            = "Staging"
       db_identifier                          = "fss-public-stg-db"
@@ -29,6 +31,7 @@ locals {
       centralised_parameter_store_account_id = "469511945406"
     }
     production = {
+      env_tag                                = "prod"
       vpc_name                               = "apis-prod"
       vpc_env_tag                            = "Production"
       db_identifier                          = "fss-public-prod-db"
