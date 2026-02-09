@@ -137,12 +137,16 @@ commands:
             # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
             terraform init -backend-config="bucket=terraform-state-disaster-recovery"
       - run:
+          name: select workspace
+          command: |
+            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
+            echo "Current workspace: $(terraform workspace show)"            
+      - run:
           name: validate terraform
           command: terraform validate             
       - run:
-          name: select workspace and apply
+          name: apply terraform
           command: |
-            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
             terraform apply -auto-approve
 
 
