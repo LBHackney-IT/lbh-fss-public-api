@@ -4,7 +4,7 @@ module "postgres_db" {
   environment_name        = local.environment
   vpc_id                  = data.aws_vpc.vpc.id
   db_engine               = "postgres"
-  db_engine_version       = "16.3"
+  db_engine_version       = "16.11"
   db_parameter_group_name = "postgres-16"
   db_identifier           = local.current_config.db_identifier
   db_instance_class       = local.current_config.db_instance_class
