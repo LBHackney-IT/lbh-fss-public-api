@@ -2,8 +2,7 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  aws-cli: circleci/aws-cli@5.1.1
-  node: circleci/node@6.3.0
+  aws-cli: circleci/aws-cli@5.1.1  
   sonarcloud: sonarsource/sonarcloud@2.0.0  
 
 executors:
@@ -47,8 +46,13 @@ commands:
     steps:
       - *attach_workspace
       - checkout
-      - setup_remote_docker
-      - node/install
+      - run:
+          name: Install Node
+          command: |
+            apt-get update
+            apt-get install -y curl ca-certificates
+            curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+            apt-get install -y nodejs         
       - run:
           name: Build and deploy lambda
           working_directory: ./LBHFSSPublicAPI/
@@ -66,8 +70,7 @@ commands:
         type: string
     steps:
       - *attach_workspace
-      - checkout
-      - setup_remote_docker
+      - checkout      
       - run:
           name: Install SSH client
           command: apt-get update && apt-get install -y openssh-client
@@ -97,9 +100,6 @@ commands:
             ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/addresses-api-base-url --query Parameter.Value --output text)
             ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
             ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
-            CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
-            cd ./LBHFSSPublicAPI/
-            ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
