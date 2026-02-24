@@ -6,6 +6,9 @@ provider:
   vpc: ${self:custom.vpc.${opt:stage}}
   stage: ${opt:stage}
   region: eu-west-2
+  tracing:
+    lambda: true
+    logRetentionInDays: 30  
 
 package:
   artifact: ./bin/release/net8.0/fss-public-api.zip
@@ -56,13 +59,10 @@ custom:
   vpc:
     development:
       securityGroupIds:
-        # - sg-07aa5b4bfe5431d73
-        - sg-07d5d1b647871ed04        
+        - sg-07aa5b4bfe5431d73
       subnetIds:
-        # - subnet-0deabb5d8fb9c3446
-        # - subnet-000b89c249f12a8ad
-        - subnet-0e6bc9b4ac24493cc
-        - subnet-05e595c59b7d6c8df         
+        - subnet-0deabb5d8fb9c3446
+        - subnet-000b89c249f12a8ad
     staging:
       securityGroupIds:
         - sg-00be85a006bff97e8

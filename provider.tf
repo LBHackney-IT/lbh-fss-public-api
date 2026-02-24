@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     encrypt = true
     region  = "eu-west-2"
-    key     = "services/fss-public-api/state"
+    key     = "services/fss-public-api/terraform.tfstate"
   }
 }
 

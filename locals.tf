@@ -1,12 +1,15 @@
+variable "environment" {
+  description = "The environment name (development, staging, production)"
+  type        = string
+}
+
 locals {
-  environment = terraform.workspace
+  environment = var.environment
 
   config = {
     development = {
-      vpc_env_tag = "Prod"
-      vpc_name    = "disaster-recovery-prod"
-      # vpc_name                               = "apis-dev"
-      # vpc_env_tag                            = "Dev"
+      vpc_name                               = "apis-dev"
+      vpc_env_tag                            = "Dev"
       env_tag                                = "dev"
       db_identifier                          = "fss-public-dev-db"
       db_instance_class                      = "db.t3.micro"
@@ -20,8 +23,8 @@ locals {
     staging = {
       env_tag                                = "stg"
       vpc_name                               = "apis-stg"
-      vpc_env_tag                            = "Staging"
-      db_identifier                          = "fss-public-stg-db"
+      vpc_env_tag                            = "Stg"
+      db_identifier                          = "fss-public-encrypted"
       db_instance_class                      = "db.t3.micro"
       db_allocated_storage                   = 20
       storage_encrypted                      = true
@@ -33,7 +36,7 @@ locals {
     production = {
       env_tag                                = "prod"
       vpc_name                               = "apis-prod"
-      vpc_env_tag                            = "Production"
+      vpc_env_tag                            = "Prod"
       db_identifier                          = "fss-public-prod-db"
       db_instance_class                      = "db.t3.micro"
       db_allocated_storage                   = 50

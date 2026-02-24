@@ -103,7 +103,7 @@ commands:
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
             ADDRESSES_API_BASE_URL=${ADDRESSES_URL} ADDRESSES_API_KEY=${ADDRESSES_KEY} ADDRESSES_API_TOKEN=${ADDRESSES_API_TOKEN} CONNECTION_STRING=${CONN_STR} ./../dotnet-ef-local/dotnet-ef database update
-  
+
   preview-terraform:
     description: "Previews terraform configuration changes"
     parameters:
@@ -115,12 +115,11 @@ commands:
       - run:
           name: preview terraform
           command: |
-            terraform get -update=true
-            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
-            terraform init -backend-config="bucket=terraform-state-disaster-recovery"            
-            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
-            terraform validate            
-            terraform plan
+            terraform init \
+              -backend-config="bucket=terraform-state-<<parameters.environment>>-apis" \
+              -backend-config="key=services/fss-portal-api/terraform.tfstate"
+            terraform validate
+            terraform plan -var="environment=<<parameters.environment>>"
 
   deploy-terraform:
     description: "Initializes and applies terraform configuration"
@@ -131,24 +130,20 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          name: get and init
+          name: Initialize and apply terraform
           command: |
-            terraform get -update=true
-            # terraform init -backend-config="bucket=terraform-state-<<parameters.environment>>-apis"
-            terraform init -backend-config="bucket=terraform-state-disaster-recovery"
+            terraform init \
+              -backend-config="bucket=terraform-state-<<parameters.environment>>-apis" \
+              -backend-config="key=services/fss-portal-api/terraform.tfstate"
+            terraform validate
+            terraform apply -auto-approve -var="environment=<<parameters.environment>>"
       - run:
-          name: select workspace
-          command: |
-            terraform workspace select <<parameters.environment>> || terraform workspace new <<parameters.environment>>
-            echo "Current workspace: $(terraform workspace show)"            
-      - run:
-          name: validate terraform
-          command: terraform validate             
-      - run:
-          name: apply terraform
-          command: |
-            terraform apply -auto-approve
-
+          name: show terraform outputs
+          command: terraform output -json
+          when: on_success
+      - store_artifacts:
+          path: /tmp/terraform-outputs-<<parameters.environment>>.json
+          destination: terraform-outputs
 
 jobs:
   check-code-formatting:
@@ -376,88 +371,88 @@ workflows:
               ignore:
                 - develop
                 - master
-  check-and-deploy-dr:
-    jobs:
-      - check-code-formatting:
-          filters:
-            branches:
-              only: SSI-778-Remediation
-      - sonar-scan:
-          context: SonarCloud
-          filters:
-            branches:
-              only: SSI-778-Remediation              
-      - build-and-test:
-          context: find-support-services-public-api-context
-          requires: [check-code-formatting, sonar-scan]
-          filters:
-            branches:
-              only: SSI-778-Remediation
-      - permit-dr-release:
-          type: approval
-          requires: 
-            - build-and-test
-          filters:
-            branches:
-              only: SSI-778-Remediation
-      - assume-role-dr:
-          context: api-assume-role-disaster-recovery-context
-          requires:
-            - permit-dr-release
-          filters:
-            branches:
-              only: SSI-778-Remediation
-      - migrate-database-dr:
-          requires:
-            - assume-role-dr
-          filters:
-            branches:
-              only: SSI-778-Remediation
-      - deploy-to-dr:
-          context:
-            - "Serverless Framework"
-          requires:
-            - assume-role-dr
-          filters:
-            branches:
-              only: SSI-778-Remediation
+  # check-and-deploy-dr:
+  #   jobs:
+  #     - check-code-formatting:
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
+  #     - sonar-scan:
+  #         context: SonarCloud
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation              
+  #     - build-and-test:
+  #         context: find-support-services-public-api-context
+  #         requires: [check-code-formatting, sonar-scan]
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
+  #     - permit-dr-release:
+  #         type: approval
+  #         requires: 
+  #           - build-and-test
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
+  #     - assume-role-dr:
+  #         context: api-assume-role-disaster-recovery-context
+  #         requires:
+  #           - permit-dr-release
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
+  #     - migrate-database-dr:
+  #         requires:
+  #           - assume-role-dr
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
+  #     - deploy-to-dr:
+  #         context:
+  #           - "Serverless Framework"
+  #         requires:
+  #           - assume-role-dr
+  #         filters:
+  #           branches:
+  #             only: SSI-778-Remediation
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
       - sonar-scan:
           context: SonarCloud
           filters:
             branches:
-              only: develop              
+              only: [develop, SSI-778-Remediation]
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
       - permit-development-release:
           type: approval
           requires: 
             - build-and-test
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
             - permit-development-release
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
       - migrate-database-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
       - deploy-to-development:
           context:
             - "Serverless Framework"
@@ -465,7 +460,7 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: [develop, SSI-778-Remediation]
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
