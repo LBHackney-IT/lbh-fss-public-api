@@ -183,11 +183,6 @@ jobs:
           name: Cleanup
           when: always
           command: docker compose down -v
-  assume-role-dr:
-    executor: docker-python
-    steps:
-      - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DISASTER_RECOVERY
   assume-role-development:
     executor: docker-python
     steps:
@@ -203,11 +198,6 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
-  deploy-to-dr:
-    executor: docker-dotnet
-    steps:
-      - deploy-lambda:
-          stage: "development"
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -223,12 +213,6 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "production"
-  migrate-database-dr:
-    executor: docker-dotnet
-    steps:
-      - migrate-database:
-          stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-development:
     executor: docker-dotnet
     steps:
@@ -247,11 +231,6 @@ jobs:
       - migrate-database:
           stage: "production"
           aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
-  deploy-dr-terraform:
-    executor: docker-terraform
-    steps:
-      - deploy-terraform:
-          environment: "development"
   deploy-development-terraform:
     executor: docker-terraform
     steps:
@@ -267,11 +246,6 @@ jobs:
     steps:
       - deploy-terraform:
           environment: "production"
-  preview-dr-terraform:
-    executor: docker-terraform
-    steps:
-      - preview-terraform:
-          environment: "development"
   preview-development-terraform:
     executor: docker-terraform
     steps:
@@ -307,21 +281,6 @@ workflows:
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
-          filters:
-            branches:
-              ignore:
-                - develop
-                - master
-      - assume-role-dr:
-          context: api-assume-role-disaster-recovery-context
-          filters:
-            branches:
-              ignore:
-                - develop
-                - master
-      - preview-dr-terraform:
-          requires:
-            - assume-role-dr
           filters:
             branches:
               ignore:
@@ -372,88 +331,43 @@ workflows:
               ignore:
                 - develop
                 - master
-  # check-and-deploy-dr:
-  #   jobs:
-  #     - check-code-formatting:
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - sonar-scan:
-  #         context: SonarCloud
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - build-and-test:
-  #         context: find-support-services-public-api-context
-  #         requires: [check-code-formatting, sonar-scan]
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - permit-dr-release:
-  #         type: approval
-  #         requires:
-  #           - build-and-test
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - assume-role-dr:
-  #         context: api-assume-role-disaster-recovery-context
-  #         requires:
-  #           - permit-dr-release
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - migrate-database-dr:
-  #         requires:
-  #           - assume-role-dr
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
-  #     - deploy-to-dr:
-  #         context:
-  #           - "Serverless Framework"
-  #         requires:
-  #           - assume-role-dr
-  #         filters:
-  #           branches:
-  #             only: SSI-778-Remediation
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - sonar-scan:
           context: SonarCloud
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - permit-development-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
             - permit-development-release
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - migrate-database-development:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
       - deploy-to-development:
           context:
             - "Serverless Framework"
@@ -461,7 +375,7 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: [develop, SSI-778-Remediation]
+              only: [develop]
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
@@ -527,25 +441,6 @@ workflows:
               only: master
   terraform-release:
     jobs:
-      - permit-terraform-dr-release:
-          type: approval
-          filters:
-            branches:
-              only:  SSI-778-Remediation
-      - assume-role-dr:
-          context: api-assume-role-disaster-recovery-context
-          requires:
-            - permit-terraform-dr-release
-          filters:
-            branches:
-              only:  SSI-778-Remediation
-      - deploy-dr-terraform:
-          requires:
-            - assume-role-dr
-          filters:
-            branches:
-              only:  SSI-778-Remediation
-
       - permit-terraform-development-release:
           type: approval
           filters:
