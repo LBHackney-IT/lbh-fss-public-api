@@ -2,8 +2,8 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  aws-cli: circleci/aws-cli@5.1.1  
-  sonarcloud: sonarsource/sonarcloud@2.0.0  
+  aws-cli: circleci/aws-cli@5.1.1
+  sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
   docker-python:
@@ -52,7 +52,7 @@ commands:
             apt-get update
             apt-get install -y curl ca-certificates
             curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-            apt-get install -y nodejs         
+            apt-get install -y nodejs
       - run:
           name: Build and deploy lambda
           working_directory: ./LBHFSSPublicAPI/
@@ -66,11 +66,11 @@ commands:
     parameters:
       stage:
         type: string
-      aws-central-parameter-account:  
+      aws-central-parameter-account:
         type: string
     steps:
       - *attach_workspace
-      - checkout      
+      - checkout
       - run:
           name: Install SSH client
           command: apt-get update && apt-get install -y openssh-client
@@ -87,7 +87,7 @@ commands:
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
       - run:
           name: SSH into RDS and migrate database
-          command: |            
+          command: |
             aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
@@ -159,8 +159,9 @@ jobs:
   sonar-scan:
     executor: docker-python
     steps:
-      - checkout
-      - sonarcloud/scan          
+      - checkout:
+          method: full
+      - sonarcloud/scan
   build-and-test:
     executor: docker-python
     steps:
@@ -171,7 +172,7 @@ jobs:
             command: |
               docker compose up -d test-database
               echo "Waiting for database to be ready..."
-              timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'      
+              timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'
       - run:
           name: Build test image
           command: docker compose build fss-public-api-test
@@ -181,7 +182,7 @@ jobs:
       - run:
           name: Cleanup
           when: always
-          command: docker compose down -v          
+          command: docker compose down -v
   assume-role-dr:
     executor: docker-python
     steps:
@@ -302,7 +303,7 @@ workflows:
             branches:
               ignore:
                 - develop
-                - master                         
+                - master
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
@@ -381,7 +382,7 @@ workflows:
   #         context: SonarCloud
   #         filters:
   #           branches:
-  #             only: SSI-778-Remediation              
+  #             only: SSI-778-Remediation
   #     - build-and-test:
   #         context: find-support-services-public-api-context
   #         requires: [check-code-formatting, sonar-scan]
@@ -390,7 +391,7 @@ workflows:
   #             only: SSI-778-Remediation
   #     - permit-dr-release:
   #         type: approval
-  #         requires: 
+  #         requires:
   #           - build-and-test
   #         filters:
   #           branches:
@@ -435,7 +436,7 @@ workflows:
               only: [develop, SSI-778-Remediation]
       - permit-development-release:
           type: approval
-          requires: 
+          requires:
             - build-and-test
           filters:
             branches:
@@ -467,10 +468,10 @@ workflows:
           context: find-support-services-public-api-context
           filters:
             branches:
-              only: master              
+              only: master
       - permit-staging-release:
           type: approval
-          requires: 
+          requires:
             - build-and-test
           filters:
             branches:
@@ -530,7 +531,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only:  SSI-778-Remediation              
+              only:  SSI-778-Remediation
       - assume-role-dr:
           context: api-assume-role-disaster-recovery-context
           requires:
