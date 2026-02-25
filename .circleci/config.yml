@@ -71,15 +71,14 @@ commands:
     steps:
       - *attach_workspace
       - checkout
-      - aws-cli/install
       - run:
           name: Install dependencies
           command: |
             apt-get update
             apt-get install -y openssh-client unzip curl
-            # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            # unzip awscliv2.zip
-            # ./aws/install
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
@@ -371,8 +370,7 @@ workflows:
       - deploy-to-development:
           context:
             - "Serverless Framework"
-          requires:
-            - assume-role-development
+          requires: [assume-role-development, migrate-database-development]
           filters:
             branches:
               only: [develop]
@@ -406,8 +404,7 @@ workflows:
       - deploy-to-staging:
           context:
             - "Serverless Framework"
-          requires:
-            - assume-role-staging
+          requires: [assume-role-staging, migrate-database-staging]
           filters:
             branches:
               only: master
@@ -425,17 +422,16 @@ workflows:
           filters:
             branches:
               only: master
-      - deploy-to-production:
-          context:
-            - "Serverless Framework"
+      - migrate-database-production:
           requires:
             - assume-role-production
           filters:
             branches:
               only: master
-      - migrate-database-production:
-          requires:
-            - assume-role-production
+      - deploy-to-production:
+          context:
+            - "Serverless Framework"
+          requires: [assume-role-production, migrate-database-production]
           filters:
             branches:
               only: master
