@@ -71,12 +71,13 @@ commands:
     steps:
       - *attach_workspace
       - checkout
+      - aws-cli/install
       - run:
           name: Install SSH client
           command: apt-get update && apt-get install -y openssh-client
       - run:
           name: Install Unzip
-          command: apt-get update && apt-get install unzip
+          command: apt-get update && apt-get install -y unzip
       - run:
           name: Install Session Manager plugin
           command: |
@@ -367,7 +368,7 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/database-migration]
       - deploy-to-development:
           context:
             - "Serverless Framework"
