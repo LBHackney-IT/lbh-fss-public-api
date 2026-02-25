@@ -14,7 +14,7 @@ locals {
       db_identifier                          = "fss-public-dev-db"
       db_instance_class                      = "db.t3.micro"
       db_allocated_storage                   = 20
-      storage_encrypted                      = false
+      storage_encrypted                      = true
       multi_az                               = false
       deletion_protection                    = false
       maintenance_window                     = "sun:10:00-sun:10:30"
