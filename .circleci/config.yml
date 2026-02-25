@@ -69,7 +69,6 @@ commands:
       aws-central-parameter-account:
         type: string
     steps:
-      - *attach_workspace
       - checkout
       - run:
           name: Install dependencies
@@ -81,6 +80,7 @@ commands:
             ./aws/install
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
+      - *attach_workspace
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
@@ -335,18 +335,18 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop, bugfix/database-migration]
+              only: [develop]
       - sonar-scan:
           context: SonarCloud
           filters:
             branches:
-              only: [develop, bugfix/database-migration]
+              only: [develop]
       - build-and-test:
           context: find-support-services-public-api-context
-          requires: [check-code-formatting, sonar-scan]
+          # requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
-              only: [develop, bugfix/database-migration]
+              only: [develop]
       - permit-development-release:
           type: approval
           requires:
