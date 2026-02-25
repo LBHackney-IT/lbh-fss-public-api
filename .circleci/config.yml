@@ -358,11 +358,11 @@ workflows:
               only: [develop]
       - assume-role-development:
           context: api-assume-role-development-context
-          requires:
-            - permit-development-release
+          # requires:
+          #   - permit-development-release
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/database-migration]
       - migrate-database-development:
           requires:
             - assume-role-development
