@@ -353,14 +353,14 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: [develop, bugfix/database-migration]
+              only: [develop]
       - assume-role-development:
           context: api-assume-role-development-context
-          requires:
-            - permit-development-release
+          # requires:
+          #   - permit-development-release
           filters:
             branches:
-              only: [bugfix/database-migration]
+              only: [development, bugfix/database-migration]
       - migrate-database-development:
           context: api-assume-role-development-context
           requires:
