@@ -335,29 +335,29 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop]
+              only: [develop, bugfix/database-migration]
       - sonar-scan:
           context: SonarCloud
           filters:
             branches:
-              only: [develop]
+              only: [develop, bugfix/database-migration]
       - build-and-test:
           context: find-support-services-public-api-context
           requires: [check-code-formatting, sonar-scan]
           filters:
             branches:
-              only: [develop]
+              only: [develop, bugfix/database-migration]
       - permit-development-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: [develop]
+              only: [develop, bugfix/database-migration]
       - assume-role-development:
           context: api-assume-role-development-context
-          # requires:
-          #   - permit-development-release
+          requires:
+            - permit-development-release
           filters:
             branches:
               only: [bugfix/database-migration]
@@ -367,7 +367,7 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: [bugfix/database-migration]
+              only: [development, bugfix/database-migration]
       - deploy-to-development:
           context:
             - "Serverless Framework"
