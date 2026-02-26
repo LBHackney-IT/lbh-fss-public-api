@@ -340,7 +340,7 @@ workflows:
             branches:
               only: [bugfix/database-migration]
       - migrate-database-staging:
-          context: api-assume-role-staging-context
+          # context: api-assume-role-staging-context
           requires:
             - assume-role-staging
           filters:
