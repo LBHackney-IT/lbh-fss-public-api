@@ -219,13 +219,13 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
   migrate-database-staging:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "staging"
-          aws-central-parameter-account: $AWS_ACCOUNT_STAGING
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-production:
     executor: docker-dotnet
     steps:
@@ -334,13 +334,13 @@ workflows:
                 - master
   test-database-migration:
     jobs:
-      - assume-role-staging:
-          context: api-assume-role-staging-context
+      - assume-role-development:
+          context: api-assume-role-development-context
           filters:
             branches:
               only: [bugfix/database-migration]
-      - migrate-database-staging:
-          # context: api-assume-role-staging-context
+      - migrate-database-development:
+          context: api-assume-role-development-context
           requires:
             - assume-role-staging
           filters:
