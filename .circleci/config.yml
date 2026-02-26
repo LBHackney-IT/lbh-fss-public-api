@@ -217,7 +217,7 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
   migrate-database-staging:
     executor: docker-dotnet
     steps:
