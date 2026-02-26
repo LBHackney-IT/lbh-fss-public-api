@@ -69,6 +69,7 @@ commands:
       aws-central-parameter-account:
         type: string
     steps:
+      - *attach_workspace
       - checkout
       - run:
           name: Install dependencies
@@ -80,7 +81,6 @@ commands:
             ./aws/install
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
-      - *attach_workspace
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
@@ -217,7 +217,7 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-staging:
     executor: docker-dotnet
     steps:
