@@ -342,7 +342,7 @@ workflows:
       - migrate-database-development:
           context: api-assume-role-development-context
           requires:
-            - assume-role-staging
+            - assume-role-development
           filters:
             branches:
               only: [bugfix/database-migration]
