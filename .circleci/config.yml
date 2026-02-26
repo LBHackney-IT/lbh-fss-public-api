@@ -334,15 +334,15 @@ workflows:
                 - master
   test-database-migration:
     jobs:
-      - assume-role-development:
-          context: api-assume-role-development-context
+      - assume-role-staging:
+          context: api-assume-role-staging-context
           filters:
             branches:
               only: [bugfix/database-migration]
-      - migrate-database-development:
-          # context: api-assume-role-development-context
+      - migrate-database-staging:
+          context: api-assume-role-staging-context
           requires:
-            - assume-role-development
+            - assume-role-staging
           filters:
             branches:
               only: [bugfix/database-migration]
