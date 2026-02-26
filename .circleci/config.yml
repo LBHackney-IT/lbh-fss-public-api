@@ -71,6 +71,8 @@ commands:
     steps:
       - *attach_workspace
       - checkout
+      - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
+      - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
       - run:
           name: Install dependencies
           command: |
@@ -338,6 +340,7 @@ workflows:
             branches:
               only: [bugfix/database-migration]
       - migrate-database-development:
+          context: api-assume-role-development-context
           requires:
             - assume-role-development
           filters:
