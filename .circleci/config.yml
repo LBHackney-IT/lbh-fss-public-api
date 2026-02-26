@@ -33,7 +33,7 @@ commands:
       - aws_assume_role/assume_role:
           account: <<parameters.aws-account>>
           profile_name: default
-          role: "LBH_Circle_CI_Deployment_Role"
+          role: "AWSReservedSSO_developer_36fd10b4a27d9f7d"
       - persist_to_workspace:
           root: *workspace_root
           paths:
@@ -219,7 +219,7 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
   migrate-database-staging:
     executor: docker-dotnet
     steps:
