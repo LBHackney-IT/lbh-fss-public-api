@@ -70,12 +70,13 @@ commands:
         type: string
     steps:
       - *attach_workspace
-      - aws-cli/install
       - checkout
       - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
       - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
-      - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
-      - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
+      - run:
+          name: Install prerequisites
+          command: apt-get update && apt-get install -y unzip openssh-client curl
+      - aws-cli/install
       - run:
           name: Install dependencies
           command: |
