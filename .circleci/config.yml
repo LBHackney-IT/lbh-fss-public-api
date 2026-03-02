@@ -70,8 +70,8 @@ commands:
         type: string
     steps:
       - *attach_workspace
-      - checkout
       - aws-cli/install
+      - checkout
       - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
       - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
       - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
