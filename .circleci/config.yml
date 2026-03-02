@@ -334,20 +334,6 @@ workflows:
               ignore:
                 - develop
                 - master
-  test-database-migration:
-    jobs:
-      - assume-role-development:
-          context: api-assume-role-development-context
-          filters:
-            branches:
-              only: [bugfix/database-migration]
-      - migrate-database-development:
-          context: api-assume-role-development-context
-          requires:
-            - assume-role-development
-          filters:
-            branches:
-              only: [bugfix/database-migration]
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
@@ -378,14 +364,14 @@ workflows:
             - permit-development-release
           filters:
             branches:
-              only: [development]
+              only: [develop]
       - migrate-database-development:
           context: api-assume-role-development-context
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [development]
+              only: [develop]
       - deploy-to-development:
           context:
             - "Serverless Framework"
