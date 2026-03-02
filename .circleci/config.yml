@@ -71,16 +71,16 @@ commands:
     steps:
       - *attach_workspace
       - checkout
+      - aws-cli/install
+      - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
+      - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
       - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
       - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
       - run:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y openssh-client unzip curl
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install
+            apt-get install -y openssh-client curl
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
@@ -91,7 +91,7 @@ commands:
           command: |
             aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
-            HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:115283375626:parameter/developmentapis/fss-public-api-development/fss-public-api/postgres-hostname --query Parameter.Value --output text)
+            HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
             PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
             INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
             ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST}:${PORT} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME}
