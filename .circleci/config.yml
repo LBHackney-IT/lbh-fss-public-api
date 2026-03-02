@@ -69,8 +69,8 @@ commands:
       aws-central-parameter-account:
         type: string
     steps:
-      - checkout
       - *attach_workspace
+      - checkout
       - run:
           name: Install prerequisites
           command: apt-get update && apt-get install -y unzip openssh-client curl
