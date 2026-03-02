@@ -72,19 +72,22 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          name: Install SSH client
-          command: apt-get update && apt-get install -y openssh-client
+          name: Install prerequisites
+          command: apt-get update && apt-get install -y unzip openssh-client curl
+      - aws-cli/install
       - run:
-          name: Install Unzip
-          command: apt-get update && apt-get install unzip
-      - run:
-          name: Install Session Manager plugin
+          name: Install dependencies
           command: |
+            apt-get update
+            apt-get install -y openssh-client curl
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
+      - run:
+          name: Restore NuGet packages
+          command: dotnet restore ./LBHFSSPublicAPI/LBHFSSPublicAPI.csproj
       - run:
           name: SSH into RDS and migrate database
           command: |
@@ -97,7 +100,7 @@ commands:
             PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value --output text)
             USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value --output text)
             DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
-            ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/addresses-api-base-url --query Parameter.Value --output text)
+            ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
             ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
             ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
@@ -363,6 +366,7 @@ workflows:
             branches:
               only: [develop]
       - migrate-database-development:
+          context: api-assume-role-development-context
           requires:
             - assume-role-development
           filters:
@@ -371,8 +375,7 @@ workflows:
       - deploy-to-development:
           context:
             - "Serverless Framework"
-          requires:
-            - assume-role-development
+          requires: [assume-role-development, migrate-database-development]
           filters:
             branches:
               only: [develop]
@@ -406,8 +409,7 @@ workflows:
       - deploy-to-staging:
           context:
             - "Serverless Framework"
-          requires:
-            - assume-role-staging
+          requires: [assume-role-staging, migrate-database-staging]
           filters:
             branches:
               only: master
@@ -425,17 +427,16 @@ workflows:
           filters:
             branches:
               only: master
-      - deploy-to-production:
-          context:
-            - "Serverless Framework"
+      - migrate-database-production:
           requires:
             - assume-role-production
           filters:
             branches:
               only: master
-      - migrate-database-production:
-          requires:
-            - assume-role-production
+      - deploy-to-production:
+          context:
+            - "Serverless Framework"
+          requires: [assume-role-production, migrate-database-production]
           filters:
             branches:
               only: master
