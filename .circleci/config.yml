@@ -86,6 +86,9 @@ commands:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
       - run:
+          name: Restore NuGet packages
+          command: dotnet restore ./LBHFSSPublicAPI/LBHFSSPublicAPI.csproj
+      - run:
           name: SSH into RDS and migrate database
           command: |
             aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
