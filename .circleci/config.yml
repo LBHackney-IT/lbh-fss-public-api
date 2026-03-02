@@ -69,7 +69,6 @@ commands:
       aws-central-parameter-account:
         type: string
     steps:
-      - *attach_workspace
       - checkout
       - run: echo "MY_ENV_VAR is $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE"
       - run: echo "MY_OTHJER_ENV_VAR is <<parameters.aws-central-parameter-account>>"
@@ -84,6 +83,7 @@ commands:
             apt-get install -y openssh-client curl
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
+      - *attach_workspace
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
