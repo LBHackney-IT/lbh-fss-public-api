@@ -1,1 +1,1 @@
-FROM postgres:12-buster
+FROM postgres:16-alpine            

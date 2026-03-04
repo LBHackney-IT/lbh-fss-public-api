@@ -1,64 +1,72 @@
-# LBH Base API
+# LBH Find Support Services Public API
 
-Base API is a boilerplate code for being reused for new APIs for LBH
+Find Support Services Public API is a service that exposes endpoints to allow consumers to search for support services available to Hackney residents.
+
+### Runtime (AWS)
+- **API Gateway** → **Lambda (.NET 8)** → **RDS PostgreSQL** (in VPC private subnets).
+- Lambda runs in a **VPC** with **security groups** and **private subnets** configured per environment.
+- Configuration and secrets are stored in **SSM Parameter Store**.
+
+### Infrastructure as Code
+- **Terraform** defines environment infrastructure in:
+  - `terraform/development`
+  - `terraform/staging`
+  - `terraform/production`
+- **RDS PostgreSQL** is provisioned via a shared Terraform module.
+- Terraform state is stored in **S3**.
+
+![Architecture Diagram](docs/architecture.png)
 
 ## Stack
 
-- .NET Core as a web framework.
-- nUnit as a test framework.
-
-## Dependencies
-
-- Universal Housing Simulator
+- .NET 8 (AWS Lambda)
+- nUnit
+- Serverless Framework
+- Terraform
+- CircleCI
 
 ## Contributing
 
-### Setup
+### Local Development
 
-1. Install [Docker][docker-download].
-2. Install [AWS CLI][AWS-CLI].
-3. Clone this repository.
-4. Rename the initial template.
-5. Open it in your IDE.
+1. **Prerequisites**: Docker Desktop installed
+2. **Run the API**:
+   ```sh
+   make build && make serve
+   ```
+3. **Run tests**:
+   ```sh
+   make test
+   ```
+4. **Access**: API available at `http://localhost:3000`
 
-### Renaming
+### Deployment (Serverless)
 
-The renaming of `base-api` into `SomethingElseApi` can be done by running a Renamer powershell script. To do so:
-1. Open the powershell and navigate to this directory's root.
-2. Run the script using the following command:
-```
-.\Renamer.ps1 -apiName My_Api
-```
+The Lambda is deployed with Serverless. The function is defined in `LBHFSSPublicAPI/serverless.yml` and uses SSM parameters for configuration:
 
-If your ***script execution policy*** prevents you from running the script, you can temporarily ***bypass*** that with:
-```
-powershell -noprofile -ExecutionPolicy Bypass -file .\Renamer.ps1 -apiName My_Api
-```
+- `/fss-public-api/{stage}/postgres-*`
+- `/fss-public-api/{stage}/addresses-api-*`
+- `/fss-common-api/{stage}/addresses-api-token`
+- `/fss-common-api/{stage}/placeholder-image`
 
-Or you can change your execution policy, prior to running the script, permanently with _(this disables security so, be cautious)_:
-```
-Set-ExecutionPolicy Unrestricted
-```
+### Infrastructure (Terraform)
 
-After the renaming is done, the ***script will ask you if you want to delete it as well***, as it's useless now - It's your choice.
+Terraform is environment-scoped:
+- `terraform/development`
+- `terraform/staging`
+- `terraform/production`
 
-### Development
+Use CircleCI workflows to **plan/apply** Terraform (see below).
 
-To serve the application, run it using your IDE of choice, we use Visual Studio CE and JetBrains Rider on Mac.
+### CI/CD (CircleCI)
 
-The application can also be served locally using docker:
-1.  Add you security credentials to AWS CLI.
-```sh
-$ aws configure
-```
-2. Log into AWS ECR.
-```sh
-$ aws ecr get-login --no-include-email
-```
-3. Build and serve the application. It will be available in the port 3000.
-```sh
-$ make build && make serve
-```
+CircleCI workflows:
+- **feature**: format, tests, and **Terraform plan** for all envs.
+- **check-and-deploy-development**: auto deploy to **development** on `develop`.
+- **check-and-deploy-staging-and-production**: gated deploys to **staging** and **production** on `master`.
+- **terraform-release**: gated **Terraform apply** per environment.
+
+Database migrations run in CircleCI via an SSM jump box before deployments.
 
 ### Release process
 
@@ -68,14 +76,14 @@ We use a pull request workflow, where changes are made on a branch and approved 
 
 Then we have an automated six step deployment process, which runs in CircleCI.
 
-1. Automated tests (nUnit) are run to ensure the release is of good quality.
+1. Automated tests (nUnit) and code checks (Sonar) are run to ensure the release is of good quality.
 2. The application is deployed to development automatically, where we check our latest changes work well.
 3. We manually confirm a staging deployment in the CircleCI workflow once we're happy with our changes in development.
 4. The application is deployed to staging.
 5. We manually confirm a production deployment in the CircleCI workflow once we're happy with our changes in staging.
 6. The application is deployed to production.
 
-Our staging and production environments are hosted by AWS. We would deploy to production per each feature/config merged into  `master`  branch.
+Our environments are hosted by AWS. We would deploy to production per each feature/config merged into  `master`  branch.
 
 ## Static Code Analysis
 
@@ -142,16 +150,14 @@ Note: The Host name needs to be the name of the stub database docker-compose ser
 
 ### Active Maintainers
 
-- **Selwyn Preston**, Lead Developer at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
-- **Mirela Georgieva**, Lead Developer at London Borough of Hackney (mirela.georgieva@hackney.gov.uk)
-- **Matt Keyworth**, Lead Developer at London Borough of Hackney (matthew.keyworth@hackney.gov.uk)
+- **Selwyn Preston**, Head of Engineering at London Borough of Hackney (selwyn.preston@hackney.gov.uk)
 
 ### Other Contacts
 
-- **Rashmi Shetty**, Product Owner at London Borough of Hackney (rashmi.shetty@hackney.gov.uk)
-
-[docker-download]: https://www.docker.com/products/docker-desktop
-[universal-housing-simulator]: https://github.com/LBHackney-IT/lbh-universal-housing-simulator
+[docker-download]: https://www.docker.com/products/docker-desktop/
 [made-tech]: https://madetech.com/
 [AWS-CLI]: https://aws.amazon.com/cli/
 
+# License
+
+[MIT](./LICENSE)
