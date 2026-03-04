@@ -18,7 +18,6 @@ module "postgres_db" {
   storage_encrypted       = local.current_config.storage_encrypted
   multi_az                = local.current_config.multi_az
   deletion_protection     = local.current_config.deletion_protection
-  apply_immediately       = local.current_config.apply_immediately
   publicly_accessible     = false
   project_name            = local.application_name
   copy_tags_to_snapshot   = true

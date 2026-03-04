@@ -17,7 +17,6 @@ locals {
       storage_encrypted                      = true
       multi_az                               = false
       deletion_protection                    = false
-      apply_immediately                      = true
       maintenance_window                     = "sun:10:00-sun:10:30"
       centralised_parameter_store_account_id = "115283375626"
       additional_tags = {
@@ -34,7 +33,6 @@ locals {
       storage_encrypted                      = true
       multi_az                               = false
       deletion_protection                    = true
-      apply_immediately                      = true
       maintenance_window                     = "sun:10:00-sun:10:30"
       centralised_parameter_store_account_id = "469511945406"
       additional_tags = {
@@ -51,7 +49,6 @@ locals {
       storage_encrypted                      = true
       multi_az                               = true
       deletion_protection                    = true
-      apply_immediately                      = true
       maintenance_window                     = "sun:10:00-sun:10:30"
       centralised_parameter_store_account_id = "918025132036"
       additional_tags = {
