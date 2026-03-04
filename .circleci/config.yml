@@ -462,7 +462,7 @@ workflows:
               only: develop
       - deploy-development-terraform:
           requires:
-            - assume-role-development
+            - permit-terraform-development-release
           filters:
             branches:
               only: develop
@@ -474,13 +474,6 @@ workflows:
       - preview-staging-terraform:
           requires:
             - assume-role-staging
-          filters:
-            branches:
-              only: master
-      - permit-staging-terraform-release:
-          type: approval
-          requires:
-            - preview-staging-terraform
           filters:
             branches:
               only: master
@@ -499,6 +492,8 @@ workflows:
               only: master
       - assume-role-production:
           context: api-assume-role-production-context
+          requires:
+            - deploy-staging-terraform
           filters:
             branches:
               only: master
@@ -517,7 +512,7 @@ workflows:
               only: master
       - deploy-production-terraform:
           requires:
-            - assume-role-production
+            - permit-terraform-production-release
           filters:
             branches:
               only: master
