@@ -442,15 +442,21 @@ workflows:
               only: master
   terraform-release:
     jobs:
-      - permit-terraform-development-release:
-          type: approval
+      - assume-role-development:
+          context: api-assume-role-development-context
           filters:
             branches:
               only: develop
-      - assume-role-development:
-          context: api-assume-role-development-context
+      - preview-development-terraform:
           requires:
-            - permit-terraform-development-release
+            - assume-role-development
+          filters:
+            branches:
+              only: develop
+      - permit-terraform-development-release:
+          type: approval
+          requires:
+            - preview-development-terraform
           filters:
             branches:
               only: develop
@@ -460,34 +466,52 @@ workflows:
           filters:
             branches:
               only: develop
-
-      - permit-terraform-staging-release:
-          type: approval
-          filters:
-            branches:
-              only: master
       - assume-role-staging:
           context: api-assume-role-staging-context
-          requires:
-            - permit-terraform-staging-release
           filters:
             branches:
               only: master
-      - deploy-staging-terraform:
+      - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
               only: master
-      - permit-terraform-production-release:
+      - permit-staging-terraform-release:
           type: approval
+          requires:
+            - preview-staging-terraform
+          filters:
+            branches:
+              only: master
+      - permit-terraform-staging-release:
+          type: approval
+          requires:
+            - preview-staging-terraform
+          filters:
+            branches:
+              only: master
+      - deploy-staging-terraform:
+          requires:
+            - permit-terraform-staging-release
           filters:
             branches:
               only: master
       - assume-role-production:
           context: api-assume-role-production-context
+          filters:
+            branches:
+              only: master
+      - preview-production-terraform:
           requires:
-            - permit-terraform-production-release
+            - assume-role-production
+          filters:
+            branches:
+              only: master
+      - permit-terraform-production-release:
+          type: approval
+          requires:
+            - preview-production-terraform
           filters:
             branches:
               only: master
