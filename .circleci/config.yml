@@ -65,7 +65,8 @@ commands:
     description: "Migrate database"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
       aws-central-parameter-account:
         type: enum
         enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
@@ -188,17 +189,17 @@ jobs:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-account: "AWS_ACCOUNT_DEVELOPMENT"
   assume-role-staging:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_STAGING
+          aws-account: "AWS_ACCOUNT_STAGING"
   assume-role-production:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_PRODUCTION
+          aws-account: "AWS_ACCOUNT_PRODUCTION"
   deploy-to-development:
     executor: docker-dotnet
     steps:
