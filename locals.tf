@@ -19,6 +19,9 @@ locals {
       deletion_protection                    = false
       maintenance_window                     = "sun:10:00-sun:10:30"
       centralised_parameter_store_account_id = "115283375626"
+      additional_tags = {
+        BackupPolicy = "Dev"
+      }
     }
     staging = {
       env_tag                                = "stg"
@@ -32,6 +35,9 @@ locals {
       deletion_protection                    = true
       maintenance_window                     = "sun:10:00-sun:10:30"
       centralised_parameter_store_account_id = "469511945406"
+      additional_tags = {
+        BackupPolicy = "Stg"
+      }
     }
     production = {
       env_tag                                = "prod"
