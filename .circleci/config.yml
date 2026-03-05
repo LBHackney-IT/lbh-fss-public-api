@@ -380,28 +380,28 @@ workflows:
           context: find-support-services-public-api-context
           filters:
             branches:
-              only: build/preview-before-deploy
+              only: master
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: build/preview-before-deploy
+              only: master
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
             - permit-staging-release
           filters:
             branches:
-              only: build/preview-before-deploy
+              only: master
       - migrate-database-staging:
           context: central-parameter-store-context
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: build/preview-before-deploy
+              only: master
       - deploy-to-staging:
           context:
             - "Serverless Framework"
