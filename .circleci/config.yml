@@ -406,7 +406,7 @@ workflows:
             - assume-role-staging
           filters:
             branches:
-              only: master
+              only: build/preview-before-deploy
       - deploy-to-staging:
           context:
             - "Serverless Framework"
