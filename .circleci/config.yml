@@ -401,6 +401,7 @@ workflows:
             branches:
               only: master
       - migrate-database-staging:
+          context: api-assume-role-staging-context
           requires:
             - assume-role-staging
           filters:
