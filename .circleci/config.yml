@@ -385,21 +385,21 @@ workflows:
           context: find-support-services-public-api-context
           filters:
             branches:
-              only: master
+              only: build/preview-before-deploy
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: master
+              only: build/preview-before-deploy
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
             - permit-staging-release
           filters:
             branches:
-              only: master
+              only: build/preview-before-deploy
       - migrate-database-staging:
           context: api-assume-role-staging-context
           requires:
