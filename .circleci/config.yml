@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  # aws-cli: circleci/aws-cli@5.1.1
+  aws-cli: circleci/aws-cli@5.1.1
   sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
@@ -71,33 +71,15 @@ commands:
     steps:
       - *attach_workspace
       - checkout
-
-      # - run:
-      #     name: Install prerequisites
-      #     command: apt-get update && apt-get install -y unzip openssh-client curl
-      # - aws-cli/install
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       apt-get update
-      #       apt-get install -y openssh-client curl
-      #       curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
-      #       dpkg -i session-manager-plugin.deb
       - run:
-          name: Install Unzip
-          command: apt-get update && apt-get install unzip
+          name: Install prerequisites
+          command: apt-get update && apt-get install -y unzip openssh-client curl
+      - aws-cli/install
       - run:
-          name: Install ssh
-          command: apt-get update && apt-get install -y --no-install-recommends ssh-client && rm -rf /var/lib/apt/lists/*
-      - run:
-          name: Install AWS CLI
+          name: Install dependencies
           command: |
-            curl -L -o awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-            unzip awscliv2.zip
-            ./aws/install
-      - run:
-          name: Install Session Manager plugin
-          command: |
+            apt-get update
+            apt-get install -y openssh-client curl
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
@@ -239,19 +221,19 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
   migrate-database-staging:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "staging"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: $AWS_ACCOUNT_STAGING
   migrate-database-production:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "production"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: $AWS_ACCOUNT_PRODUCTION
   deploy-development-terraform:
     executor: docker-terraform
     steps:
@@ -384,7 +366,7 @@ workflows:
             branches:
               only: [develop]
       - migrate-database-development:
-          context: api-assume-role-development-context
+          context: central-parameter-store-context
           requires:
             - assume-role-development
           filters:
@@ -412,13 +394,14 @@ workflows:
             branches:
               only: build/preview-before-deploy
       - assume-role-staging:
-          context: api-assume-role-staging-context
+          context: central-parameter-store-context
           requires:
             - permit-staging-release
           filters:
             branches:
               only: build/preview-before-deploy
       - migrate-database-staging:
+          context: central-parameter-store-context
           requires:
             - assume-role-staging
           filters:
@@ -446,6 +429,7 @@ workflows:
             branches:
               only: master
       - migrate-database-production:
+          context: api-assume-role-production-context
           requires:
             - assume-role-production
           filters:
