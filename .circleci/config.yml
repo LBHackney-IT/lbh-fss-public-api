@@ -188,17 +188,17 @@ jobs:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: "AWS_ACCOUNT_DEVELOPMENT"
+          aws-account: $AWS_ACCOUNT_DEVELOPMENT
   assume-role-staging:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: "AWS_ACCOUNT_STAGING"
+          aws-account: $AWS_ACCOUNT_STAGING
   assume-role-production:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: "AWS_ACCOUNT_PRODUCTION"
+          aws-account: $AWS_ACCOUNT_PRODUCTION
   deploy-to-development:
     executor: docker-dotnet
     steps:
@@ -219,19 +219,19 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-central-parameter-account: "AWS_ACCOUNT_DEVELOPMENT"
   migrate-database-staging:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "staging"
-          aws-central-parameter-account: $AWS_ACCOUNT_STAGING
+          aws-central-parameter-account: "AWS_ACCOUNT_STAGING"
   migrate-database-production:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "production"
-          aws-central-parameter-account: $AWS_ACCOUNT_PRODUCTION
+          aws-central-parameter-account: "AWS_ACCOUNT_PRODUCTION"
   deploy-development-terraform:
     executor: docker-terraform
     steps:
