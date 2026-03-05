@@ -42,7 +42,8 @@ commands:
     description: "Deploys API via Serverless"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["development", "staging", "production"]
     steps:
       - *attach_workspace
       - checkout
@@ -66,7 +67,8 @@ commands:
     description: "Migrate database"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["development", "staging", "production"]
       aws-central-parameter-account:
         type: enum
         enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
