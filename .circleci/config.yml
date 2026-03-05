@@ -394,7 +394,7 @@ workflows:
             branches:
               only: build/preview-before-deploy
       - assume-role-staging:
-          context: central-parameter-store-context
+          context: api-assume-role-staging-context
           requires:
             - permit-staging-release
           filters:
