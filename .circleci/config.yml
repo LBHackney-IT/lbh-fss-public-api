@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  aws-cli: circleci/aws-cli@5.1.1
   sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
@@ -72,22 +71,15 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          name: Install prerequisites
-          command: apt-get update && apt-get install -y unzip openssh-client curl
-      - aws-cli/install
-      - run:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y openssh-client curl
+            apt-get install -y unzip openssh-client curl awscli
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
-      - run:
-          name: Restore NuGet packages
-          command: dotnet restore ./LBHFSSPublicAPI/LBHFSSPublicAPI.csproj
       - run:
           name: SSH into RDS and migrate database
           command: |
