@@ -26,7 +26,8 @@ commands:
     description: "Assumes deployment role and persists credentials across jobs"
     parameters:
       aws-account:
-        type: string
+        type: enum
+        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
     steps:
       - checkout
       - aws_assume_role/assume_role:
@@ -65,8 +66,7 @@ commands:
     description: "Migrate database"
     parameters:
       stage:
-        type: enum
-        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
+        type: string
       aws-central-parameter-account:
         type: enum
         enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
