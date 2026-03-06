@@ -20,5 +20,6 @@ module "postgres_db" {
   deletion_protection     = local.current_config.deletion_protection
   publicly_accessible     = false
   project_name            = local.application_name
+  copy_tags_to_snapshot   = true
   additional_tags         = lookup(local.current_config, "additional_tags", {})
 }
