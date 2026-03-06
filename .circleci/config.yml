@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  aws-cli: circleci/aws-cli@5.1.1
   sonarcloud: sonarsource/sonarcloud@2.0.0
 
 executors:
@@ -42,7 +41,8 @@ commands:
     description: "Deploys API via Serverless"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["development", "staging", "production"]
     steps:
       - *attach_workspace
       - checkout
@@ -61,46 +61,46 @@ commands:
             chmod +x ./build.sh
             ./build.sh
             npx --yes serverless@4 deploy --stage <<parameters.stage>> --conceal
+
   migrate-database:
     description: "Migrate database"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["development", "staging", "production"]
       aws-central-parameter-account:
-        type: string
+        type: enum
+        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
     steps:
       - *attach_workspace
       - checkout
       - run:
-          name: Install prerequisites
-          command: apt-get update && apt-get install -y unzip openssh-client curl
-      - aws-cli/install
-      - run:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y openssh-client curl
+            apt-get install -y unzip openssh-client curl awscli
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
       - run:
-          name: Restore NuGet packages
+          name: Restore dotnet packages
           command: dotnet restore ./LBHFSSPublicAPI/LBHFSSPublicAPI.csproj
       - run:
           name: SSH into RDS and migrate database
           command: |
+            CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
             aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
-            HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
-            PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
-            INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
+            HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
+            PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
+            INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
             ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST}:${PORT} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME}
             PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value --output text)
             USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value --output text)
-            DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
-            ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:<<parameters.aws-central-parameter-account>>:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
+            DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
+            ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
             ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
             ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
@@ -221,19 +221,19 @@ jobs:
     steps:
       - migrate-database:
           stage: "development"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: "AWS_ACCOUNT_DEVELOPMENT"
   migrate-database-staging:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "staging"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: "AWS_ACCOUNT_STAGING"
   migrate-database-production:
     executor: docker-dotnet
     steps:
       - migrate-database:
           stage: "production"
-          aws-central-parameter-account: $AWS_ACCOUNT_CENTRAL_PARAMETER_STORE
+          aws-central-parameter-account: "AWS_ACCOUNT_PRODUCTION"
   deploy-development-terraform:
     executor: docker-terraform
     steps:
@@ -366,7 +366,7 @@ workflows:
             branches:
               only: [develop]
       - migrate-database-development:
-          context: api-assume-role-development-context
+          context: central-parameter-store-context
           requires:
             - assume-role-development
           filters:
@@ -401,7 +401,7 @@ workflows:
             branches:
               only: master
       - migrate-database-staging:
-          context: api-assume-role-staging-context
+          context: central-parameter-store-context
           requires:
             - assume-role-staging
           filters:
@@ -429,6 +429,7 @@ workflows:
             branches:
               only: master
       - migrate-database-production:
+          context: central-parameter-store-context
           requires:
             - assume-role-production
           filters:
