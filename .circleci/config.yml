@@ -41,7 +41,8 @@ commands:
     description: "Deploys API via Serverless"
     parameters:
       stage:
-        type: string
+        type: enum
+        enum: ["development", "staging", "production"]
       aws-central-parameter-account:
         type: enum
         enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
@@ -432,6 +433,7 @@ workflows:
       - deploy-to-development:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-development, migrate-database-development]
           filters:
             branches:
@@ -467,6 +469,7 @@ workflows:
       - deploy-to-staging:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-staging, migrate-database-staging]
           filters:
             branches:
@@ -495,6 +498,7 @@ workflows:
       - deploy-to-production:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-production, migrate-database-production]
           filters:
             branches:
