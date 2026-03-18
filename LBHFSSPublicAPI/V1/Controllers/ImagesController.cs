@@ -59,6 +59,15 @@ namespace LBHFSSPublicAPI.V1.Controllers
             {
                 return NotFound();
             }
+            catch (AmazonS3Exception ex)
+            {
+                // AccessDenied, timeout, etc. - log and return 502 so you can see in CloudWatch
+                return StatusCode(502, $"S3 error: {ex.ErrorCode} - {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Image error: {ex.Message}");
+            }
         }
     }
 }
