@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using LBHFSSPublicAPI.V1.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LBHFSSPublicAPI.V1.Controllers
 {
@@ -13,11 +14,13 @@ namespace LBHFSSPublicAPI.V1.Controllers
     {
         private readonly IAmazonS3 _s3Client;
         private readonly ImageStoreOptions _options;
+        private readonly ILogger<ImagesController> _logger;
 
-        public ImagesController(IAmazonS3 s3Client, ImageStoreOptions options)
+        public ImagesController(IAmazonS3 s3Client, ImageStoreOptions options, ILogger<ImagesController> logger)
         {
             _s3Client = s3Client;
             _options = options;
+            _logger = logger;
         }
 
         /// <summary>
@@ -60,12 +63,14 @@ namespace LBHFSSPublicAPI.V1.Controllers
             catch (AmazonS3Exception ex)
             {
                 var msg = $"S3 error: {ex.ErrorCode} - {ex.Message}";
+                _logger.LogError(ex, "S3 GetObject failed. Bucket: {Bucket}, Key: {Key}, ErrorCode: {ErrorCode}", _options.BucketName, key, ex.ErrorCode);
                 Response.Headers["X-Error-Message"] = msg;
                 return StatusCode(502, msg);
             }
             catch (Exception ex)
             {
                 var msg = $"Image error: {ex.Message}";
+                _logger.LogError(ex, "Image request failed. Id: {Id}, Size: {Size}", id, size);
                 Response.Headers["X-Error-Message"] = msg;
                 return StatusCode(500, msg);
             }
