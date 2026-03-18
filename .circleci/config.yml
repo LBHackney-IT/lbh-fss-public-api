@@ -43,6 +43,9 @@ commands:
       stage:
         type: enum
         enum: ["development", "staging", "production"]
+      aws-central-parameter-account:
+        type: enum
+        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
     steps:
       - *attach_workspace
       - checkout
@@ -249,16 +252,19 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "development"
+          aws-central-parameter-account: "AWS_ACCOUNT_DEVELOPMENT"
   deploy-to-staging:
     executor: docker-dotnet
     steps:
       - deploy-lambda:
           stage: "staging"
+          aws-central-parameter-account: "AWS_ACCOUNT_STAGING"
   deploy-to-production:
     executor: docker-dotnet
     steps:
       - deploy-lambda:
           stage: "production"
+          aws-central-parameter-account: "AWS_ACCOUNT_PRODUCTION"
   migrate-database-development:
     executor: docker-dotnet
     steps:
