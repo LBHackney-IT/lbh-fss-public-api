@@ -22,8 +22,10 @@ functions:
       ADDRESSES_API_BASE_URL: ${param:addressUrl}
       ADDRESSES_API_KEY: ${ssm:/fss-public-api/${self:provider.stage}/addresses-api-key}
       ADDRESSES_API_TOKEN: ${ssm:/fss-common-api/${self:provider.stage}/addresses-api-token}
-      IMAGE_STORE_BUCKET: ${param:imageBucket}
+      # Sort this later -
+      IMAGE_STORE_BUCKET: fss-imagestore-${self:provider.stage}
       PLACEHOLDER_IMAGE: ${param:imageBucket}/placeholder-image
+      # hardcoded for now - need to get this from the environment
       IMAGE_PROXY_BASE_URL: https://xx0z3bot52.execute-api.eu-west-2.amazonaws.com/${self:provider.stage}/api/v1
     events:
       - http:
