@@ -26,7 +26,6 @@ namespace LBHFSSPublicAPI.V1.Controllers
         /// </summary>
         [HttpGet]
         [Route("{id}/{size}")]
-        [Produces("image/jpeg")]
         public async Task<IActionResult> GetImage(int id, string size)
         {
             if (string.IsNullOrEmpty(_options?.BucketName))
