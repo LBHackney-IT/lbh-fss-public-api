@@ -457,50 +457,50 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: develop
+              only: [develop, feature/add-presigned-s3]
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: [develop, feature/add-presigned-s3]
       - permit-terraform-development-release:
           type: approval
           requires:
             - preview-development-terraform
           filters:
             branches:
-              only: develop
+              only: [develop, feature/add-presigned-s3]
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
-              only: develop
+              only: [develop, feature/add-presigned-s3]
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: master
+              only: [master, feature/add-presigned-s3]
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: master
+              only: [master, feature/add-presigned-s3]
       - permit-terraform-staging-release:
           type: approval
           requires:
             - preview-staging-terraform
           filters:
             branches:
-              only: master
+              only: [master, feature/add-presigned-s3]
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
-              only: master
+              only: [master, feature/add-presigned-s3]
       - assume-role-production:
           context: api-assume-role-production-context
           requires:
