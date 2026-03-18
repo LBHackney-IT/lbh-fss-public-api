@@ -41,8 +41,7 @@ commands:
     description: "Deploys API via Serverless"
     parameters:
       stage:
-        type: enum
-        enum: ["development", "staging", "production"]
+        type: string
       aws-central-parameter-account:
         type: enum
         enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
@@ -65,10 +64,22 @@ commands:
           name: Fetch SSM parameters from central account
           command: |
             CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            export ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
-            export HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
-            export PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
-            export DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
+            export ADDRESSES_URL=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url \
+              --query Parameter.Value \
+              --output text)
+            export HOST=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname \
+              --query Parameter.Value \
+              --output text)
+            export PORT=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port \
+              --query Parameter.Value \
+              --output text)
+            export DATABASE=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database \
+              --query Parameter.Value \
+              --output text)
             export IMAGE_BUCKET=$(aws ssm get-parameter \
               --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-common-api-<<parameters.stage>>/fss-common-api/images-base-url \
               --query Parameter.Value \
