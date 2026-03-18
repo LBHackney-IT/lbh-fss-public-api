@@ -27,7 +27,6 @@ namespace LBHFSSPublicAPI.V1.Controllers
         [HttpGet]
         [Route("{id}/{size}")]
         [Produces("image/jpeg")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "id", "size" })]
         public async Task<IActionResult> GetImage(int id, string size)
         {
             if (string.IsNullOrEmpty(_options?.BucketName))
