@@ -8,6 +8,10 @@ provider:
   region: eu-west-2
   tracing:
     lambda: true
+  apiGateway:
+    binaryMediaTypes:
+      - "image/jpeg"
+      - "image/*"
 
 package:
   artifact: ./bin/release/net8.0/fss-public-api.zip
