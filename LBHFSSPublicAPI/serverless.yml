@@ -8,7 +8,7 @@ provider:
   region: eu-west-2
   tracing:
     lambda: true
-    logRetentionInDays: 30  
+    logRetentionInDays: 30
 
 package:
   artifact: ./bin/release/net8.0/fss-public-api.zip
@@ -24,6 +24,8 @@ functions:
       ADDRESSES_API_KEY: ${ssm:/fss-public-api/${self:provider.stage}/addresses-api-key}
       ADDRESSES_API_TOKEN: ${ssm:/fss-common-api/${self:provider.stage}/addresses-api-token}
       PLACEHOLDER_IMAGE: ${ssm:/fss-common-api/${self:provider.stage}/placeholder-image}
+      IMAGE_STORE_BUCKET: fss-imagestore-${self:provider.stage}
+      IMAGE_STORE_REGION: eu-west-2
     events:
       - http:
           path: /{proxy+}
@@ -55,6 +57,18 @@ resources:
                   Action:
                     - "lambda:InvokeFunction"
                   Resource: "*"
+          - PolicyName: imagestoreS3Access
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:GetObject
+                    - s3:DeleteObject
+                  Resource:
+                    - "arn:aws:s3:::fss-imagestore-${self:provider.stage}"
+                    - "arn:aws:s3:::fss-imagestore-${self:provider.stage}/*"
 custom:
   vpc:
     development:

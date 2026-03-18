@@ -139,19 +139,26 @@ namespace LBHFSSPublicAPI.V1.Factories
 
         private static Image ToResponseImage(this ServiceEntity serviceDomain)
         {
-            var images = serviceDomain?.Image?.Url == null ? System.Array.Empty<string>() : serviceDomain.Image.Url.Split(';');
-            return
-                serviceDomain?.Image == null
-                ? new Image()
+            if (serviceDomain?.Image == null)
+                return new Image() { Medium = _placeholderImage, Original = _placeholderImage };
+
+            var proxyBase = Environment.GetEnvironmentVariable("IMAGE_PROXY_BASE_URL")?.TrimEnd('/');
+            if (!string.IsNullOrEmpty(proxyBase))
+            {
+                var id = serviceDomain.Image.Id;
+                return new Image()
                 {
-                    Medium = _placeholderImage,
-                    Original = _placeholderImage
-                }
-                : new Image()
-                {
-                    Medium = images.Length > 1 ? images[1] : _placeholderImage,
-                    Original = images.Length > 0 ? images[0] : _placeholderImage
+                    Medium = $"{proxyBase}/images/{id}/medium",
+                    Original = $"{proxyBase}/images/{id}/original"
                 };
+            }
+
+            var images = serviceDomain.Image.Url == null ? System.Array.Empty<string>() : serviceDomain.Image.Url.Split(';');
+            return new Image()
+            {
+                Medium = images.Length > 1 ? images[1] : _placeholderImage,
+                Original = images.Length > 0 ? images[0] : _placeholderImage
+            };
         }
 
         private static List<Location> ToResponseServiceLocationList(this ICollection<ServiceLocation> serviceLocations)
