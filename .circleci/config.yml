@@ -342,7 +342,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - build-and-test:
           context:
             - find-support-services-public-api-context
@@ -353,7 +353,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - assume-role-development:
           context: api-assume-role-development-context
           filters:
@@ -361,7 +361,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - preview-development-terraform:
           requires:
             - assume-role-development
@@ -370,7 +370,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
@@ -378,7 +378,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - preview-staging-terraform:
           requires:
             - assume-role-staging
@@ -387,7 +387,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
@@ -395,7 +395,7 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
       - preview-production-terraform:
           requires:
             - assume-role-production
@@ -404,13 +404,13 @@ workflows:
               ignore:
                 - develop
                 - master
-                - feature/add-presigned-s3
+
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - build-and-test:
           context:
             - find-support-services-public-api-context
@@ -418,28 +418,28 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - permit-development-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
             - permit-development-release
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - migrate-database-development:
           context: central-parameter-store-context
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - deploy-to-development:
           context:
             - "Serverless Framework"
@@ -447,7 +447,7 @@ workflows:
           requires: [assume-role-development, migrate-database-development]
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
@@ -456,28 +456,28 @@ workflows:
             - SonarCloud
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
             - permit-staging-release
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - migrate-database-staging:
           context: central-parameter-store-context
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - deploy-to-staging:
           context:
             - "Serverless Framework"
@@ -485,7 +485,7 @@ workflows:
           requires: [assume-role-staging, migrate-database-staging]
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - permit-production-release:
           type: approval
           requires:
@@ -521,50 +521,50 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - permit-terraform-development-release:
           type: approval
           requires:
             - preview-development-terraform
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
-              only: [develop, feature/add-presigned-s3]
+              only: [develop]
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - permit-terraform-staging-release:
           type: approval
           requires:
             - preview-staging-terraform
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
-              only: [master, feature/add-presigned-s3]
+              only: [master]
       - assume-role-production:
           context: api-assume-role-production-context
           requires:
