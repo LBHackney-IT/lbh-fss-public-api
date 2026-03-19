@@ -63,14 +63,14 @@ namespace LBHFSSPublicAPI.V1.Controllers
             catch (AmazonS3Exception ex)
             {
                 var msg = $"S3 error: {ex.ErrorCode} - {ex.Message}";
-                _logger.LogError(ex, "S3 GetObject failed. Bucket: {Bucket}, Key: {Key}, ErrorCode: {ErrorCode}", _options.BucketName, key, ex.ErrorCode);
+                _logger.LogError(ex, "S3 GetObject failed. Bucket: {Bucket}, ErrorCode: {ErrorCode}", _options.BucketName, ex.ErrorCode);
                 Response.Headers["X-Error-Message"] = msg;
                 return StatusCode(502, msg);
             }
             catch (Exception ex)
             {
                 var msg = $"Image error: {ex.Message}";
-                _logger.LogError(ex, "Image request failed. Id: {Id}, Size: {Size}", id, size);
+                _logger.LogError(ex, "Image request failed");
                 Response.Headers["X-Error-Message"] = msg;
                 return StatusCode(500, msg);
             }
