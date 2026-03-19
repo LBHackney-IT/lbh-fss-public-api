@@ -16,7 +16,8 @@ RUN dotnet restore ./LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 # Copy everything else and build
 COPY . .
 
-RUN dotnet build -c debug -o out LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
+# Default bin/ layout (not -o out) so Coverlet and --no-build agree on the test DLL path
+RUN dotnet build -c Debug LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 
 # OpenCover report for SonarCloud (written to mounted /app/coverage in CI)
 RUN mkdir -p /app/coverage
