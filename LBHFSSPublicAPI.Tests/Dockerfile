@@ -19,10 +19,12 @@ COPY . .
 # Default bin/ layout (not -o out) so Coverlet and --no-build agree on the test DLL path
 RUN dotnet build -c Debug LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 
-# OpenCover report for SonarCloud (written to mounted /app/coverage in CI)
-RUN mkdir -p /app/coverage
+# OpenCover for SonarCloud; JUnit XML for CircleCI store_test_results
+RUN mkdir -p /app/coverage /app/test_results
 CMD dotnet test LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj -c Debug --no-build \
     /p:CollectCoverage=true \
     /p:CoverletOutput=/app/coverage/ \
     /p:CoverletOutputFormat=opencover \
-    /p:CoverletOutputFile=coverage.opencover.xml
+    /p:CoverletOutputFile=coverage.opencover.xml \
+    --logger "console;verbosity=minimal" \
+    --logger "junit;LogFilePath=/app/test_results/junit.xml"

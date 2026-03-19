@@ -216,8 +216,7 @@ jobs:
     steps:
       - checkout:
           method: full
-      - attach_workspace:
-          at: .
+      - *attach_workspace
       - sonarcloud/scan
   build-and-test:
     executor: docker-python
@@ -236,19 +235,25 @@ jobs:
       - run:
           name: Run tests with coverage (Coverlet OpenCover for SonarCloud)
           command: |
-            mkdir -p coverage
+            mkdir -p coverage test_results
             docker compose run --rm \
               -v "$(pwd)/coverage:/app/coverage" \
+              -v "$(pwd)/test_results:/app/test_results" \
               -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN \
               fss-public-api-test
       - run:
           name: Cleanup
           when: always
           command: docker compose down -v
+      - store_test_results:
+          path: test_results
+      - store_artifacts:
+          path: coverage
+          destination: coverage
       - persist_to_workspace:
-          root: .
+          root: *workspace_root
           paths:
-            - coverage
+            - project/coverage
   assume-role-development:
     executor: docker-python
     steps:
