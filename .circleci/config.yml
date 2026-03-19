@@ -229,7 +229,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            # No --rm: leave the test container so the Report step can docker cp coverage out (remote Docker).
             docker compose run \
               -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN \
               fss-public-api-test
