@@ -143,7 +143,7 @@ namespace LBHFSSPublicAPI.V1.Factories
                 return new Image() { Medium = _placeholderImage, Original = _placeholderImage };
 
             // Proxy URL must use service id: files in S3 are stored as images/{serviceId}-medium.jpg (same as portal).
-            var proxyBase = Environment.GetEnvironmentVariable("IMAGE_PROXY_BASE_URL")?.TrimEnd('/');
+            var proxyBase = Environment.GetEnvironmentVariable("FSS_PUBLIC_API_BASE_URL")?.TrimEnd('/');
             if (!string.IsNullOrEmpty(proxyBase))
             {
                 var serviceId = serviceDomain.Id;
