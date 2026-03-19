@@ -45,10 +45,6 @@ Ankh.NoLoad
 
 #Other
 .svn
-coverage/
-test_results/
-TestResults/
-
 # Include DLLs if they're in the NuGet packages directory
 !/packages/*/lib/*.dll
 !/packages/*/lib/*/*.dll

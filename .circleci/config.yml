@@ -211,17 +211,11 @@ jobs:
       - run:
           name: Run formatter check
           command: ./dotnet-format-local/dotnet-format --check
-  sonar-scan:
+  build-and-test:
     executor: docker-python
     steps:
       - checkout:
           method: full
-      - *attach_workspace
-      - sonarcloud/scan
-  build-and-test:
-    executor: docker-python
-    steps:
-      - checkout
       - setup_remote_docker
       - run:
             name: Start database
@@ -233,27 +227,28 @@ jobs:
           name: Build test image
           command: docker compose build fss-public-api-test
       - run:
-          name: Run tests with coverage (Coverlet OpenCover for SonarCloud)
+          name: Run tests
           command: |
-            mkdir -p coverage test_results
-            docker compose run --rm \
-              -v "$(pwd)/coverage:/app/coverage" \
-              -v "$(pwd)/test_results:/app/test_results" \
+            # No --rm: leave the test container so the Report step can docker cp coverage out (remote Docker).
+            docker compose run \
               -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN \
               fss-public-api-test
+      - run:
+          name: Report
+          command: |
+            mkdir -p coverage
+            CID=$(docker ps -aqf "name=fss-public-api-test" | head -n1)
+            if [ -z "${CID}" ]; then
+              echo "No test container found matching name=fss-public-api-test"
+              exit 1
+            fi
+            docker cp "${CID}:/app/coverage/." ./coverage/
+            find coverage -name '*.opencover.xml' -exec sed -i "s|/app/|$(pwd)/|g" {} +
+      - sonarcloud/scan
       - run:
           name: Cleanup
           when: always
           command: docker compose down -v
-      - store_test_results:
-          path: test_results
-      - store_artifacts:
-          path: coverage
-          destination: coverage
-      - persist_to_workspace:
-          root: *workspace_root
-          paths:
-            - project/coverage
   assume-role-development:
     executor: docker-python
     steps:
@@ -347,17 +342,10 @@ workflows:
                 - master
                 - feature/add-presigned-s3
       - build-and-test:
-          context: find-support-services-public-api-context
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
           requires: [check-code-formatting]
-          filters:
-            branches:
-              ignore:
-                - develop
-                - master
-                - feature/add-presigned-s3
-      - sonar-scan:
-          context: SonarCloud
-          requires: [build-and-test]
           filters:
             branches:
               ignore:
@@ -422,14 +410,10 @@ workflows:
             branches:
               only: [develop, feature/add-presigned-s3]
       - build-and-test:
-          context: find-support-services-public-api-context
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
           requires: [check-code-formatting]
-          filters:
-            branches:
-              only: [develop, feature/add-presigned-s3]
-      - sonar-scan:
-          context: SonarCloud
-          requires: [build-and-test]
           filters:
             branches:
               only: [develop, feature/add-presigned-s3]
@@ -437,7 +421,6 @@ workflows:
           type: approval
           requires:
             - build-and-test
-            - sonar-scan
           filters:
             branches:
               only: [develop, feature/add-presigned-s3]
@@ -466,7 +449,9 @@ workflows:
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
-          context: find-support-services-public-api-context
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
           filters:
             branches:
               only: [master, feature/add-presigned-s3]
