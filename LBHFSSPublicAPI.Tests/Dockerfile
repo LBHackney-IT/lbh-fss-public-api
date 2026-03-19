@@ -18,4 +18,10 @@ COPY . .
 
 RUN dotnet build -c debug -o out LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 
-CMD dotnet test
+# OpenCover report for SonarCloud (written to mounted /app/coverage in CI)
+RUN mkdir -p /app/coverage
+CMD dotnet test LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj -c Debug --no-build \
+    /p:CollectCoverage=true \
+    /p:CoverletOutput=/app/coverage/ \
+    /p:CoverletOutputFormat=opencover \
+    /p:CoverletOutputFile=coverage.opencover.xml
