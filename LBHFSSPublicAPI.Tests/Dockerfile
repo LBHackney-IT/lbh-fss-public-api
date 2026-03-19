@@ -19,9 +19,10 @@ COPY . .
 # Default bin/ layout (not -o out) so Coverlet matches the built test DLL path
 RUN dotnet build -c Debug LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 
-RUN mkdir -p /app/coverage
+RUN mkdir -p /app/coverage /app/test_results
 CMD dotnet test LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj -c Debug --no-build \
     --logger "console;verbosity=minimal" \
+    --logger "junit;LogFilePath=/app/test_results/junit.xml" \
     /p:CollectCoverage=true \
     /p:CoverletOutput=/app/coverage/ \
     /p:CoverletOutputFormat=opencover \

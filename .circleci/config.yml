@@ -235,14 +235,18 @@ jobs:
       - run:
           name: Report
           command: |
-            mkdir -p coverage
+            mkdir -p coverage test_results
             CID=$(docker ps -aqf "name=fss-public-api-test" | head -n1)
             if [ -z "${CID}" ]; then
               echo "No test container found matching name=fss-public-api-test"
               exit 1
             fi
             docker cp "${CID}:/app/coverage/." ./coverage/
+            docker cp "${CID}:/app/test_results/." ./test_results/
             find coverage -name '*.opencover.xml' -exec sed -i "s|/app/|$(pwd)/|g" {} +
+      - when: always
+        store_test_results:
+          path: test_results
       - sonarcloud/scan
       - run:
           name: Cleanup
