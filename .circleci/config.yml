@@ -244,8 +244,7 @@ jobs:
             docker cp "${CID}:/app/coverage/." ./coverage/
             docker cp "${CID}:/app/test_results/." ./test_results/
             find coverage -name '*.opencover.xml' -exec sed -i "s|/app/|$(pwd)/|g" {} +
-      - when: always
-        store_test_results:
+      - store_test_results:
           path: test_results
       - sonarcloud/scan
       - run:
