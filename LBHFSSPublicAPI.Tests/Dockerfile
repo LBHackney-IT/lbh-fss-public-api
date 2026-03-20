@@ -16,6 +16,13 @@ RUN dotnet restore ./LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 # Copy everything else and build
 COPY . .
 
-RUN dotnet build -c debug -o out LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
+RUN dotnet build -c Debug LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj
 
-CMD dotnet test
+RUN mkdir -p /app/coverage /app/test_results
+CMD dotnet test LBHFSSPublicAPI.Tests/LBHFSSPublicAPI.Tests.csproj -c Debug --no-build \
+    --logger "console;verbosity=minimal" \
+    --logger "junit;LogFilePath=/app/test_results/junit.xml" \
+    /p:CollectCoverage=true \
+    /p:CoverletOutput=/app/coverage/ \
+    /p:CoverletOutputFormat=opencover \
+    /p:CoverletOutputFile=coverage.opencover.xml
