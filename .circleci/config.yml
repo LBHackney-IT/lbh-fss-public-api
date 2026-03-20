@@ -43,6 +43,9 @@ commands:
       stage:
         type: enum
         enum: ["development", "staging", "production"]
+      aws-central-parameter-account:
+        type: enum
+        enum: ["AWS_ACCOUNT_DEVELOPMENT", "AWS_ACCOUNT_STAGING", "AWS_ACCOUNT_PRODUCTION"]
     steps:
       - *attach_workspace
       - checkout
@@ -54,13 +57,62 @@ commands:
             curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
             apt-get install -y nodejs
       - run:
+          name: Install AWS CLI
+          command: |
+            apt-get update
+            apt-get install -y awscli
+      - run:
+          name: Fetch SSM parameters from central account
+          command: |
+            CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
+            export ADDRESSES_URL=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url \
+              --query Parameter.Value \
+              --output text)
+            export FSS_PUBLIC_API_URL=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/fss-public-api-base-url \
+              --query Parameter.Value \
+              --output text)
+            export HOST=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname \
+              --query Parameter.Value \
+              --output text)
+            export PORT=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port \
+              --query Parameter.Value \
+              --output text)
+            export DATABASE=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database \
+              --query Parameter.Value \
+              --output text)
+            export IMAGE_BUCKET_NAME=$(aws ssm get-parameter \
+              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-common-api-<<parameters.stage>>/fss-common-api/images-bucket-name \
+              --query Parameter.Value \
+              --output text)
+
+            echo "export ADDRESSES_URL=${ADDRESSES_URL}" >> $BASH_ENV
+            echo "export HOST=${HOST}" >> $BASH_ENV
+            echo "export PORT=${PORT}" >> $BASH_ENV
+            echo "export DATABASE=${DATABASE}" >> $BASH_ENV
+            echo "export IMAGE_BUCKET_NAME=${IMAGE_BUCKET_NAME}" >> $BASH_ENV
+            echo "export FSS_PUBLIC_API_URL=${FSS_PUBLIC_API_URL}" >> $BASH_ENV
+
+      - run:
           name: Build and deploy lambda
           working_directory: ./LBHFSSPublicAPI/
           command: |
             set -e
             chmod +x ./build.sh
             ./build.sh
-            npx --yes serverless@4 deploy --stage <<parameters.stage>> --conceal
+            npx --yes serverless@4 deploy \
+              --stage <<parameters.stage>> \
+              --param="addressUrl=${ADDRESSES_URL}" \
+              --param="dbHost=${HOST}" \
+              --param="dbPort=${PORT}" \
+              --param="dbDatabase=${DATABASE}" \
+              --param="imageBucketName=${IMAGE_BUCKET_NAME}" \
+              --param="fssPublicApiUrl=${FSS_PUBLIC_API_URL}" \
+              --conceal
 
   migrate-database:
     description: "Migrate database"
@@ -159,16 +211,11 @@ jobs:
       - run:
           name: Run formatter check
           command: ./dotnet-format-local/dotnet-format --check
-  sonar-scan:
+  build-and-test:
     executor: docker-python
     steps:
       - checkout:
           method: full
-      - sonarcloud/scan
-  build-and-test:
-    executor: docker-python
-    steps:
-      - checkout
       - setup_remote_docker
       - run:
             name: Start database
@@ -181,7 +228,25 @@ jobs:
           command: docker compose build fss-public-api-test
       - run:
           name: Run tests
-          command: docker compose run -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN --rm fss-public-api-test
+          command: |
+            docker compose run \
+              -e ADDRESSES_API_BASE_URL -e ADDRESSES_API_KEY -e ADDRESSES_API_TOKEN \
+              fss-public-api-test
+      - run:
+          name: Report
+          command: |
+            mkdir -p coverage test_results
+            CID=$(docker ps -aqf "name=fss-public-api-test" | head -n1)
+            if [ -z "${CID}" ]; then
+              echo "No test container found matching name=fss-public-api-test"
+              exit 1
+            fi
+            docker cp "${CID}:/app/coverage/." ./coverage/
+            docker cp "${CID}:/app/test_results/." ./test_results/
+            find coverage -name '*.opencover.xml' -exec sed -i "s|/app/|$(pwd)/|g" {} +
+      - store_test_results:
+          path: test_results
+      - sonarcloud/scan
       - run:
           name: Cleanup
           when: always
@@ -206,16 +271,19 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "development"
+          aws-central-parameter-account: "AWS_ACCOUNT_DEVELOPMENT"
   deploy-to-staging:
     executor: docker-dotnet
     steps:
       - deploy-lambda:
           stage: "staging"
+          aws-central-parameter-account: "AWS_ACCOUNT_STAGING"
   deploy-to-production:
     executor: docker-dotnet
     steps:
       - deploy-lambda:
           stage: "production"
+          aws-central-parameter-account: "AWS_ACCOUNT_PRODUCTION"
   migrate-database-development:
     executor: docker-dotnet
     steps:
@@ -274,21 +342,18 @@ workflows:
               ignore:
                 - develop
                 - master
-      - sonar-scan:
-          context: SonarCloud
-          filters:
-            branches:
-              ignore:
-                - develop
-                - master
+
       - build-and-test:
-          context: find-support-services-public-api-context
-          requires: [check-code-formatting, sonar-scan]
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
+          requires: [check-code-formatting]
           filters:
             branches:
               ignore:
                 - develop
                 - master
+
       - assume-role-development:
           context: api-assume-role-development-context
           filters:
@@ -296,6 +361,7 @@ workflows:
               ignore:
                 - develop
                 - master
+
       - preview-development-terraform:
           requires:
             - assume-role-development
@@ -304,6 +370,7 @@ workflows:
               ignore:
                 - develop
                 - master
+
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
@@ -311,6 +378,7 @@ workflows:
               ignore:
                 - develop
                 - master
+
       - preview-staging-terraform:
           requires:
             - assume-role-staging
@@ -319,6 +387,7 @@ workflows:
               ignore:
                 - develop
                 - master
+
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
@@ -326,6 +395,7 @@ workflows:
               ignore:
                 - develop
                 - master
+
       - preview-production-terraform:
           requires:
             - assume-role-production
@@ -334,20 +404,18 @@ workflows:
               ignore:
                 - develop
                 - master
+
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
               only: [develop]
-      - sonar-scan:
-          context: SonarCloud
-          filters:
-            branches:
-              only: [develop]
       - build-and-test:
-          context: find-support-services-public-api-context
-          requires: [check-code-formatting, sonar-scan]
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
+          requires: [check-code-formatting]
           filters:
             branches:
               only: [develop]
@@ -375,6 +443,7 @@ workflows:
       - deploy-to-development:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-development, migrate-database-development]
           filters:
             branches:
@@ -382,38 +451,41 @@ workflows:
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
-          context: find-support-services-public-api-context
+          context:
+            - find-support-services-public-api-context
+            - SonarCloud
           filters:
             branches:
-              only: master
+              only: [master]
       - permit-staging-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: master
+              only: [master]
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
             - permit-staging-release
           filters:
             branches:
-              only: master
+              only: [master]
       - migrate-database-staging:
           context: central-parameter-store-context
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: master
+              only: [master]
       - deploy-to-staging:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-staging, migrate-database-staging]
           filters:
             branches:
-              only: master
+              only: [master]
       - permit-production-release:
           type: approval
           requires:
@@ -438,6 +510,7 @@ workflows:
       - deploy-to-production:
           context:
             - "Serverless Framework"
+            - central-parameter-store-context
           requires: [assume-role-production, migrate-database-production]
           filters:
             branches:
@@ -448,50 +521,50 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: develop
+              only: [develop]
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: develop
+              only: [develop]
       - permit-terraform-development-release:
           type: approval
           requires:
             - preview-development-terraform
           filters:
             branches:
-              only: develop
+              only: [develop]
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
-              only: develop
+              only: [develop]
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: master
+              only: [master]
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: master
+              only: [master]
       - permit-terraform-staging-release:
           type: approval
           requires:
             - preview-staging-terraform
           filters:
             branches:
-              only: master
+              only: [master]
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
-              only: master
+              only: [master]
       - assume-role-production:
           context: api-assume-role-production-context
           requires:
