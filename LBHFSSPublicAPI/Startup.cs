@@ -120,7 +120,7 @@ new List<string>()
 
         private static void ConfigureImageStore(IServiceCollection services)
         {
-            var bucketName = Environment.GetEnvironmentVariable("IMAGE_STORE_BUCKET") ?? string.Empty;
+            var bucketName = Environment.GetEnvironmentVariable("IMAGE_STORE_BUCKET_NAME") ?? string.Empty;
             var region = Environment.GetEnvironmentVariable("IMAGE_STORE_REGION") ?? "eu-west-2";
             var regionEndpoint = RegionEndpoint.GetBySystemName(region);
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(regionEndpoint));
