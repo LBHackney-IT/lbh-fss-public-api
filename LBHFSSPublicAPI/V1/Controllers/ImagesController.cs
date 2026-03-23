@@ -32,7 +32,7 @@ namespace LBHFSSPublicAPI.V1.Controllers
         public async Task<IActionResult> GetImage(int id, string size)
         {
             if (string.IsNullOrEmpty(_options?.BucketName))
-                return StatusCode(500, "Image store not configured (IMAGE_STORE_BUCKET).");
+                return StatusCode(500, "Image store not configured (IMAGE_STORE_BUCKET_NAME).");
 
             if (!string.Equals(size, "medium", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase))
