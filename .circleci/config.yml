@@ -426,7 +426,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - build-and-test:
           context:
@@ -438,7 +437,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - assume-role-development:
           context: api-assume-role-development-context
@@ -447,7 +445,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - preview-development-terraform:
           requires:
@@ -457,7 +454,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - assume-role-staging:
           context: api-assume-role-staging-context
@@ -466,7 +462,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - preview-staging-terraform:
           requires:
@@ -476,7 +471,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - assume-role-production:
           context: api-assume-role-production-context
@@ -485,7 +479,6 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
       - preview-production-terraform:
           requires:
@@ -495,14 +488,13 @@ workflows:
               ignore:
                 - develop
                 - master
-                - build/decouple-migration
 
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - build-and-test:
           context:
             - find-support-services-public-api-context
@@ -510,21 +502,21 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - permit-development-release:
           type: approval
           requires:
             - build-and-test
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
             - permit-development-release
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - deploy-to-development:
           context:
             - "Serverless Framework"
@@ -532,7 +524,7 @@ workflows:
           requires: [assume-role-development]
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
@@ -592,26 +584,26 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - permit-terraform-development-release:
           type: approval
           requires:
             - preview-development-terraform
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
@@ -670,25 +662,25 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - preview-migrations-development:
           context: central-parameter-store-context
           requires: [assume-role-development]
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - permit-migration-development:
           type: approval
           requires: [preview-migrations-development]
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
       - migrate-database-development:
           context: central-parameter-store-context
           requires: [permit-migration-development]
           filters:
             branches:
-              only: [develop, build/decouple-migration]
+              only: [develop]
 
       # Staging migrations
       - assume-role-staging:
