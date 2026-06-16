@@ -22,13 +22,13 @@ functions:
     handler: LBHFSSPublicAPI::LBHFSSPublicAPI.LambdaEntryPoint::FunctionHandlerAsync
     role: lambdaExecutionRole
     environment:
-      CONNECTION_STRING: Host=${param:dbHost};Port=${param:dbPort};Database=${param:dbDatabase};Username=${ssm:/fss-public-api/${self:provider.stage}/postgres-username};Password=${ssm:/fss-public-api/${self:provider.stage}/postgres-password}
-      ADDRESSES_API_BASE_URL: ${param:addressUrl}
+      CONNECTION_STRING: Host=${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-public-api-${self:provider.stage}/fss-public-api/postgres-hostname};Port=${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-public-api-${self:provider.stage}/fss-public-api/postgres-port};Database=${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-public-api-${self:provider.stage}/fss-public-api/postgres-database};Username=${ssm:/fss-public-api/${self:provider.stage}/postgres-username};Password=${ssm:/fss-public-api/${self:provider.stage}/postgres-password}
+      ADDRESSES_API_BASE_URL: ${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/${self:provider.stage}-apis/${self:provider.stage}apis/addresses-api-base-url}
       ADDRESSES_API_KEY: ${ssm:/fss-public-api/${self:provider.stage}/addresses-api-key}
       ADDRESSES_API_TOKEN: ${ssm:/fss-common-api/${self:provider.stage}/addresses-api-token}
-      IMAGE_STORE_BUCKET_NAME: ${param:imageBucketName}
-      PLACEHOLDER_IMAGE: ${param:imageBucketName}/placeholder-image
-      FSS_PUBLIC_API_BASE_URL: ${param:fssPublicApiUrl}
+      IMAGE_STORE_BUCKET_NAME: ${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-common-api-${self:provider.stage}/fss-common-api/images-bucket-name}
+      PLACEHOLDER_IMAGE: ${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-common-api-${self:provider.stage}/fss-common-api/images-bucket-name}/placeholder-image
+      FSS_PUBLIC_API_BASE_URL: ${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/${self:provider.stage}-apis/${self:provider.stage}apis/fss-public-api-base-url}
     events:
       - http:
           path: /{proxy+}

@@ -1,16 +1,19 @@
 version: 2.1
 
 orbs:
-  aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
-  sonarcloud: sonarsource/sonarcloud@2.0.0
+  aws_assume_role: lbh-hackit/aws_assume_role@0.1.1
+  sonarcloud: sonarsource/sonarcloud@4.0.0
 
 executors:
-  docker-python:
+  assume-role:
+    docker:
+      - image: cimg/base:current
+  docker-compose:
     docker:
       - image: cimg/python:3.11
   docker-terraform:
     docker:
-      - image: hashicorp/terraform:1.14.5
+      - image: hashicorp/terraform:1.14
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -51,68 +54,23 @@ commands:
       - *attach_workspace
       - checkout
       - run:
-          name: Install Node
+          name: Install Node.js
           command: |
             apt-get update
             apt-get install -y curl ca-certificates
             curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
             apt-get install -y nodejs
       - run:
-          name: Install AWS CLI
-          command: |
-            apt-get update
-            apt-get install -y awscli
-      - run:
-          name: Fetch SSM parameters from central account
-          command: |
-            CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            export ADDRESSES_URL=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url \
-              --query Parameter.Value \
-              --output text)
-            export FSS_PUBLIC_API_URL=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/fss-public-api-base-url \
-              --query Parameter.Value \
-              --output text)
-            export HOST=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname \
-              --query Parameter.Value \
-              --output text)
-            export PORT=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port \
-              --query Parameter.Value \
-              --output text)
-            export DATABASE=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database \
-              --query Parameter.Value \
-              --output text)
-            export IMAGE_BUCKET_NAME=$(aws ssm get-parameter \
-              --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-common-api-<<parameters.stage>>/fss-common-api/images-bucket-name \
-              --query Parameter.Value \
-              --output text)
-
-            echo "export ADDRESSES_URL=${ADDRESSES_URL}" >> $BASH_ENV
-            echo "export HOST=${HOST}" >> $BASH_ENV
-            echo "export PORT=${PORT}" >> $BASH_ENV
-            echo "export DATABASE=${DATABASE}" >> $BASH_ENV
-            echo "export IMAGE_BUCKET_NAME=${IMAGE_BUCKET_NAME}" >> $BASH_ENV
-            echo "export FSS_PUBLIC_API_URL=${FSS_PUBLIC_API_URL}" >> $BASH_ENV
-
-      - run:
           name: Build and deploy lambda
           working_directory: ./LBHFSSPublicAPI/
           command: |
             set -e
+            CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
             chmod +x ./build.sh
             ./build.sh
             npx --yes serverless@4 deploy \
               --stage <<parameters.stage>> \
-              --param="addressUrl=${ADDRESSES_URL}" \
-              --param="dbHost=${HOST}" \
-              --param="dbPort=${PORT}" \
-              --param="dbDatabase=${DATABASE}" \
-              --param="imageBucketName=${IMAGE_BUCKET_NAME}" \
-              --param="fssPublicApiUrl=${FSS_PUBLIC_API_URL}" \
+              --param="centralAccount=${CENTRAL_ACCOUNT}" \
               --conceal
 
   migrate-database:
@@ -144,17 +102,17 @@ commands:
           name: SSH into RDS and migrate database
           command: |
             CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --with-decryption --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
             PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
             INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
             ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST}:${PORT} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME}
-            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value --output text)
+            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --with-decryption --query Parameter.Value --output text)
             USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value --output text)
             DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
             ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
-            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
+            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --with-decryption --query Parameter.Value --output text)
             ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
@@ -189,17 +147,17 @@ commands:
           name: List pending migrations
           command: |
             CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --with-decryption --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
             PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
             INSTANCE_NAME=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/jump-box-instance-name --query Parameter.Value --output text)
             ssh -4 -i ./private-key.pem -Nf -M -L 6000:${HOST}:${PORT} -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ProxyCommand="aws ssm start-session --target %h --document AWS-StartSSHSession --parameters portNumber=%p --region=eu-west-2" ec2-user@${INSTANCE_NAME}
-            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --query Parameter.Value --output text)
+            PASSWORD=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-password --with-decryption --query Parameter.Value --output text)
             USERNAME=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/postgres-username --query Parameter.Value --output text)
             DATABASE=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-database --query Parameter.Value --output text)
             ADDRESSES_URL=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/<<parameters.stage>>-apis/<<parameters.stage>>apis/addresses-api-base-url --query Parameter.Value --output text)
-            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --query Parameter.Value --output text)
+            ADDRESSES_KEY=$(aws ssm get-parameter --name /fss-public-api/<<parameters.stage>>/addresses-api-key --with-decryption --query Parameter.Value --output text)
             ADDRESSES_API_TOKEN=$(aws ssm get-parameter --name /fss-common-api/<<parameters.stage>>/addresses-api-token --query Parameter.Value --output text)
             CONN_STR="Host=localhost;Password=${PASSWORD};Port=6000;Username=${USERNAME};Database=${DATABASE}"
             cd ./LBHFSSPublicAPI/
@@ -240,13 +198,6 @@ commands:
               -backend-config="key=services/fss-public-api/terraform.tfstate"
             terraform validate
             terraform apply -auto-approve -var="environment=<<parameters.environment>>"
-      - run:
-          name: Show terraform outputs
-          command: terraform output -json
-          when: on_success
-      - store_artifacts:
-          path: /tmp/terraform-outputs-<<parameters.environment>>.json
-          destination: terraform-outputs
 
 jobs:
   check-code-formatting:
@@ -261,7 +212,7 @@ jobs:
           command: ./dotnet-format-local/dotnet-format --check
 
   build-and-test:
-    executor: docker-python
+    executor: docker-compose
     steps:
       - checkout:
           method: full
@@ -269,9 +220,9 @@ jobs:
       - run:
           name: Start database
           command: |
-              docker compose up -d test-database
-              echo "Waiting for database to be ready..."
-              timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'
+            docker compose up -d test-database
+            echo "Waiting for database to be ready..."
+            timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'
       - run:
           name: Build test image
           command: docker compose build fss-public-api-test
@@ -302,19 +253,19 @@ jobs:
           command: docker compose down -v
 
   assume-role-development:
-    executor: docker-python
+    executor: assume-role
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_DEVELOPMENT
 
   assume-role-staging:
-    executor: docker-python
+    executor: assume-role
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_STAGING
 
   assume-role-production:
-    executor: docker-python
+    executor: assume-role
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
@@ -378,6 +329,7 @@ jobs:
     steps:
       - deploy-terraform:
           environment: "production"
+
   preview-migrations-development:
     executor: docker-dotnet
     steps:
@@ -423,9 +375,7 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              ignore:
-                - develop
-                - master
+              ignore: [master, develop]
 
       - build-and-test:
           context:
@@ -434,26 +384,22 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              ignore:
-                - develop
-                - master
+              ignore: [master, develop]
 
       - assume-role-development:
           context: api-assume-role-development-context
+          requires:
+            - build-and-test
           filters:
             branches:
-              ignore:
-                - develop
-                - master
+              ignore: [master, develop]
 
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              ignore:
-                - develop
-                - master
+              ignore: [master, develop]
 
   check-and-deploy-development:
     jobs:
@@ -461,6 +407,7 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - build-and-test:
           context:
             - find-support-services-public-api-context
@@ -469,6 +416,7 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - permit-development-release:
           type: approval
           requires:
@@ -476,6 +424,7 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - assume-role-development:
           context: api-assume-role-development-context
           requires:
@@ -483,23 +432,34 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - deploy-to-development:
           context:
             - "Serverless Framework"
             - central-parameter-store-context
-          requires: [assume-role-development]
+          requires:
+            - permit-development-release
+            - assume-role-development
           filters:
             branches:
               only: [develop]
+
   check-and-deploy-staging-and-production:
     jobs:
+      - check-code-formatting:
+          filters:
+            branches:
+              only: [master]
+
       - build-and-test:
           context:
             - find-support-services-public-api-context
             - SonarCloud
+          requires: [check-code-formatting]
           filters:
             branches:
               only: [master]
+
       - permit-staging-release:
           type: approval
           requires:
@@ -507,6 +467,7 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - assume-role-staging:
           context: api-assume-role-staging-context
           requires:
@@ -514,14 +475,18 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - deploy-to-staging:
           context:
             - "Serverless Framework"
             - central-parameter-store-context
-          requires: [assume-role-staging]
+          requires:
+            - permit-staging-release
+            - assume-role-staging
           filters:
             branches:
               only: [master]
+
       - permit-production-release:
           type: approval
           requires:
@@ -529,6 +494,7 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - assume-role-production:
           context: api-assume-role-production-context
           requires:
@@ -536,14 +502,18 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - deploy-to-production:
           context:
             - "Serverless Framework"
             - central-parameter-store-context
-          requires: [assume-role-production]
+          requires:
+            - permit-production-release
+            - assume-role-production
           filters:
             branches:
               only: [master]
+
   terraform-release:
     jobs:
       - assume-role-development:
@@ -551,12 +521,14 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
               only: [develop]
+
       - permit-terraform-development-release:
           type: approval
           requires:
@@ -564,23 +536,27 @@ workflows:
           filters:
             branches:
               only: [develop]
+
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
               only: [develop]
+
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
               only: [master]
+
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
               only: [master]
+
       - permit-terraform-staging-release:
           type: approval
           requires:
@@ -588,25 +564,27 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
               only: [master]
+
       - assume-role-production:
           context: api-assume-role-production-context
-          requires:
-            - deploy-staging-terraform
           filters:
             branches:
               only: [master]
+
       - preview-production-terraform:
           requires:
             - assume-role-production
           filters:
             branches:
               only: [master]
+
       - permit-terraform-production-release:
           type: approval
           requires:
@@ -614,6 +592,7 @@ workflows:
           filters:
             branches:
               only: [master]
+
       - deploy-production-terraform:
           requires:
             - permit-terraform-production-release
@@ -676,7 +655,6 @@ workflows:
       # Production migrations
       - assume-role-production:
           context: api-assume-role-production-context
-          requires: [migrate-database-staging]
           filters:
             branches:
               only: [master]
