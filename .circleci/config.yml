@@ -144,7 +144,7 @@ commands:
           name: SSH into RDS and migrate database
           command: |
             CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --with-decryption --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
             PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
@@ -189,7 +189,7 @@ commands:
           name: List pending migrations
           command: |
             CENTRAL_ACCOUNT=${<<parameters.aws-central-parameter-account>>}
-            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --output text --query Parameter.Value > ./private-key.pem
+            aws ssm get-parameter --name "/platform-apis-jump-box-pem-key" --with-decryption --output text --query Parameter.Value > ./private-key.pem
             chmod 400 ./private-key.pem
             HOST=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-hostname --query Parameter.Value --output text)
             PORT=$(aws ssm get-parameter --name arn:aws:ssm:eu-west-2:${CENTRAL_ACCOUNT}:parameter/<<parameters.stage>>apis/fss-public-api-<<parameters.stage>>/fss-public-api/postgres-port --query Parameter.Value --output text)
@@ -676,25 +676,24 @@ workflows:
       # Production migrations
       - assume-role-production:
           context: api-assume-role-production-context
-          requires: [migrate-database-staging]
           filters:
             branches:
-              only: [master]
+              only: [chore/update-pem]
       - preview-migrations-production:
           context: central-parameter-store-context
           requires: [assume-role-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/update-pem]
       - permit-migration-production:
           type: approval
           requires: [preview-migrations-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/update-pem]
       - migrate-database-production:
           context: central-parameter-store-context
           requires: [permit-migration-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/update-pem]
