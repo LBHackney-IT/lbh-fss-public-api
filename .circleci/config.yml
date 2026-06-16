@@ -375,7 +375,7 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              ignore: [master, develop]
+              ignore: [chore/test-tf, develop]
 
       - build-and-test:
           context:
@@ -384,7 +384,7 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              ignore: [master, develop]
+              ignore: [chore/test-tf, develop]
 
       - assume-role-development:
           context: api-assume-role-development-context
@@ -392,14 +392,14 @@ workflows:
             - build-and-test
           filters:
             branches:
-              ignore: [master, develop]
+              ignore: [chore/test-tf, develop]
 
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              ignore: [master, develop]
+              ignore: [chore/test-tf, develop]
 
   check-and-deploy-development:
     jobs:
@@ -449,7 +449,7 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - build-and-test:
           context:
@@ -458,7 +458,7 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - permit-staging-release:
           type: approval
@@ -466,7 +466,7 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - assume-role-staging:
           context: api-assume-role-staging-context
@@ -474,7 +474,7 @@ workflows:
             - permit-staging-release
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - deploy-to-staging:
           context:
@@ -485,7 +485,7 @@ workflows:
             - assume-role-staging
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - permit-production-release:
           type: approval
@@ -493,7 +493,7 @@ workflows:
             - deploy-to-staging
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - assume-role-production:
           context: api-assume-role-production-context
@@ -501,7 +501,7 @@ workflows:
             - permit-production-release
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - deploy-to-production:
           context:
@@ -512,7 +512,7 @@ workflows:
             - assume-role-production
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
   terraform-release:
     jobs:
@@ -548,14 +548,14 @@ workflows:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - permit-terraform-staging-release:
           type: approval
@@ -563,14 +563,14 @@ workflows:
             - preview-staging-terraform
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - assume-role-production:
           context: api-assume-role-production-context
@@ -578,14 +578,14 @@ workflows:
             - deploy-staging-terraform
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - preview-production-terraform:
           requires:
             - assume-role-production
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - permit-terraform-production-release:
           type: approval
@@ -593,14 +593,14 @@ workflows:
             - preview-production-terraform
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       - deploy-production-terraform:
           requires:
             - permit-terraform-production-release
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
   database-migration:
     jobs:
@@ -634,47 +634,47 @@ workflows:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - preview-migrations-staging:
           context: central-parameter-store-context
           requires: [assume-role-staging]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - permit-migration-staging:
           type: approval
           requires: [preview-migrations-staging]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - migrate-database-staging:
           context: central-parameter-store-context
           requires: [permit-migration-staging]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
 
       # Production migrations
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - preview-migrations-production:
           context: central-parameter-store-context
           requires: [assume-role-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - permit-migration-production:
           type: approval
           requires: [preview-migrations-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
       - migrate-database-production:
           context: central-parameter-store-context
           requires: [permit-migration-production]
           filters:
             branches:
-              only: [master]
+              only: [chore/test-tf]
