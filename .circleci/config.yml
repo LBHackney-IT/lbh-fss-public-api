@@ -574,8 +574,6 @@ workflows:
 
       - assume-role-production:
           context: api-assume-role-production-context
-          requires:
-            - deploy-staging-terraform
           filters:
             branches:
               only: [master]
