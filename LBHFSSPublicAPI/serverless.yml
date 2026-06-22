@@ -31,6 +31,10 @@ functions:
       FSS_PUBLIC_API_BASE_URL: ${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/${self:provider.stage}-apis/${self:provider.stage}apis/fss-public-api-base-url}
     events:
       - http:
+          path: /api/v1/images/{proxy+}
+          method: GET
+          private: false
+      - http:
           path: /{proxy+}
           method: ANY
           private: true
