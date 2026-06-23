@@ -16,6 +16,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             _apiBaseUrl = options.ApiBaseUrl;
             _apiKey = options.ApiKey;
             _apiToken = options.ApiToken;
+            _httpClient.Timeout = TimeSpan.FromSeconds(5);
         }
 
         public AddressesAPIContextResponse GetAddressesRequest(string postcode) // asc Block for now.
@@ -23,7 +24,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             // Build the request
             var request = new HttpRequestMessage();
             request.Method = HttpMethod.Get;
-            var fullUrlString = $"{_apiBaseUrl}addresses?PostCode={postcode}&Gazetteer=Both&Format=Detailed"; //Gazeteer Both? or Local?
+            var fullUrlString = $"{_apiBaseUrl}addresses?PostCode={Uri.EscapeDataString(postcode)}&Gazetteer=Both&Format=Detailed"; //Gazeteer Both? or Local?
             request.RequestUri = new Uri(fullUrlString);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
 
