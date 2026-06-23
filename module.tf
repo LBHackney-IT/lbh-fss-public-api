@@ -34,6 +34,16 @@ resource "aws_security_group_rule" "postgres_ingress_from_lambda" {
   source_security_group_id = local.current_config.lambda_security_group_id
 }
 
+resource "aws_security_group_rule" "postgres_ingress_from_portal_lambda" {
+  type                     = "ingress"
+  description              = "Allow portal API Lambda to access PostgreSQL"
+  from_port                = data.aws_ssm_parameter.postgres_port.value
+  to_port                  = data.aws_ssm_parameter.postgres_port.value
+  protocol                 = "tcp"
+  security_group_id        = module.postgres_db.db_security_group_id
+  source_security_group_id = local.current_config.portal_lambda_security_group_id
+}
+
 resource "aws_security_group_rule" "postgres_ingress_from_jump_box" {
   for_each = toset(data.aws_instance.jump_box.vpc_security_group_ids)
 

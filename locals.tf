@@ -19,6 +19,7 @@ locals {
       deletion_protection                    = false
       maintenance_window                     = "sun:10:00-sun:10:30"
       lambda_security_group_id               = "sg-07aa5b4bfe5431d73"
+      portal_lambda_security_group_id        = "sg-033babc9f5ce30345"
       centralised_parameter_store_account_id = "115283375626"
       additional_tags = {
         BackupPolicy = "Dev"
@@ -36,6 +37,7 @@ locals {
       deletion_protection                    = true
       maintenance_window                     = "sun:10:00-sun:10:30"
       lambda_security_group_id               = "sg-00be85a006bff97e8"
+      portal_lambda_security_group_id        = "sg-04c73000bf97eae7e"
       centralised_parameter_store_account_id = "469511945406"
       additional_tags = {
         BackupPolicy = "Stg"
@@ -53,6 +55,7 @@ locals {
       deletion_protection                    = false
       maintenance_window                     = "sun:10:00-sun:10:30"
       lambda_security_group_id               = "sg-038eb450496ec5548"
+      portal_lambda_security_group_id        = "sg-060458cddaaa2742a"
       centralised_parameter_store_account_id = "918025132036"
       additional_tags = {
         BackupPolicy = "Prod"
