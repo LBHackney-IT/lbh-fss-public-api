@@ -72,15 +72,19 @@ resources:
                   Action:
                     - s3:ListBucket
                   Resource:
-                    - "arn:aws:s3:::${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-common-api-${self:provider.stage}/fss-common-api/images-bucket-name}"
+                    - "arn:aws:s3:::${self:custom.imageStoreBucket.${self:provider.stage}}"
                 - Effect: Allow
                   Action:
                     - s3:PutObject
                     - s3:GetObject
                     - s3:DeleteObject
                   Resource:
-                    - "arn:aws:s3:::${ssm:arn:aws:ssm:eu-west-2:${param:centralAccount}:parameter/${self:provider.stage}apis/fss-common-api-${self:provider.stage}/fss-common-api/images-bucket-name}/*"
+                    - "arn:aws:s3:::${self:custom.imageStoreBucket.${self:provider.stage}}/*"
 custom:
+  imageStoreBucket:
+    development: fss-imagestore-development
+    staging: fss-imagestore-staging
+    production: fss-imagestore-live
   vpc:
     development:
       securityGroupIds:
