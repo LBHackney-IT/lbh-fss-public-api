@@ -8,6 +8,7 @@ using Amazon.S3.Model;
 using FluentAssertions;
 using LBHFSSPublicAPI.V1.Controllers;
 using LBHFSSPublicAPI.V1.Infrastructure;
+using LBHFSSPublicAPI.Tests.TestHelpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,7 +18,7 @@ using NUnit.Framework;
 namespace LBHFSSPublicAPI.Tests.V1.Controllers
 {
     [TestFixture]
-    public class ImagesControllerTests
+    public class ImagesControllerTests : DatabaseTests
     {
         private Mock<IAmazonS3> _s3;
         private ImagesController _controller;
@@ -27,7 +28,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         {
             _s3 = new Mock<IAmazonS3>();
             var options = new ImageStoreOptions("fss-imagestore-test");
-            _controller = new ImagesController(_s3.Object, options, NullLogger<ImagesController>.Instance)
+            _controller = new ImagesController(_s3.Object, options, DatabaseContext, NullLogger<ImagesController>.Instance)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -37,10 +38,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public async Task GetImage_ValidMedium_ReturnsJpegFile()
         {
             var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
+            var serviceId = AddServiceWithImage("https://assets.example.com/images/99-original.jpg;https://assets.example.com/images/99-medium.jpg");
             _s3.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetObjectResponse { ResponseStream = stream });
 
-            var result = await _controller.GetImage(99, "medium") as FileStreamResult;
+            var result = await _controller.GetImage(serviceId, "medium") as FileStreamResult;
 
             result.Should().NotBeNull();
             result!.ContentType.Should().Be("image/jpeg");
@@ -54,14 +56,16 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public async Task GetImage_ValidOriginal_UsesOriginalKey()
         {
             var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+            var serviceId = AddServiceWithImage("https://assets.example.com/images/7-original.png;https://assets.example.com/images/7-medium.png");
             _s3.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetObjectResponse { ResponseStream = stream });
 
-            var result = await _controller.GetImage(7, "original");
+            var result = await _controller.GetImage(serviceId, "original") as FileStreamResult;
 
-            result.Should().BeOfType<FileStreamResult>();
+            result.Should().NotBeNull();
+            result!.ContentType.Should().Be("image/png");
             _s3.Verify(x => x.GetObjectAsync(
-                It.Is<GetObjectRequest>(r => r.Key == "images/7-original.jpg"),
+                It.Is<GetObjectRequest>(r => r.Key == "images/7-original.png"),
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -69,13 +73,14 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public async Task GetImage_SizeIsCaseInsensitive()
         {
             var stream = new MemoryStream();
+            var serviceId = AddServiceWithImage("https://assets.example.com/images/1-original.png;https://assets.example.com/images/1-medium.png");
             _s3.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new GetObjectResponse { ResponseStream = stream });
 
-            await _controller.GetImage(1, "MEDIUM");
+            await _controller.GetImage(serviceId, "MEDIUM");
 
             _s3.Verify(x => x.GetObjectAsync(
-                It.Is<GetObjectRequest>(r => r.Key == "images/1-medium.jpg"),
+                It.Is<GetObjectRequest>(r => r.Key == "images/1-medium.png"),
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -94,6 +99,7 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var controller = new ImagesController(
                 _s3.Object,
                 new ImageStoreOptions(string.Empty),
+                DatabaseContext,
                 NullLogger<ImagesController>.Instance)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
@@ -110,10 +116,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         [Test]
         public async Task GetImage_S3ObjectNotFound_ReturnsNotFound()
         {
+            var serviceId = AddServiceWithImage("https://assets.example.com/images/404-original.jpg;https://assets.example.com/images/404-medium.jpg");
             _s3.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new AmazonS3Exception("NoSuchKey") { StatusCode = HttpStatusCode.NotFound });
 
-            var result = await _controller.GetImage(404, "medium");
+            var result = await _controller.GetImage(serviceId, "medium");
 
             result.Should().BeOfType<NotFoundResult>();
         }
@@ -121,14 +128,33 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         [Test]
         public async Task GetImage_OtherS3Error_Returns502()
         {
+            var serviceId = AddServiceWithImage("https://assets.example.com/images/1-original.jpg;https://assets.example.com/images/1-medium.jpg");
             _s3.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new AmazonS3Exception("AccessDenied") { StatusCode = HttpStatusCode.Forbidden });
 
-            var result = await _controller.GetImage(1, "medium");
+            var result = await _controller.GetImage(serviceId, "medium");
 
             var status = result as ObjectResult;
             status.Should().NotBeNull();
             status!.StatusCode.Should().Be(502);
+        }
+
+        [Test]
+        public async Task GetImage_ServiceHasNoImage_ReturnsNotFound()
+        {
+            var result = await _controller.GetImage(999999, "medium");
+
+            result.Should().BeOfType<NotFoundResult>();
+            _s3.Verify(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        private int AddServiceWithImage(string imageUrl)
+        {
+            var service = EntityHelpers.CreateService();
+            service.Image.Url = imageUrl;
+            DatabaseContext.Services.Add(service);
+            DatabaseContext.SaveChanges();
+            return service.Id;
         }
     }
 }
