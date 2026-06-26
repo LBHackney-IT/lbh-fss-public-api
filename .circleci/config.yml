@@ -375,7 +375,7 @@ workflows:
       - check-code-formatting:
           filters:
             branches:
-              ignore: [bugfix/prod-tf, develop]
+              ignore: [master, bugfix/prod-tf]
 
       - build-and-test:
           context:
@@ -384,7 +384,7 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              ignore: [bugfix/prod-tf, develop]
+              ignore: [master, bugfix/prod-tf]
 
       - assume-role-development:
           context: api-assume-role-development-context
@@ -392,21 +392,21 @@ workflows:
             - build-and-test
           filters:
             branches:
-              ignore: [bugfix/prod-tf, develop]
+              ignore: [master, bugfix/prod-tf]
 
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              ignore: [bugfix/prod-tf, develop]
+              ignore: [master, bugfix/prod-tf]
 
   check-and-deploy-development:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - build-and-test:
           context:
@@ -415,7 +415,7 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - permit-development-release:
           type: approval
@@ -423,7 +423,7 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - assume-role-development:
           context: api-assume-role-development-context
@@ -431,7 +431,7 @@ workflows:
             - permit-development-release
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - deploy-to-development:
           context:
@@ -442,14 +442,14 @@ workflows:
             - assume-role-development
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
   check-and-deploy-staging-and-production:
     jobs:
       - check-code-formatting:
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - build-and-test:
           context:
@@ -458,7 +458,7 @@ workflows:
           requires: [check-code-formatting]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - permit-staging-release:
           type: approval
@@ -466,7 +466,7 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - assume-role-staging:
           context: api-assume-role-staging-context
@@ -474,7 +474,7 @@ workflows:
             - permit-staging-release
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - deploy-to-staging:
           context:
@@ -485,7 +485,7 @@ workflows:
             - assume-role-staging
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - permit-production-release:
           type: approval
@@ -493,7 +493,7 @@ workflows:
             - deploy-to-staging
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - assume-role-production:
           context: api-assume-role-production-context
@@ -501,7 +501,7 @@ workflows:
             - permit-production-release
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - deploy-to-production:
           context:
@@ -512,7 +512,7 @@ workflows:
             - assume-role-production
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
   terraform-release:
     jobs:
@@ -520,14 +520,14 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - preview-development-terraform:
           requires:
             - assume-role-development
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - permit-terraform-development-release:
           type: approval
@@ -535,27 +535,27 @@ workflows:
             - preview-development-terraform
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - deploy-development-terraform:
           requires:
             - permit-terraform-development-release
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - preview-staging-terraform:
           requires:
             - assume-role-staging
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - permit-terraform-staging-release:
           type: approval
@@ -563,27 +563,27 @@ workflows:
             - preview-staging-terraform
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - deploy-staging-terraform:
           requires:
             - permit-terraform-staging-release
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - preview-production-terraform:
           requires:
             - assume-role-production
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - permit-terraform-production-release:
           type: approval
@@ -591,14 +591,14 @@ workflows:
             - preview-production-terraform
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       - deploy-production-terraform:
           requires:
             - permit-terraform-production-release
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
   database-migration:
     jobs:
@@ -607,72 +607,72 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
       - preview-migrations-development:
           context: central-parameter-store-context
           requires: [assume-role-development]
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
       - permit-migration-development:
           type: approval
           requires: [preview-migrations-development]
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
       - migrate-database-development:
           context: central-parameter-store-context
           requires: [permit-migration-development]
           filters:
             branches:
-              only: [develop]
+              only: [bugfix/prod-tf]
 
       # Staging migrations
       - assume-role-staging:
           context: api-assume-role-staging-context
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - preview-migrations-staging:
           context: central-parameter-store-context
           requires: [assume-role-staging]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - permit-migration-staging:
           type: approval
           requires: [preview-migrations-staging]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - migrate-database-staging:
           context: central-parameter-store-context
           requires: [permit-migration-staging]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
 
       # Production migrations
       - assume-role-production:
           context: api-assume-role-production-context
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - preview-migrations-production:
           context: central-parameter-store-context
           requires: [assume-role-production]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - permit-migration-production:
           type: approval
           requires: [preview-migrations-production]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
       - migrate-database-production:
           context: central-parameter-store-context
           requires: [permit-migration-production]
           filters:
             branches:
-              only: [bugfix/prod-tf]
+              only: [master]
