@@ -24,7 +24,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
             // Build the request
             var request = new HttpRequestMessage();
             request.Method = HttpMethod.Get;
-            var fullUrlString = $"{_apiBaseUrl}addresses?PostCode={Uri.EscapeDataString(postcode)}&Gazetteer=Both&Format=Detailed"; //Gazeteer Both? or Local?
+            var fullUrlString = $"{_apiBaseUrl}addresses?PostCode={Uri.EscapeDataString(postcode)}&Gazetteer=Both&Format=Detailed";
             request.RequestUri = new Uri(fullUrlString);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
 

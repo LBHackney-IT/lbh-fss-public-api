@@ -33,13 +33,9 @@ namespace LBHFSSPublicAPI.V1.Controllers
 
                 return NotFound(new ErrorResponse($"Service with an Id: {requestParams.Id} was not found."));
             }
-            catch (Exception ex) when (ex.InnerException != null)
+            catch (Exception)
             {
-                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ErrorResponse(ex.Message));
+                return StatusCode(500, new ErrorResponse("There was a problem getting the service."));
             }
         }
 
@@ -51,13 +47,9 @@ namespace LBHFSSPublicAPI.V1.Controllers
                 var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
                 return Ok(usecaseResult);
             }
-            catch (Exception ex) when (ex.InnerException != null)
+            catch (Exception)
             {
-                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ErrorResponse(ex.Message));
+                return StatusCode(500, new ErrorResponse("There was a problem searching services."));
             }
         }
     }

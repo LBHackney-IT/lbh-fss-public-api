@@ -26,13 +26,9 @@ namespace LBHFSSPublicAPI.V1.Controllers
                 var result = _taxonomiesUseCase.ExecuteGet(vocabulary);
                 return Ok(result);
             }
-            catch (Exception ex) when (ex.InnerException != null)
+            catch (Exception)
             {
-                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ErrorResponse(ex.Message));
+                return StatusCode(500, new ErrorResponse("There was a problem getting taxonomies."));
             }
         }
 
@@ -49,13 +45,9 @@ namespace LBHFSSPublicAPI.V1.Controllers
 
                 return NotFound(new ErrorResponse($"Taxonomy with an Id: {id} was not found."));
             }
-            catch (Exception ex) when (ex.InnerException != null)
+            catch (Exception)
             {
-                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ErrorResponse(ex.Message));
+                return StatusCode(500, new ErrorResponse("There was a problem getting the taxonomy."));
             }
         }
     }
