@@ -38,3 +38,11 @@ data "aws_ssm_parameter" "postgres_port" {
 data "aws_ssm_parameter" "postgres_database" {
   name = "arn:aws:ssm:eu-west-2:${local.current_config.centralised_parameter_store_account_id}:parameter/${local.environment}apis/fss-public-api-${local.environment}/fss-public-api/postgres-database"
 }
+
+data "aws_ssm_parameter" "jump_box_instance_name" {
+  name = "arn:aws:ssm:eu-west-2:${local.current_config.centralised_parameter_store_account_id}:parameter/${local.environment}apis/${local.environment}-apis/${local.environment}apis/jump-box-instance-name"
+}
+
+data "aws_instance" "jump_box" {
+  instance_id = data.aws_ssm_parameter.jump_box_instance_name.value
+}

@@ -6,7 +6,7 @@ namespace LBHFSSPublicAPI.V1.Infrastructure
 
         public ImageStoreOptions(string bucketName)
         {
-            BucketName = bucketName;
+            BucketName = bucketName?.Trim() ?? string.Empty;
         }
     }
 }

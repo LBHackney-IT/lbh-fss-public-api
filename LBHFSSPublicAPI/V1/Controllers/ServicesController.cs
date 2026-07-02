@@ -24,12 +24,19 @@ namespace LBHFSSPublicAPI.V1.Controllers
         [Route("{id}")]
         public IActionResult GetService([FromRoute] GetServiceByIdRequest requestParams) //if user doens't input anything, then it will be 0 by default!!!
         {
-            var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
+            try
+            {
+                var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
 
-            if (usecaseResult != null)
-                return Ok(usecaseResult);
+                if (usecaseResult != null)
+                    return Ok(usecaseResult);
 
-            return NotFound(new ErrorResponse($"Service with an Id: {requestParams.Id} was not found."));
+                return NotFound(new ErrorResponse($"Service with an Id: {requestParams.Id} was not found."));
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ErrorResponse("There was a problem getting the service."));
+            }
         }
 
         [HttpGet]
@@ -40,13 +47,9 @@ namespace LBHFSSPublicAPI.V1.Controllers
                 var usecaseResult = _servicesUseCase.ExecuteGet(requestParams);
                 return Ok(usecaseResult);
             }
-            catch (Exception ex) when (ex.InnerException != null)
+            catch (Exception)
             {
-                return StatusCode(500, new ErrorResponse(ex.Message, ex.InnerException.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ErrorResponse(ex.Message));
+                return StatusCode(500, new ErrorResponse("There was a problem searching services."));
             }
         }
     }
