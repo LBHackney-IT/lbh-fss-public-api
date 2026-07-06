@@ -23,3 +23,35 @@ module "postgres_db" {
   copy_tags_to_snapshot   = true
   additional_tags         = lookup(local.current_config, "additional_tags", {})
 }
+
+resource "aws_security_group_rule" "postgres_ingress_from_lambda" {
+  type                     = "ingress"
+  description              = "Allow public API Lambda to access PostgreSQL"
+  from_port                = data.aws_ssm_parameter.postgres_port.value
+  to_port                  = data.aws_ssm_parameter.postgres_port.value
+  protocol                 = "tcp"
+  security_group_id        = module.postgres_db.db_security_group_id
+  source_security_group_id = local.current_config.lambda_security_group_id
+}
+
+resource "aws_security_group_rule" "postgres_ingress_from_portal_lambda" {
+  type                     = "ingress"
+  description              = "Allow portal API Lambda to access PostgreSQL"
+  from_port                = data.aws_ssm_parameter.postgres_port.value
+  to_port                  = data.aws_ssm_parameter.postgres_port.value
+  protocol                 = "tcp"
+  security_group_id        = module.postgres_db.db_security_group_id
+  source_security_group_id = local.current_config.portal_lambda_security_group_id
+}
+
+resource "aws_security_group_rule" "postgres_ingress_from_jump_box" {
+  for_each = toset(data.aws_instance.jump_box.vpc_security_group_ids)
+
+  type                     = "ingress"
+  description              = "Allow SSM jump box to access PostgreSQL for migrations"
+  from_port                = data.aws_ssm_parameter.postgres_port.value
+  to_port                  = data.aws_ssm_parameter.postgres_port.value
+  protocol                 = "tcp"
+  security_group_id        = module.postgres_db.db_security_group_id
+  source_security_group_id = each.value
+}
