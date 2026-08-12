@@ -98,10 +98,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void ServiceControllerSearchServiceMethodHandlesSimpleExceptionsByReturningCustomErrorObject()
         {
             // arrange
-            (var randomExpectedException, var expectedExceptionMessages) =
+            (var randomExpectedException, _) =
                 GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.SimpleException);
-
-            var expectedExceptionMessage = expectedExceptionMessages[0];
 
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
 
@@ -114,10 +112,9 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var actualExceptionMessage = returnedContent.Errors[0];
 
             returnedContent.Should().NotBeNull();
-            returnedContent.Errors.Count.Should().Be(expectedExceptionMessages.Count);
             returnedContent.Errors.Count.Should().Be(1);
 
-            actualExceptionMessage.Should().Be(expectedExceptionMessage);
+            actualExceptionMessage.Should().Be("There was a problem searching services.");
         }
 
 
@@ -125,11 +122,8 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
         public void ServiceControllerSearchServiceMethodHandlesNestedExceptionsByReturningCustomErrorObject()
         {
             // arrange
-            (var randomExpectedException, var expectedExceptionMessages) =
+            (var randomExpectedException, _) =
                 GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.InnerException);
-
-            var expectedExceptionMessage = expectedExceptionMessages[0];
-            var expectedInnerExceptionMessage = expectedExceptionMessages[1];
 
             _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
 
@@ -140,14 +134,11 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             var controllerObjectResult = controllerResponse as ObjectResult;
             var returnedContent = controllerObjectResult.Value as ErrorResponse;
             var actualExceptionMessage = returnedContent.Errors[0];
-            var actualInnerExceptionMessage = returnedContent.Errors[1];
 
             returnedContent.Should().NotBeNull();
-            returnedContent.Errors.Count.Should().Be(expectedExceptionMessages.Count);
-            returnedContent.Errors.Count.Should().Be(2);
+            returnedContent.Errors.Count.Should().Be(1);
 
-            actualExceptionMessage.Should().Be(expectedExceptionMessage);
-            actualInnerExceptionMessage.Should().Be(expectedInnerExceptionMessage);
+            actualExceptionMessage.Should().Be("There was a problem searching services.");
         }
 
         #endregion

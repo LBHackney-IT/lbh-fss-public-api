@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Asp.Versioning.ApiExplorer;
 
 namespace LBHFSSPublicAPI.Versioning
 {
@@ -10,4 +10,3 @@ namespace LBHFSSPublicAPI.Versioning
         }
     }
 }
-

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using Amazon;
 using Amazon.S3;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using LBHFSSPublicAPI.V1.Gateways;
 using LBHFSSPublicAPI.V1.Gateways.Interfaces;
 using LBHFSSPublicAPI.V1.Infrastructure;
@@ -13,14 +15,11 @@ using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using LBHFSSPublicAPI.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 
@@ -40,20 +39,16 @@ namespace LBHFSSPublicAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public static void ConfigureServices(IServiceCollection services)
         {
-            services
-            .AddMvc(setupAction =>
-            {
-                setupAction.EnableEndpointRouting = false;
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddControllers();
             services.AddApiVersioning(o =>
             {
                 o.DefaultApiVersion = new ApiVersion(1, 0);
                 o.AssumeDefaultVersionWhenUnspecified = true;// assume that the caller wants the default version if they don't specify
                 o.ApiVersionReader = new UrlSegmentApiVersionReader();// read the version number from the url segment header)
-            });
+            })
+            .AddMvc()
+            .AddApiExplorer();
             services.AddCors();
-            services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
 
             services.AddSwaggerGen(c =>
             {
@@ -66,16 +61,10 @@ namespace LBHFSSPublicAPI
         Type = SecuritySchemeType.ApiKey
     });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-{
-new OpenApiSecurityScheme
-{
-Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Token" }
-},
-new List<string>()
-}
-            });
+                c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Token", document)] = []
+                });
 
                 //Looks at the APIVersionAttribute [ApiVersion("x")] on controllers and decides whether or not
                 //to include it in that version of the swagger document
