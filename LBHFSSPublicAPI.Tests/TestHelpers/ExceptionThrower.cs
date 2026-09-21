@@ -1,6 +1,5 @@
 using Bogus;
 using System;
-using System.Collections.Generic;
 
 namespace LBHFSSPublicAPI.Tests.TestHelpers
 {
@@ -9,29 +8,6 @@ namespace LBHFSSPublicAPI.Tests.TestHelpers
         private static int _numberOfCases = 12;
         private static int _numberOfSimpleCases = 7;
         private static Faker _faker = new Faker();
-
-        public static Tuple<Exception, List<string>> GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType options = ExceptionType.AnyException)
-        {
-            List<string> exception_messages = new List<string>();
-
-            var random_exception = GenerateException(options);
-
-            try // throw random exception
-            {
-                throw random_exception;
-            }
-            catch (Exception ex) when (ex.InnerException != null)
-            {
-                exception_messages.Add(ex.Message);
-                exception_messages.Add(ex.InnerException.Message);
-            }
-            catch (Exception ex) // catch the expected exception message
-            {
-                exception_messages.Add(ex.Message);
-            }
-
-            return new Tuple<Exception, List<string>>(random_exception, exception_messages);
-        }
 
         public static Exception GenerateException(ExceptionType options = ExceptionType.AnyException)
         {

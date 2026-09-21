@@ -14,20 +14,13 @@
       "launchBrowser": true,
       "launchUrl": "api/v1/healthcheck/ping",
       "environmentVariables": {
-        "DB_USERNAME": "postgres",
-        "DB_DATABASE": "testdb",
-        "DB_PORT": "6543",
-        "DB_PASSWORD": "mypassword",
+        "CONNECTION_STRING": "Host=127.0.0.1;Port=6543;Username=postgres;Password=mypassword;Database=testdb",
         "ADDRESSES_API_KEY": "Test",
-        "DB_HOST": "testdb",
         "ADDRESSES_API_BASE_URL": "Test",
         "ASPNETCORE_ENVIRONMENT": "Test",
         "ADDRESSES_API_TOKEN": "Test"
       },
-      "applicationUrl": "http://localhost:5000",
-      "ConnectionStrings": {
-        "DefaultConnection": "host=test-database;port=6543;username=postgres;password=mypassword;database=testdb"
-      }
+      "applicationUrl": "http://localhost:5000"
     }
   }
 }

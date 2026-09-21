@@ -26,11 +26,7 @@ services:
       context: .
       dockerfile: LBHFSSPublicAPI.Tests/Dockerfile
     environment:
-      - DB_HOST=test-database
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=mypassword
-      - DB_DATABASE=testdb
+      - CONNECTION_STRING=Host=test-database;Port=5432;Database=testdb;Username=postgres;Password=mypassword
       - ASPNETCORE_ENVIRONMENT=Test
       - ADDRESSES_API_BASE_URL=Test
       - ADDRESSES_API_KEY=Test

@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Bogus.DataSets;
 using FluentAssertions;
 using LBHFSSPublicAPI.Tests.TestHelpers;
 using LBHFSSPublicAPI.V1.Boundary;
 using LBHFSSPublicAPI.V1.Boundary.Request;
 using LBHFSSPublicAPI.V1.Boundary.Response;
 using LBHFSSPublicAPI.V1.Controllers;
-using LBHFSSPublicAPI.V1.Domain;
-using LBHFSSPublicAPI.V1.Factories;
 using LBHFSSPublicAPI.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -94,51 +88,21 @@ namespace LBHFSSPublicAPI.Tests.V1.Controllers
             returnedContent.Should().NotBeNull();
         }
 
-        [TestCase(TestName = "Given the services controller SearchServices method is called, When a simple exception during code execution is raised, Then the controller method returns custom error response with a message")]
-        public void ServiceControllerSearchServiceMethodHandlesSimpleExceptionsByReturningCustomErrorObject()
+        [TestCase(TestName =
+            "Given SearchServices is called, When a simple or aggregate exception is raised, Then the controller safely returns a generic error response")]
+        public void SearchServices_SafelyHandlesExceptions_ByReturningGenericErrorResponse()
         {
-            // arrange
-            (var randomExpectedException, _) =
-                GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.SimpleException);
+            var exception = GenerateException();
+            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(exception);
 
-            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
-
-            //act
             var controllerResponse = _classUnderTest.SearchServices(null);
 
-            //assert
             var controllerObjectResult = controllerResponse as ObjectResult;
             var returnedContent = controllerObjectResult.Value as ErrorResponse;
-            var actualExceptionMessage = returnedContent.Errors[0];
 
             returnedContent.Should().NotBeNull();
-            returnedContent.Errors.Count.Should().Be(1);
-
-            actualExceptionMessage.Should().Be("There was a problem searching services.");
-        }
-
-
-        [TestCase(TestName = "Given the services controller SearchServices method is called, When a nested exception during code execution is raised, Then the controller method returns custom error response with exception messages")]
-        public void ServiceControllerSearchServiceMethodHandlesNestedExceptionsByReturningCustomErrorObject()
-        {
-            // arrange
-            (var randomExpectedException, _) =
-                GenerateExceptionAndCorrespondinExceptionMessages(ExceptionType.InnerException);
-
-            _mockUseCase.Setup(u => u.ExecuteGet(It.IsAny<SearchServicesRequest>())).Throws(randomExpectedException);
-
-            //act
-            var controllerResponse = _classUnderTest.SearchServices(null);
-
-            //assert
-            var controllerObjectResult = controllerResponse as ObjectResult;
-            var returnedContent = controllerObjectResult.Value as ErrorResponse;
-            var actualExceptionMessage = returnedContent.Errors[0];
-
-            returnedContent.Should().NotBeNull();
-            returnedContent.Errors.Count.Should().Be(1);
-
-            actualExceptionMessage.Should().Be("There was a problem searching services.");
+            returnedContent.Errors.Should().ContainSingle()
+                .Which.Should().Be("There was a problem searching services.");
         }
 
         #endregion
