@@ -218,14 +218,14 @@ jobs:
           method: full
       - setup_remote_docker
       - run:
+          name: Build database and test images
+          command: docker compose build test-database fss-public-api-test
+      - run:
           name: Start database
           command: |
             docker compose up -d test-database
             echo "Waiting for database to be ready..."
             timeout 60 sh -c 'until docker compose exec -T test-database pg_isready -U postgres; do sleep 2; done'
-      - run:
-          name: Build test image
-          command: docker compose build fss-public-api-test
       - run:
           name: Run tests
           command: |
