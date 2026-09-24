@@ -610,13 +610,13 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop, fix/add-aws-cli]
+              only: [develop]
       - preview-migrations-development:
           context: central-parameter-store-context
           requires: [assume-role-development]
           filters:
             branches:
-              only: [develop, fix/add-aws-cli]
+              only: [develop]
       - permit-migration-development:
           type: approval
           requires: [preview-migrations-development]
