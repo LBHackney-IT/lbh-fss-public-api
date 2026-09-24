@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.1
+  aws-cli: circleci/aws-cli@5.4.2
   sonarcloud: sonarsource/sonarcloud@4.0.0
 
 executors:
@@ -89,9 +90,10 @@ commands:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y unzip openssh-client curl awscli
+            apt-get install -y unzip openssh-client curl ca-certificates
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
+      - aws-cli/install
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
@@ -134,9 +136,10 @@ commands:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y unzip openssh-client curl awscli
+            apt-get install -y openssh-client curl ca-certificates unzip
             curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
             dpkg -i session-manager-plugin.deb
+      - aws-cli/install
       - run:
           name: Install dotnet ef core
           command: dotnet tool install dotnet-ef --tool-path ./dotnet-ef-local/
@@ -607,13 +610,13 @@ workflows:
           context: api-assume-role-development-context
           filters:
             branches:
-              only: [develop]
+              only: [develop, fix/add-aws-cli]
       - preview-migrations-development:
           context: central-parameter-store-context
           requires: [assume-role-development]
           filters:
             branches:
-              only: [develop]
+              only: [develop, fix/add-aws-cli]
       - permit-migration-development:
           type: approval
           requires: [preview-migrations-development]
