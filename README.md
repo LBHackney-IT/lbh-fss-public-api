@@ -4,7 +4,7 @@
 Find Support Services Public API is a service that exposes endpoints to allow consumers to search for support services available to Hackney residents.
 
 ### Runtime (AWS)
-- **API Gateway** → **Lambda (.NET 8)** → **RDS PostgreSQL** (in VPC private subnets).
+- **API Gateway** → **Lambda (.NET 10)** → **RDS PostgreSQL** (in VPC private subnets).
 - Lambda runs in a **VPC** with **security groups** and **private subnets** configured per environment.
 - Configuration and secrets are stored in **SSM Parameter Store**.
 
@@ -20,7 +20,7 @@ Find Support Services Public API is a service that exposes endpoints to allow co
 
 ## Stack
 
-- .NET 8 (AWS Lambda)
+- .NET 10 (AWS Lambda)
 - nUnit
 - Serverless Framework
 - Terraform
